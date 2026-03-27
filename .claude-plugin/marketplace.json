@@ -1,0 +1,42 @@
+{
+  "name": "kesekit",
+  "owner": {
+    "name": "CDPP Corp",
+    "url": "https://github.com/cdppcorp"
+  },
+  "metadata": {
+    "description": "KESA-based Critical Information Infrastructure (CII) vulnerability assessment skills. Technical (424 items), Administrative (127 items), Physical (9 items) security evaluation based on Korean Information Security Agency (KISA) guidelines.",
+    "version": "1.0.0",
+    "license": "MIT"
+  },
+  "plugins": [
+    {
+      "name": "kesekit-en",
+      "description": "CII vulnerability assessment skills (English). start(full technical/administrative/physical security audit), check(CII compliance pre-deployment checklist), fix(auto-fix vulnerabilities with hardening scripts), guide(generate secure coding prompts for AI tools).",
+      "source": "./",
+      "strict": false,
+      "keywords": ["security", "KISA", "CII", "vulnerability", "assessment", "infrastructure", "hardening"],
+      "category": "security",
+      "skills": [
+        "./skills/start",
+        "./skills/check",
+        "./skills/fix",
+        "./skills/guide"
+      ]
+    },
+    {
+      "name": "kesekit-ko",
+      "description": "주요정보통신기반시설 취약점 분석평가 스킬 (한국어). start(기술/관리/물리 보안 전체 감사), check(CII 컴플라이언스 배포 전 체크리스트), fix(취약점 자동 수정 + 보안설정 스크립트), guide(AI 도구용 시큐어코딩 프롬프트 생성).",
+      "source": "./",
+      "strict": false,
+      "keywords": ["보안", "KISA", "주요정보통신기반시설", "취약점", "분석평가", "기반시설", "보안설정"],
+      "category": "security",
+      "skills": [
+        "./skills-ko/start",
+        "./skills-ko/check",
+        "./skills-ko/fix",
+        "./skills-ko/guide"
+      ]
+    }
+  ]
+}
