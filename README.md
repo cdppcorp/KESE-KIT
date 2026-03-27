@@ -207,6 +207,26 @@ KESE/
 
 ---
 
+## Built With
+
+이 프로젝트는 다음 Claude Code 플러그인을 활용하여 제작되었습니다:
+
+| Plugin | Description |
+|--------|-------------|
+| [authorkit-ko](https://github.com/cdppcorp/authorkit) | 책 집필 지원 스킬 - PDF 분석, 구조 추출, 퇴고/재작성, 텍스트 블록도 생성 |
+| [win-hooks](https://github.com/anthropics/claude-code-plugins) | Windows 환경에서 Claude Code 플러그인 훅 호환성 지원 |
+
+### 제작 과정
+
+1. **authorkit-ko:juice** - KISA PDF 가이드를 마크다운으로 변환
+2. **authorkit-ko:analyze** - 레퍼런스 구조 분석 및 용어 추출
+3. **authorkit-ko:draft** - 22개 장 초안 작성 및 퇴고
+4. 한글 → 영문 번역 (22개 장)
+5. 통합본 생성 (한글/영문)
+6. KESEKIT 스킬 플러그인 구현
+
+---
+
 ## License
 
 MIT License
