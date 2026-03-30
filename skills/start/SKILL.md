@@ -1,6 +1,6 @@
 ---
 name: start
-description: Run a security vulnerability assessment based on KISA guidelines. Supports CII (Critical Information Infrastructure) with 560+ technical/administrative/physical items, and AI Security Guide (developer/provider/user). Use when "security assessment", "vulnerability scan", "CII audit", "KISA assessment", "AI security assessment", "infrastructure security review".
+description: Run a security vulnerability assessment based on KISA guidelines. Supports CII (Critical Information Infrastructure) with 560+ technical/administrative/physical items, the AI Security Guide (developer/provider/user), and Robot Security checklists. Use when "security assessment", "vulnerability scan", "CII audit", "KISA assessment", "AI security assessment", "robot security assessment", "infrastructure security review".
 ---
 
 # KESE Security Vulnerability Assessment
@@ -18,6 +18,7 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 ### Auto-detection
 - Servers, networks, databases, web services, firewalls → **CII**
 - AI models, LLM, generative AI, machine learning, prompts → **AI Security**
+- Robots, industrial robots, service robots, medical robots, ROS/ROS2, PLC-linked robot systems → **Robot Security**
 
 ---
 
@@ -62,6 +63,23 @@ Read from `references/ai-security/` based on target audience.
 | User | `references/ai-security/user-guide.md` |
 
 6-stage lifecycle: Planning → Data → Model Dev → Deploy → Monitoring → Decommission
+
+---
+
+## Robot Security Branch
+
+Read from `references/robot-security/` based on the target robot system or concern.
+
+| Topic | Reference File |
+|-------|---------------|
+| Overview | `references/robot-security/overview.md` |
+| SSDF / secure software development | `references/robot-security/ssdf.md` |
+| Supply chain security | `references/robot-security/supply-chain.md` |
+| IEC 62443 controls (IA, UC, SI, DP, DFR, ER, RA) | `references/robot-security/iec62443.md` |
+| Cyber resilience | `references/robot-security/cyber-resilience.md` |
+| Wireless security | `references/robot-security/wireless.md` |
+
+Assess the relevant categories for industrial, service, or medical robots and generate a dedicated `reports/robot-security/` summary when robot security is selected.
 
 ---
 

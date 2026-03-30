@@ -1,6 +1,6 @@
 ---
 name: guide
-description: Generate secure coding prompts and guides for AI tools (Claude, ChatGPT, Cursor, Copilot). Creates copy-paste ready prompts for writing secure code following KISA CII guidelines, CWE-mapped patterns, and AI security best practices. Use when "generate security guide", "AI security prompt", "secure coding guide", "safe code request", "AI secure coding".
+description: Generate secure coding prompts and guides for AI tools (Claude, ChatGPT, Cursor, Copilot). Creates copy-paste ready prompts for writing secure code following KISA CII guidelines, CWE-mapped patterns, AI security best practices, and robot security controls. Use when "generate security guide", "AI security prompt", "secure coding guide", "safe code request", "AI secure coding", "robot secure coding".
 ---
 
 # KESE Secure Coding Prompt Generator
@@ -22,6 +22,10 @@ Reference `references/cii/webapp.md` for CWE-based patterns. Generate language-s
 ## AI Security Branch
 
 Reference `references/ai-security/developer.md` and `references/ai-security/overview.md`. Generate prompts for: Prompt Injection defense, Data Poisoning prevention, Model Extraction protection, LLM security, RAG pipeline security.
+
+## Robot Security Branch
+
+Reference `references/robot-security/overview.md` first, then use `ssdf.md`, `supply-chain.md`, `iec62443.md`, `cyber-resilience.md`, or `wireless.md` depending on whether the user needs prompts for firmware, ROS/ROS2 nodes, robot APIs, field protocols, supply chain controls, or wireless interfaces.
 
 ## Usage
 
