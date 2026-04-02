@@ -16,10 +16,10 @@ KESE (KISA Enhanced Security Evaluation Kit) là một plugin Claude Code cung c
 
 | Kỹ năng | Mô tả |
 |---------|-------|
-| `/kesekit-en:start` | Chạy đánh giá lỗ hổng bảo mật toàn diện (CII 560+ hạng mục hoặc Bảo mật AI) |
-| `/kesekit-en:check` | Danh sách kiểm tra tuân thủ bảo mật trước triển khai |
-| `/kesekit-en:fix` | Tự động tạo script tăng cường bảo mật và bản vá lỗ hổng |
-| `/kesekit-en:guide` | Tạo prompt lập trình an toàn cho các công cụ AI |
+| `/kesekit-start` | Chạy đánh giá lỗ hổng bảo mật toàn diện (CII 560+ hạng mục hoặc Bảo mật AI) |
+| `/kesekit-check` | Danh sách kiểm tra tuân thủ bảo mật trước triển khai |
+| `/kesekit-fix` | Tự động tạo script tăng cường bảo mật và bản vá lỗ hổng |
+| `/kesekit-guide` | Tạo prompt lập trình an toàn cho các công cụ AI |
 
 ## Hướng dẫn được hỗ trợ
 
@@ -55,23 +55,23 @@ KESE (KISA Enhanced Security Evaluation Kit) là một plugin Claude Code cung c
 ## Cài đặt
 
 ```bash
-claude plugins install kesekit-en@kesekit
+claude plugins install kesekit
 ```
 
 ## Cách sử dụng
 
 ```bash
 # Bắt đầu đánh giá bảo mật toàn diện
-/kesekit-en:start
+/kesekit-start
 
 # Chạy danh sách kiểm tra trước triển khai
-/kesekit-en:check
+/kesekit-check
 
 # Tạo script tăng cường bảo mật
-/kesekit-en:fix
+/kesekit-fix
 
 # Nhận prompt lập trình an toàn
-/kesekit-en:guide
+/kesekit-guide
 ```
 
 ---

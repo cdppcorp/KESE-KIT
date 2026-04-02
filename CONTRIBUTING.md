@@ -18,10 +18,10 @@ python authorkit/convert_pdf.py "authorkit/new pdf/가이드라인.pdf" authorki
 
 ### Step 3: Reference 파일 작성
 
-`skills-ko/start/references/` 아래에 새 가이드라인 디렉터리를 생성합니다:
+`skills-ko/kesekit-start-ko/references/` 아래에 새 가이드라인 디렉터리를 생성합니다:
 
 ```
-skills-ko/start/references/
+skills-ko/kesekit-start-ko/references/
 ├── cii/                    ← 기존
 ├── ai-security/            ← 기존
 └── new-guideline/          ← 신규
@@ -38,7 +38,7 @@ skills-ko/start/references/
 
 ### Step 4: SKILL.md 라우터 업데이트
 
-`skills-ko/start/SKILL.md`의 가이드라인 선택 테이블에 새 가이드라인을 추가합니다:
+`skills-ko/kesekit-start-ko/SKILL.md`의 가이드라인 선택 테이블에 새 가이드라인을 추가합니다:
 
 ```markdown
 | 3 | **새 가이드라인** | 설명 | 항목 수 |
@@ -52,7 +52,7 @@ skills-ko/start/references/
 `references/new-guideline/` 디렉터리에서 해당 reference를 읽어 평가합니다.
 ```
 
-**4개 스킬 (start, check, fix, guide) 모두 동일하게 업데이트합니다.**
+**4개 스킬 (kesekit-start, kesekit-check, kesekit-fix, kesekit-guide) 모두 동일하게 업데이트합니다.**
 
 ### Step 5: References 복사
 
@@ -60,15 +60,15 @@ skills-ko/start/references/
 
 ```bash
 # 한국어 스킬
-cp -r skills-ko/start/references/new-guideline skills-ko/check/references/
-cp -r skills-ko/start/references/new-guideline skills-ko/fix/references/
-cp -r skills-ko/start/references/new-guideline skills-ko/guide/references/
+cp -r skills-ko/kesekit-start-ko/references/new-guideline skills-ko/kesekit-check-ko/references/
+cp -r skills-ko/kesekit-start-ko/references/new-guideline skills-ko/kesekit-fix-ko/references/
+cp -r skills-ko/kesekit-start-ko/references/new-guideline skills-ko/kesekit-guide-ko/references/
 
 # 영문 스킬
-cp -r skills-ko/start/references/new-guideline skills/start/references/
-cp -r skills-ko/start/references/new-guideline skills/check/references/
-cp -r skills-ko/start/references/new-guideline skills/fix/references/
-cp -r skills-ko/start/references/new-guideline skills/guide/references/
+cp -r skills-ko/kesekit-start-ko/references/new-guideline skills/kesekit-start/references/
+cp -r skills-ko/kesekit-start-ko/references/new-guideline skills/kesekit-check/references/
+cp -r skills-ko/kesekit-start-ko/references/new-guideline skills/kesekit-fix/references/
+cp -r skills-ko/kesekit-start-ko/references/new-guideline skills/kesekit-guide/references/
 ```
 
 ### Step 6: marketplace.json 업데이트

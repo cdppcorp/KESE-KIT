@@ -1,5 +1,5 @@
 ---
-name: check
+name: kesekit-check
 description: Run a pre-deployment security compliance checklist based on KISA guidelines. Supports CII compliance (70 items), AI security checklists, Robot Security (103 items), and Space Security (12 domains, 53 items). Use when "pre-deploy check", "compliance checklist", "security checklist", "AI security check", "robot security check", "space security check", "satellite compliance", "GSaaS check".
 ---
 

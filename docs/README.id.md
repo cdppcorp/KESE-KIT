@@ -16,10 +16,10 @@ KESE (KISA Enhanced Security Evaluation Kit) adalah plugin Claude Code yang meny
 
 | Skill | Deskripsi |
 |-------|-----------|
-| `/kesekit-en:start` | Menjalankan penilaian kerentanan keamanan lengkap (CII 560+ item atau AI Security) |
-| `/kesekit-en:check` | Daftar periksa kepatuhan keamanan sebelum deployment |
-| `/kesekit-en:fix` | Menghasilkan skrip hardening dan perbaikan keamanan secara otomatis |
-| `/kesekit-en:guide` | Membuat prompt secure coding untuk alat AI |
+| `/kesekit-start` | Menjalankan penilaian kerentanan keamanan lengkap (CII 560+ item atau AI Security) |
+| `/kesekit-check` | Daftar periksa kepatuhan keamanan sebelum deployment |
+| `/kesekit-fix` | Menghasilkan skrip hardening dan perbaikan keamanan secara otomatis |
+| `/kesekit-guide` | Membuat prompt secure coding untuk alat AI |
 
 ## Pedoman yang Didukung
 
@@ -55,23 +55,23 @@ KESE (KISA Enhanced Security Evaluation Kit) adalah plugin Claude Code yang meny
 ## Instalasi
 
 ```bash
-claude plugins install kesekit-en@kesekit
+claude plugins install kesekit
 ```
 
 ## Penggunaan
 
 ```bash
 # Memulai penilaian keamanan lengkap
-/kesekit-en:start
+/kesekit-start
 
 # Menjalankan daftar periksa sebelum deployment
-/kesekit-en:check
+/kesekit-check
 
 # Menghasilkan skrip hardening
-/kesekit-en:fix
+/kesekit-fix
 
 # Mendapatkan prompt secure coding
-/kesekit-en:guide
+/kesekit-guide
 ```
 
 ---

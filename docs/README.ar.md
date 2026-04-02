@@ -16,10 +16,10 @@ KESE (KISA Enhanced Security Evaluation Kit) هي اضافة لـ Claude Code ت
 
 | المهارة | الوصف |
 |---------|-------|
-| `/kesekit-en:start` | تشغيل تقييم شامل للثغرات الامنية (CII اكثر من 560 عنصرا او امن الذكاء الاصطناعي) |
-| `/kesekit-en:check` | قائمة فحص الامتثال الامني قبل النشر |
-| `/kesekit-en:fix` | انشاء تلقائي لنصوص التقوية والاصلاحات الامنية |
-| `/kesekit-en:guide` | انشاء موجهات البرمجة الامنة لادوات الذكاء الاصطناعي |
+| `/kesekit-start` | تشغيل تقييم شامل للثغرات الامنية (CII اكثر من 560 عنصرا او امن الذكاء الاصطناعي) |
+| `/kesekit-check` | قائمة فحص الامتثال الامني قبل النشر |
+| `/kesekit-fix` | انشاء تلقائي لنصوص التقوية والاصلاحات الامنية |
+| `/kesekit-guide` | انشاء موجهات البرمجة الامنة لادوات الذكاء الاصطناعي |
 
 ## الارشادات المدعومة
 
@@ -55,23 +55,23 @@ KESE (KISA Enhanced Security Evaluation Kit) هي اضافة لـ Claude Code ت
 ## التثبيت
 
 ```bash
-claude plugins install kesekit-en@kesekit
+claude plugins install kesekit
 ```
 
 ## الاستخدام
 
 ```bash
 # بدء التقييم الامني الشامل
-/kesekit-en:start
+/kesekit-start
 
 # تشغيل قائمة فحص ما قبل النشر
-/kesekit-en:check
+/kesekit-check
 
 # انشاء نصوص التقوية
-/kesekit-en:fix
+/kesekit-fix
 
 # الحصول على موجهات البرمجة الامنة
-/kesekit-en:guide
+/kesekit-guide
 ```
 
 ---

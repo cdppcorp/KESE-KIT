@@ -16,10 +16,10 @@ KESE (KISA Enhanced Security Evaluation Kit) ar ett Claude Code-plugin som erbju
 
 | Skill | Beskrivning |
 |-------|-------------|
-| `/kesekit-en:start` | Kor fullstandig sakerhetsarbarhetsanalys (CII 560+ objekt eller AI-sakerhet) |
-| `/kesekit-en:check` | Sakerhetschecklista for efterlevnad fore driftsattning |
-| `/kesekit-en:fix` | Generera hardening-skript och sakerhetsatgarder automatiskt |
-| `/kesekit-en:guide` | Generera secure coding-promptar for AI-verktyg |
+| `/kesekit-start` | Kor fullstandig sakerhetsarbarhetsanalys (CII 560+ objekt eller AI-sakerhet) |
+| `/kesekit-check` | Sakerhetschecklista for efterlevnad fore driftsattning |
+| `/kesekit-fix` | Generera hardening-skript och sakerhetsatgarder automatiskt |
+| `/kesekit-guide` | Generera secure coding-promptar for AI-verktyg |
 
 ## Riktlinjer som stods
 
@@ -55,23 +55,23 @@ KESE (KISA Enhanced Security Evaluation Kit) ar ett Claude Code-plugin som erbju
 ## Installation
 
 ```bash
-claude plugins install kesekit-en@kesekit
+claude plugins install kesekit
 ```
 
 ## Anvandning
 
 ```bash
 # Starta fullstandig sakerhetsutvardering
-/kesekit-en:start
+/kesekit-start
 
 # Kor checklista fore driftsattning
-/kesekit-en:check
+/kesekit-check
 
 # Generera hardening-skript
-/kesekit-en:fix
+/kesekit-fix
 
 # Hamta secure coding-promptar
-/kesekit-en:guide
+/kesekit-guide
 ```
 
 ---
