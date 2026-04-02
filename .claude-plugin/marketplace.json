@@ -18,14 +18,14 @@
       "keywords": ["security", "KISA", "CII", "vulnerability", "assessment", "infrastructure", "hardening", "AI security", "robot security", "IEC 62443", "space security", "satellite", "GSaaS", "CMMC", "NIS2", "보안", "취약점", "분석평가", "우주보안", "로봇보안"],
       "category": "security",
       "skills": [
-        "./skills/kesekit:start",
-        "./skills/kesekit:check",
-        "./skills/kesekit:fix",
-        "./skills/kesekit:guide",
-        "./skills-ko/kesekit:start-ko",
-        "./skills-ko/kesekit:check-ko",
-        "./skills-ko/kesekit:fix-ko",
-        "./skills-ko/kesekit:guide-ko"
+        "./skills/kesekit-start",
+        "./skills/kesekit-check",
+        "./skills/kesekit-fix",
+        "./skills/kesekit-guide",
+        "./skills-ko/kesekit-start-ko",
+        "./skills-ko/kesekit-check-ko",
+        "./skills-ko/kesekit-fix-ko",
+        "./skills-ko/kesekit-guide-ko"
       ]
     }
   ]
