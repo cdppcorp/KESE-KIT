@@ -1,6 +1,6 @@
 ---
 name: kesekit-start
-description: Run a security vulnerability assessment based on KISA guidelines. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), and Space Security (satellite/GSaaS/supply chain, 12 domains, 53 items). Use when "security assessment", "vulnerability scan", "CII audit", "KISA assessment", "AI security", "robot security", "space security", "satellite security", "GSaaS security".
+description: Run a security vulnerability assessment based on KISA guidelines. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), Space Security (satellite/GSaaS/supply chain, 12 domains, 53 items), and Zero Trust (~396 items). Use when "security assessment", "vulnerability scan", "CII audit", "KISA assessment", "AI security", "robot security", "space security", "satellite security", "GSaaS security", "zero trust", "ZTA", "ZTNA".
 ---
 
 # KESE Security Vulnerability Assessment
@@ -16,6 +16,7 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 | 3 | **Robot Security** | Industrial/Service/Medical robot checklist (11 categories) | ~103 |
 | 4 | **Space Security** | Satellite/GSaaS/Supply chain checklist (12 domains) | 53 |
 | 5 | **Secure Coding** | JavaScript/Python secure coding (7 categories, 46 CWE) | 46 |
+| 6 | **Zero Trust** | Zero Trust maturity assessment (8 elements, 4 maturity levels) | ~396 |
 
 ### Auto-detection
 - Servers, networks, databases, web services, firewalls → **CII**
@@ -23,6 +24,7 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 - Robots, industrial robots, service robots, medical robots, ROS/ROS2, PLC-linked robot systems → **Robot Security**
 - Satellites, ground stations, GSaaS, space systems, GNSS, VSAT, LEO constellation, space supply chain → **Space Security**
 - JavaScript, Python, web application code, secure coding, CWE, OWASP → **Secure Coding**
+- Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **Zero Trust**
 
 ---
 
@@ -122,6 +124,33 @@ Read from `references/secure-coding/` for overview and pseudo code patterns, and
 - **Partial**: Pattern partially applied, improvement needed
 - **Fail**: Vulnerable pattern detected (UNSAFE code present)
 - **N/A**: Not applicable to the codebase
+
+---
+
+## Zero Trust Branch
+
+Read from `references/zero-trust/` for overview and maturity model, and `templates/zero-trust/` for assessment checklists.
+
+| Topic | Reference File |
+|-------|---------------|
+| Overview | `templates/zero-trust/overview.md` |
+| Identity & Device | `templates/zero-trust/identity-device.md` |
+| Network & System | `templates/zero-trust/network-system.md` |
+| Application & Data | `templates/zero-trust/app-data.md` |
+| Visibility & Automation | `templates/zero-trust/visibility-automation.md` |
+| OT/ICS Environment | `templates/zero-trust/ot-environment.md` |
+| ZT Architecture Reference | `references/zero-trust/overview.md` |
+| Maturity Model Details | `references/zero-trust/maturity-model.md` |
+| OT Deployment Guide | `references/zero-trust/ot-guide.md` |
+
+8 core elements, ~396 items across 4 maturity levels. Standards: KISA ZT Guideline 2.0, NIST SP 800-207, CISA ZT Maturity Model.
+
+### Assessment Flow
+1. Determine target maturity level (Traditional/Initial/Advanced/Optimal)
+2. Select relevant core elements based on system context
+3. If OT/ICS detected, also load `ot-environment.md`
+4. Assess items at or below target maturity level
+5. Generate gap analysis report
 
 ---
 

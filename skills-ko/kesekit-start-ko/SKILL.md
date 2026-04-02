@@ -1,6 +1,6 @@
 ---
 name: kesekit-start-ko
-description: KISA 기반 보안 취약점 분석평가를 수행합니다. 주요정보통신기반시설(CII) 기술/관리/물리 취약점(560항목), AI 보안 안내서, 로봇 보안 체크리스트, 우주 보안(위성/GSaaS/공급망 53항목) 평가를 지원합니다. "보안 점검", "취약점 분석", "기반시설 감사", "KISA 점검", "보안 평가", "AI 보안 점검", "로봇 보안 평가", "우주 보안 평가", "위성 보안" 시 사용하세요.
+description: KISA 기반 보안 취약점 분석평가를 수행합니다. 주요정보통신기반시설(CII) 기술/관리/물리 취약점(560항목), AI 보안 안내서, 로봇 보안 체크리스트, 우주 보안(위성/GSaaS/공급망 53항목), 제로트러스트(8개 핵심요소, ~396항목) 평가를 지원합니다. "보안 점검", "취약점 분석", "기반시설 감사", "KISA 점검", "보안 평가", "AI 보안 점검", "로봇 보안 평가", "우주 보안 평가", "위성 보안", "제로트러스트", "ZTA", "ZTNA" 시 사용하세요.
 ---
 
 # KESE 보안 취약점 분석평가
@@ -20,6 +20,7 @@ KISA 가이드라인에 따른 보안 취약점 분석평가를 수행합니다.
 | 3 | **로봇 보안** | 산업용/서비스용/의료용 로봇 보안 체크리스트 (11개 카테고리) | ~103 |
 | 4 | **우주 보안** | 위성/GSaaS/공급망 체크리스트 (12개 분야) | 53 |
 | 5 | **시큐어코딩** | JavaScript/Python 시큐어코딩 (7개 카테고리, 46 CWE) | 46 |
+| 6 | **제로트러스트** | 제로트러스트 성숙도 평가 (8개 핵심요소, 4단계 성숙도) | ~396 |
 
 ### 자동 판별 기준
 
@@ -28,6 +29,7 @@ KISA 가이드라인에 따른 보안 취약점 분석평가를 수행합니다.
 - 로봇, 산업용 로봇, 서비스 로봇, 의료용 로봇, ROS, PLC 등 → **로봇 보안**
 - 위성, 지상국, GSaaS, 우주 시스템, GNSS, VSAT, LEO 군집, 우주 공급망 → **우주 보안**
 - JavaScript, Python, 웹 애플리케이션 코드, 시큐어코딩, CWE, OWASP → **시큐어코딩**
+- Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **제로트러스트**
 - 클라우드, 가상화 → 맥락에 따라 CII 또는 AI 보안
 
 ---
@@ -177,6 +179,33 @@ reports/robot-security/
 - **부분이행**: 패턴이 부분적으로 적용됨, 개선 필요
 - **취약**: 취약한 패턴 감지됨 (UNSAFE 코드 존재)
 - **해당없음**: 코드베이스에 해당 없음
+
+---
+
+## 제로트러스트 분기 시
+
+`references/zero-trust/`에서 아키텍처 개요와 성숙도 모델을, `templates/zero-trust/`에서 핵심요소별 평가 체크리스트를 읽어 평가를 수행합니다.
+
+| 주제 | reference 파일 |
+|------|---------------|
+| 개요 | `templates/zero-trust/overview.md` |
+| 식별자 및 디바이스 | `templates/zero-trust/identity-device.md` |
+| 네트워크 및 시스템 | `templates/zero-trust/network-system.md` |
+| 애플리케이션 및 데이터 | `templates/zero-trust/app-data.md` |
+| 가시성 및 자동화 | `templates/zero-trust/visibility-automation.md` |
+| OT/ICS 환경 | `templates/zero-trust/ot-environment.md` |
+| ZT 아키텍처 참조 | `references/zero-trust/overview.md` |
+| 성숙도 모델 상세 | `references/zero-trust/maturity-model.md` |
+| OT 배포 가이드 | `references/zero-trust/ot-guide.md` |
+
+8개 핵심요소, ~396개 항목, 4단계 성숙도. 표준: KISA 제로트러스트 가이드라인 2.0, NIST SP 800-207, CISA ZT Maturity Model.
+
+### 평가 흐름
+1. 목표 성숙도 수준 결정 (전통적/기본/고도화/최적화)
+2. 시스템 맥락에 따른 관련 핵심요소 선택
+3. OT/ICS 환경이 감지되면 `ot-environment.md`도 로드
+4. 목표 성숙도 이하의 항목을 평가
+5. 갭 분석 보고서 생성
 
 ---
 

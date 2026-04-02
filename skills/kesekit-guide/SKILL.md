@@ -16,6 +16,9 @@ Generate secure coding prompts based on KISA guidelines and international standa
 | 3 | **Robot Security Coding** | Robot-specific (IEC 62443, firmware, protocols) |
 | 4 | **Space Security Coding** | Space-specific (CCSDS, satellite protocols, GSaaS, supply chain) |
 | 5 | **Secure Coding (Language)** | Language-specific secure coding (JS, Python, pseudo code) |
+| 6 | **Zero Trust Guide** | Zero Trust architecture and maturity assessment guide (8 elements, ~396 items) |
+
+Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **Zero Trust**
 
 ## CII Branch
 
@@ -42,6 +45,26 @@ Reference `references/secure-coding/overview.md` for 7 categories and 49 CWE map
 - Python, Django, Flask, FastAPI → `templates/secure-coding/python.md`
 - Other languages (Go, Java, Rust, C#) → `references/secure-coding/pseudocode.md` (AI adapts patterns)
 - General / language-agnostic → `references/secure-coding/pseudocode.md`
+
+## Zero Trust Branch
+
+Reference `references/zero-trust/overview.md` for ZT architecture and `references/zero-trust/maturity-model.md` for maturity definitions. Use `templates/zero-trust/overview.md` for assessment guide. Generate ZT implementation prompts based on element-specific templates. For OT/ICS environments, reference `templates/zero-trust/ot-environment.md` and `references/zero-trust/ot-guide.md`.
+
+| Topic | Reference File |
+|-------|---------------|
+| Overview | `templates/zero-trust/overview.md` |
+| Identity & Device | `templates/zero-trust/identity-device.md` |
+| Network & System | `templates/zero-trust/network-system.md` |
+| Application & Data | `templates/zero-trust/app-data.md` |
+| Visibility & Automation | `templates/zero-trust/visibility-automation.md` |
+| OT/ICS Environment | `templates/zero-trust/ot-environment.md` |
+| ZT Architecture Reference | `references/zero-trust/overview.md` |
+| Maturity Model Details | `references/zero-trust/maturity-model.md` |
+| OT Deployment Guide | `references/zero-trust/ot-guide.md` |
+
+8 core elements, ~396 items across 4 maturity levels. Standards: KISA ZT Guideline 2.0, NIST SP 800-207, CISA ZT Maturity Model.
+
+---
 
 ## Usage
 

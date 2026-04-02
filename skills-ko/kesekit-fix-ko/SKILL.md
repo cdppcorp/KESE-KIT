@@ -16,8 +16,10 @@ description: 보안 취약점 자동 수정 및 하드닝 스크립트를 생성
 | 3 | **로봇 보안 조치** | 로봇 시스템 보안 강화 (IEC 62443, CRA, RED) |
 | 4 | **우주 보안 조치** | 우주 시스템 하드닝 (CMMC, K-RMF, NIS2, NIST IR 8401) |
 | 5 | **시큐어코딩 수정** | 취약 코드 패턴 자동 수정 (JS/Python, 46 CWE) |
+| 6 | **제로트러스트 조치** | 제로트러스트 갭 분석 기반 조치 가이드 (8개 핵심요소, ~396항목) |
 
 서버, 인프라, 웹 서비스, DB → **CII** / AI 모델, LLM, AI 서비스 → **AI 보안** / 로봇, ROS/ROS2, 로봇 펌웨어, 무선 제어 인터페이스 → **로봇 보안** / 위성, 지상국, GSaaS, 우주 공급망 → **우주 보안** / JavaScript, Python, 웹 앱 코드 → **시큐어코딩**
+Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **제로트러스트**
 
 ---
 
@@ -102,6 +104,26 @@ scripts/kese-hardening/
 ## 시큐어코딩 분기 시
 
 `references/secure-coding/pseudocode.md`에서 UNSAFE→SAFE 패턴 쌍을 로드합니다. `templates/secure-coding/javascript.md` 또는 `templates/secure-coding/python.md`로 프레임워크별 수정을 적용합니다. 각 항목은 정확한 코드 변환(UNSAFE → SAFE)을 제공합니다.
+
+---
+
+## 제로트러스트 분기 시
+
+`references/zero-trust/`에서 성숙도 모델과 아키텍처를, `templates/zero-trust/`에서 핵심요소별 체크리스트를 로드합니다. 현재 성숙도와 목표 성숙도 간 갭 분석을 기반으로 조치 가이드를 생성합니다. OT/ICS 환경이 감지되면 `templates/zero-trust/ot-environment.md`와 `references/zero-trust/ot-guide.md`도 로드합니다.
+
+| 주제 | reference 파일 |
+|------|---------------|
+| 개요 | `templates/zero-trust/overview.md` |
+| 식별자 및 디바이스 | `templates/zero-trust/identity-device.md` |
+| 네트워크 및 시스템 | `templates/zero-trust/network-system.md` |
+| 애플리케이션 및 데이터 | `templates/zero-trust/app-data.md` |
+| 가시성 및 자동화 | `templates/zero-trust/visibility-automation.md` |
+| OT/ICS 환경 | `templates/zero-trust/ot-environment.md` |
+| ZT 아키텍처 참조 | `references/zero-trust/overview.md` |
+| 성숙도 모델 상세 | `references/zero-trust/maturity-model.md` |
+| OT 배포 가이드 | `references/zero-trust/ot-guide.md` |
+
+8개 핵심요소, ~396개 항목, 4단계 성숙도. 표준: KISA 제로트러스트 가이드라인 2.0, NIST SP 800-207, CISA ZT Maturity Model.
 
 ---
 
