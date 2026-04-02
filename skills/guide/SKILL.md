@@ -1,6 +1,6 @@
 ---
 name: guide
-description: Generate secure coding prompts and guides for AI tools (Claude, ChatGPT, Cursor, Copilot). Creates copy-paste ready prompts for writing secure code following KISA CII guidelines, CWE-mapped patterns, AI security best practices, and robot security controls. Use when "generate security guide", "AI security prompt", "secure coding guide", "safe code request", "AI secure coding", "robot secure coding".
+description: Generate secure coding prompts and guides for AI tools (Claude, ChatGPT, Cursor, Copilot). Creates copy-paste ready prompts for KISA CII, AI security, robot security, and space security (CCSDS, satellite protocols, GSaaS, supply chain). Use when "security guide", "secure coding guide", "AI secure coding", "robot secure coding", "space secure coding", "satellite security guide".
 ---
 
 # KESE Secure Coding Prompt Generator
@@ -14,6 +14,7 @@ Generate secure coding prompts based on KISA guidelines and international standa
 | 1 | **CII Secure Coding** | Traditional vulnerabilities (SQLi, XSS, etc.) |
 | 2 | **AI Security Coding** | AI-specific (Prompt Injection, Data Poisoning, etc.) |
 | 3 | **Robot Security Coding** | Robot-specific (IEC 62443, firmware, protocols) |
+| 4 | **Space Security Coding** | Space-specific (CCSDS, satellite protocols, GSaaS, supply chain) |
 
 ## CII Branch
 
@@ -26,6 +27,10 @@ Reference `references/ai-security/developer.md` and `references/ai-security/over
 ## Robot Security Branch
 
 Reference `references/robot-security/overview.md` first, then use `ssdf.md`, `supply-chain.md`, `iec62443.md`, `cyber-resilience.md`, or `wireless.md` depending on whether the user needs prompts for firmware, ROS/ROS2 nodes, robot APIs, field protocols, supply chain controls, or wireless interfaces.
+
+## Space Security Branch
+
+Reference `references/space-security/overview.md` first, then use domain-specific files for satellite communication encryption, ground station access control, GSaaS API security, SBOM, anti-jamming/anti-spoofing, or CMMC/NIS2/K-RMF compliance.
 
 ## Usage
 

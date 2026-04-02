@@ -1,6 +1,6 @@
 ---
 name: start
-description: Run a security vulnerability assessment based on KISA guidelines. Supports CII (Critical Information Infrastructure) with 560+ technical/administrative/physical items, the AI Security Guide (developer/provider/user), and Robot Security checklists. Use when "security assessment", "vulnerability scan", "CII audit", "KISA assessment", "AI security assessment", "robot security assessment", "infrastructure security review".
+description: Run a security vulnerability assessment based on KISA guidelines. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), and Space Security (satellite/GSaaS/supply chain, 12 domains, 53 items). Use when "security assessment", "vulnerability scan", "CII audit", "KISA assessment", "AI security", "robot security", "space security", "satellite security", "GSaaS security".
 ---
 
 # KESE Security Vulnerability Assessment
@@ -14,11 +14,13 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 | 1 | **CII (Critical Information Infrastructure)** | Technical(424)+Administrative(127)+Physical(18) | ~560 |
 | 2 | **AI Security** | AI Developer/Service Provider/User requirements | ~54 |
 | 3 | **Robot Security** | Industrial/Service/Medical robot checklist (11 categories) | ~103 |
+| 4 | **Space Security** | Satellite/GSaaS/Supply chain checklist (12 domains) | 53 |
 
 ### Auto-detection
 - Servers, networks, databases, web services, firewalls → **CII**
 - AI models, LLM, generative AI, machine learning, prompts → **AI Security**
 - Robots, industrial robots, service robots, medical robots, ROS/ROS2, PLC-linked robot systems → **Robot Security**
+- Satellites, ground stations, GSaaS, space systems, GNSS, VSAT, LEO constellation, space supply chain → **Space Security**
 
 ---
 
@@ -80,6 +82,23 @@ Read from `references/robot-security/` based on the target robot system or conce
 | Wireless security | `references/robot-security/wireless.md` |
 
 Assess the relevant categories for industrial, service, or medical robots and generate a dedicated `reports/robot-security/` summary when robot security is selected.
+
+---
+
+## Space Security Branch
+
+Read from `references/space-security/` based on target space system.
+
+| Topic | Reference File |
+|-------|---------------|
+| Overview | `references/space-security/overview.md` |
+| Access Control & Authentication (AC, IA) | `references/space-security/access-control.md` |
+| System & Communication Security (SC, SI) | `references/space-security/system-security.md` |
+| Operations & Incident Response (SO, IR) | `references/space-security/operations.md` |
+| Governance, Personnel, Physical, Risk, Contingency (PS, PE, RA, SG, CP) | `references/space-security/governance.md` |
+| Supply Chain Management (SM) + Threat Scenarios | `references/space-security/supply-chain.md` |
+
+12 domains, 53 items. Standards: CMMC, K-RMF, NIS2, ISMS-P. Generate reports in `reports/space-security/`.
 
 ---
 
