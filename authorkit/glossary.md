@@ -161,6 +161,33 @@
 
 ---
 
+## AI 보안 관련 (ref-003)
+
+| 한글 | 영문 | 약어 | 비고 |
+|------|------|------|------|
+| 대규모 언어 모델 | Large Language Model | LLM | |
+| 생성형 인공지능 | Generative AI | GenAI | |
+| 예측형 인공지능 | Predictive AI | Pred AI | |
+| 적대적 예제 | Adversarial Example | - | AI 공격 유형 |
+| 회피 공격 | Evasion Attack | - | AI 공격 유형 |
+| 오염 공격 | Poisoning Attack | - | 학습 데이터 오염 |
+| 전도 공격 | Inversion Attack | - | 모델 역추론 |
+| 모델 추출 | Model Extraction | - | AI 공격 유형 |
+| AI 탈옥 | AI Jailbreak | - | 프롬프트 우회 공격 |
+| 데이터 오염 | Data Poisoning | - | |
+| 연합 학습 | Federated Learning | FL | |
+| 검색 증강 생성 | Retrieval-Augmented Generation | RAG | |
+| 인간 피드백 강화학습 | Reinforcement Learning from Human Feedback | RLHF | |
+| 서비스형 기계학습 | Machine Learning as a Service | MLaaS | |
+| AI 위험관리 프레임워크 | AI Risk Management Framework | AI RMF | NIST 표준 |
+| 역할 기반 접근 제어 | Role-Based Access Control | RBAC | |
+| 다중 인증 | Multi-Factor Authentication | MFA | |
+| 보안 정보 이벤트 관리 | Security Information and Event Management | SIEM | |
+| 보안 중심 설계 | Security by Design | - | |
+| 최소 권한 원칙 | Least Privilege Principle | - | |
+
+---
+
 ## 사용 규칙
 
 1. **첫 등장**: 전체 형식 사용
@@ -172,4 +199,96 @@
 
 ---
 
-*분석 완료 후 업데이트됨: 2026-03-27*
+## 로봇 보안 관련 (ref-004, ref-005)
+
+| 한글 | 영문 | 약어 | 비고 |
+|------|------|------|------|
+| 산업용 로봇 | Industrial Robot | - | ISO 8373 |
+| 서비스 로봇 | Service Robot | - | ISO 8373 |
+| 의료용 로봇 | Medical Robot | - | ISO 8373 |
+| 보안 소프트웨어 개발 프레임워크 | Secure Software Development Framework | SSDF | NIST SP 800-218 |
+| 산업제어시스템 보안 | Industrial Control System Security | IEC 62443 | 국제 표준 |
+| 사이버 복원력 법 | Cyber Resilience Act | CRA | EU 규정 |
+| 무선기기 지침 | Radio Equipment Directive | RED | EU 규정 |
+| 소프트웨어 자재명세서 | Software Bill of Materials | SBoM | 공급망 보안 |
+
+---
+
+## 우주 보안 관련 (ref-006~010)
+
+### 우주 아키텍처 용어
+
+| 한글 | 영문 | 약어 | 비고 |
+|------|------|------|------|
+| 정지궤도 위성 | Geostationary Earth Orbit | GEO | ~36,000km |
+| 중궤도 위성 | Middle Earth Orbit | MEO | 2,000~30,000km |
+| 저궤도 위성 | Low Earth Orbit | LEO | 250~2,000km |
+| 저궤도 군집위성 | LEO Constellation | - | 소형위성 집단 |
+| 지상국 서비스 | Ground Station as a Service | GSaaS | 클라우드 기반 지상국 |
+| 위성항법시스템 | Global Navigation Satellite System | GNSS | 위치/항법/시각 제공 |
+| 도심항공모빌리티 | Urban Air Mobility | UAM | 저고도 항공운송 |
+| 초소형 위성통신지구국 | Very Small Aperture Terminal | VSAT | 소형 위성 지상국 |
+| 탑재체 | Payload | - | 위성 임무수행 부분 |
+| 위성 본체 | Satellite Bus | - | 위성 구동 부분 |
+| 온보드 컴퓨터 | On Board Computer | OBC | 위성 탑재 컴퓨터 |
+| 우주 데이터시스템 자문위원회 | Consultative Committee for Space Data Systems | CCSDS | 우주 통신 표준 기구 |
+
+### 우주 보안위협 용어
+
+| 한글 | 영문 | 약어 | 비고 |
+|------|------|------|------|
+| 재밍 | Jamming | - | 방해전파 송출 |
+| 스푸핑 | Spoofing | - | 위장 공격 |
+| GPS 위장 교란 | GPS Spoofing | - | 위치정보 위변조 |
+| 양자내성암호 | Post-Quantum Cryptography | PQC | 양자컴퓨터 내성 |
+| 소프트웨어 정의 라디오 | Software Defined Radio | SDR | 전파분석 장치 |
+| 일방향 전송장비 | One-way Transfer Device | - | 제어망 보호 |
+| 무선침입방지시스템 | Wireless Intrusion Prevention System | WIPS | 무선AP 불법접속 방지 |
+| 네트워크 접근통제 | Network Access Control | NAC | 인가 장치 접속 통제 |
+| 정보유출방지 | Data Loss Prevention | DLP | 매체제어/유출차단 |
+| 주파수 호핑 | Frequency Hopping | - | 안티재밍 기술 |
+| 확산 스펙트럼 | Spread Spectrum | - | 안티재밍 기술 |
+
+### 우주 보안 체크리스트 분야 코드
+
+| 코드 | 분야명 | 영문 | 항목 수 |
+|:----:|--------|------|:-------:|
+| AC | 접근통제 | Access Control | 12 |
+| IA | 식별 및 인증 | Identification & Authentication | 2 |
+| SC | 시스템 및 통신 보안 | System & Communication Security | 7 |
+| SI | 시스템 및 정보 무결성 | System & Information Integrity | 4 |
+| SO | 시스템/서비스 운영관리 | System/Service Operations Management | 9 |
+| IR | 사고 대응 | Incident Response | 2 |
+| PS | 인원 보안 | Personnel Security | 2 |
+| PE | 물리보안 | Physical & Environmental Security | 3 |
+| RA | 위험평가 및 보안 평가 | Risk Assessment & Security Evaluation | 2 |
+| SG | 보안 거버넌스 | Security Governance | 4 |
+| CP | 비상 계획 | Contingency Planning | 2 |
+| SM | 공급망 관리 | Supply Chain Management | 4 |
+
+### 우주 보안 준거 기준
+
+| 한글 | 영문 | 약어 | 비고 |
+|------|------|------|------|
+| 사이버보안 성숙도 모델 인증 | Cybersecurity Maturity Model Certification | CMMC | 미 국방부 공급망 인증 |
+| 한국형 위험관리체계 | Korea Risk Management Framework | K-RMF | 국내 표준 |
+| 네트워크 및 정보 보안 지침 | Network and Information Security Directive | NIS2 | EU 사이버보안 지침 |
+| 사이버보안 프레임워크 | Cyber Security Framework | CSF | NIST 표준 |
+| 위성 지상국 사이버보안 | Satellite Ground Segment Cybersecurity | NIST IR 8401 | NIST 지침 |
+| 상업 위성 운영 사이버보안 | Commercial Satellite Operations Cybersecurity | NIST IR 8270 | NIST 지침 |
+| 우주 시스템 위협 분석 | Space Threat Landscape | - | ENISA 보고서 |
+
+---
+
+## 사용 규칙
+
+1. **첫 등장**: 전체 형식 사용
+   - 예: 주요정보통신기반시설(Critical Information Infrastructure, CII)
+2. **이후 등장**: 한글 또는 약어 사용
+   - 예: 주요정보통신기반시설 또는 CII
+3. **새 용어 추가 시**: 이 파일에 등록 후 사용
+4. **점검 항목 코드**: 본문에서 `U-01`, `W-02`, `AC-01` 형식으로 직접 사용 가능
+
+---
+
+*최종 업데이트: 2026-04-02 (ref-006~010 우주 보안 용어 추가)*

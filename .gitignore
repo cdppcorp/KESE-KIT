@@ -1,0 +1,25 @@
+# Python virtual environments
+.venv*/
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Claude Code local
+.claude/
+
+# Authorkit working files (converted outputs are large)
+authorkit/converted/ref-*/images/
+authorkit/converted/ref-*/full.md
+authorkit/.venv-ocr/
+
+# Temp
+*.tmp

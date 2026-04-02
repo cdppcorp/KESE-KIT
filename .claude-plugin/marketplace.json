@@ -5,33 +5,23 @@
     "url": "https://github.com/cdppcorp"
   },
   "metadata": {
-    "description": "KISA-based security vulnerability assessment skills. Supports CII (Critical Information Infrastructure) with 560+ items, the AI Security Guide, and Robot Security checklists. Technical, administrative, and physical security evaluation based on Korean KISA guidelines and related standards.",
-    "version": "2.1.0",
+    "description": "KISA-based security vulnerability assessment skills. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), and Space Security (satellite/GSaaS/supply chain, 53 items). Available in English and Korean.",
+    "version": "3.0.0",
     "license": "MIT"
   },
   "plugins": [
     {
-      "name": "kesekit-en",
-      "description": "Security vulnerability assessment skills (English). start(full CII + AI + Robot security audit), check(compliance pre-deployment checklist), fix(auto-fix with hardening scripts), guide(secure coding prompts for AI tools). Supports CII infrastructure (560+ items), the AI Security Guide, and Robot Security checklists.",
+      "name": "kesekit",
+      "description": "Security vulnerability assessment (EN/KO). CII infrastructure (560+), AI Security, Robot Security (IEC 62443), Space Security (satellite/GSaaS/supply chain, CMMC/NIS2). Use /kesekit:start, /kesekit:start-ko, /kesekit:check, /kesekit:fix, /kesekit:guide etc.",
       "source": "./",
       "strict": false,
-      "keywords": ["security", "KISA", "CII", "vulnerability", "assessment", "infrastructure", "hardening", "AI security", "robot security", "IEC 62443"],
+      "keywords": ["security", "KISA", "CII", "vulnerability", "assessment", "infrastructure", "hardening", "AI security", "robot security", "IEC 62443", "space security", "satellite", "GSaaS", "CMMC", "NIS2", "보안", "취약점", "분석평가", "우주보안", "로봇보안"],
       "category": "security",
       "skills": [
         "./skills/start",
         "./skills/check",
         "./skills/fix",
-        "./skills/guide"
-      ]
-    },
-    {
-      "name": "kesekit-ko",
-      "description": "보안 취약점 분석평가 스킬 (한국어). start(CII + AI + 로봇 보안 전체 감사), check(컴플라이언스 배포 전 체크리스트), fix(취약점 자동 수정 + 하드닝 스크립트), guide(AI 도구용 시큐어코딩 프롬프트 생성). 주요정보통신기반시설(560+항목), AI 보안 안내서, 로봇 보안 체크리스트를 지원합니다.",
-      "source": "./",
-      "strict": false,
-      "keywords": ["보안", "KISA", "주요정보통신기반시설", "취약점", "분석평가", "기반시설", "보안설정", "AI보안", "로봇보안", "IEC 62443"],
-      "category": "security",
-      "skills": [
+        "./skills/guide",
         "./skills-ko/start",
         "./skills-ko/check",
         "./skills-ko/fix",
