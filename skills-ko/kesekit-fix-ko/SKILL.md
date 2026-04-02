@@ -1,5 +1,5 @@
 ---
-name: fix-ko
+name: kesekit-fix-ko
 description: 보안 취약점 자동 수정 및 하드닝 스크립트를 생성합니다. CII(Unix/Windows/웹서버/DB), AI, 로봇, 우주 시스템(위성/GSaaS/지상국/공급망)의 취약점을 수정합니다. KISA/CMMC/NIS2 가이드라인에 따른 보안 설정을 적용합니다. "취약점 수정", "서버 하드닝", "우주 보안 수정", "위성 하드닝" 시 사용하세요.
 ---
 

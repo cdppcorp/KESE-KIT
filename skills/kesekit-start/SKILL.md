@@ -1,5 +1,5 @@
 ---
-name: start
+name: kesekit-start
 description: Run a security vulnerability assessment based on KISA guidelines. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), and Space Security (satellite/GSaaS/supply chain, 12 domains, 53 items). Use when "security assessment", "vulnerability scan", "CII audit", "KISA assessment", "AI security", "robot security", "space security", "satellite security", "GSaaS security".
 ---
 
