@@ -15,6 +15,7 @@ Generate secure coding prompts based on KISA guidelines and international standa
 | 2 | **AI Security Coding** | AI-specific (Prompt Injection, Data Poisoning, etc.) |
 | 3 | **Robot Security Coding** | Robot-specific (IEC 62443, firmware, protocols) |
 | 4 | **Space Security Coding** | Space-specific (CCSDS, satellite protocols, GSaaS, supply chain) |
+| 5 | **Secure Coding (Language)** | Language-specific secure coding (JS, Python, pseudo code) |
 
 ## CII Branch
 
@@ -31,6 +32,16 @@ Reference `templates/robot-security/overview.md` first, then use `ssdf.md`, `sup
 ## Space Security Branch
 
 Reference `references/space-security/overview.md` first, then use domain-specific files from `templates/space-security/` for satellite communication encryption, ground station access control, GSaaS API security, and `references/space-security/supply-chain.md` for SBOM, anti-jamming/anti-spoofing, or CMMC/NIS2/K-RMF compliance.
+
+## Secure Coding (Language) Branch
+
+Reference `references/secure-coding/overview.md` for 7 categories and 49 CWE mappings. Use `references/secure-coding/pseudocode.md` for language-agnostic patterns (46 items, UNSAFE/SAFE pairs). For language-specific prompts, use `templates/secure-coding/javascript.md` (Express.js, Sequelize, Node.js) or `templates/secure-coding/python.md` (Django, Flask, SQLAlchemy).
+
+### Auto-detection
+- JavaScript, Node.js, Express, React, Vue → `templates/secure-coding/javascript.md`
+- Python, Django, Flask, FastAPI → `templates/secure-coding/python.md`
+- Other languages (Go, Java, Rust, C#) → `references/secure-coding/pseudocode.md` (AI adapts patterns)
+- General / language-agnostic → `references/secure-coding/pseudocode.md`
 
 ## Usage
 

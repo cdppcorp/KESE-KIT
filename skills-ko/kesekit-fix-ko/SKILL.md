@@ -14,8 +14,10 @@ description: 보안 취약점 자동 수정 및 하드닝 스크립트를 생성
 | 1 | **CII 하드닝** | 플랫폼별 하드닝 스크립트 생성 |
 | 2 | **AI 보안 조치** | AI 시스템 보안 강화 가이드 |
 | 3 | **로봇 보안 조치** | 로봇 시스템 보안 강화 (IEC 62443, CRA, RED) |
+| 4 | **우주 보안 조치** | 우주 시스템 하드닝 (CMMC, K-RMF, NIS2, NIST IR 8401) |
+| 5 | **시큐어코딩 수정** | 취약 코드 패턴 자동 수정 (JS/Python, 46 CWE) |
 
-서버, 인프라, 웹 서비스, DB → **CII** / AI 모델, LLM, AI 서비스 → **AI 보안** / 로봇, ROS/ROS2, 로봇 펌웨어, 무선 제어 인터페이스 → **로봇 보안**
+서버, 인프라, 웹 서비스, DB → **CII** / AI 모델, LLM, AI 서비스 → **AI 보안** / 로봇, ROS/ROS2, 로봇 펌웨어, 무선 제어 인터페이스 → **로봇 보안** / 위성, 지상국, GSaaS, 우주 공급망 → **우주 보안** / JavaScript, Python, 웹 앱 코드 → **시큐어코딩**
 
 ---
 
@@ -94,6 +96,12 @@ scripts/kese-hardening/
 - IEC 62443 기반 인증, 권한, 무결성, 데이터 보호 통제
 - CRA/NIS2 관점의 취약점 대응 및 사이버 복원력
 - Wi-Fi, Bluetooth, 5G 등 무선 인터페이스 보안 강화
+
+---
+
+## 시큐어코딩 분기 시
+
+`references/secure-coding/pseudocode.md`에서 UNSAFE→SAFE 패턴 쌍을 로드합니다. `templates/secure-coding/javascript.md` 또는 `templates/secure-coding/python.md`로 프레임워크별 수정을 적용합니다. 각 항목은 정확한 코드 변환(UNSAFE → SAFE)을 제공합니다.
 
 ---
 

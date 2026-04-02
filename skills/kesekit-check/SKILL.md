@@ -15,8 +15,9 @@ Run pre-deployment security checks. Auto-selects guideline based on user context
 | 2 | **AI Security Checklist** | AI developer/provider verification |
 | 3 | **Robot Security Checklist** | Robot system 11 categories, 103 items |
 | 4 | **Space Security Checklist** | Satellite/GSaaS/supply chain 12 domains, 53 items |
+| 5 | **Secure Coding Checklist** | JavaScript/Python code review (7 categories, 46 CWE) |
 
-Servers, infrastructure → **CII** / AI models, LLM → **AI Security** / robots, ROS/ROS2 → **Robot Security** / satellites, ground stations, GSaaS, space supply chain → **Space Security**
+Servers, infrastructure → **CII** / AI models, LLM → **AI Security** / robots, ROS/ROS2 → **Robot Security** / satellites, ground stations, GSaaS, space supply chain → **Space Security** / JavaScript, Python, web app code → **Secure Coding**
 
 ---
 
@@ -39,6 +40,14 @@ Load from `templates/robot-security/`. Start with `overview.md`, then select one
 ## Space Security Branch
 
 Load from `references/space-security/` for overview and supply chain guidance, and `templates/space-security/` for assessment checklists. Start with `references/space-security/overview.md`, then select domain references based on the space system type (GSaaS, satellite operator, ground station). Check against CMMC/K-RMF/NIS2/ISMS-P standards.
+
+---
+
+## Secure Coding Branch
+
+Load from `references/secure-coding/overview.md` for category/CWE mapping, then use `templates/secure-coding/javascript.md` or `templates/secure-coding/python.md` for language-specific checklists. Use `references/secure-coding/pseudocode.md` for other languages.
+
+Priority: Critical (8 items) → High (13 items) → Medium (25 items). Block deployment if any Critical CWE found.
 
 ---
 

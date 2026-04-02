@@ -5,17 +5,17 @@
     "url": "https://github.com/cdppcorp"
   },
   "metadata": {
-    "description": "KISA-based security vulnerability assessment skills. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), and Space Security (satellite/GSaaS/supply chain, 53 items). Available in English and Korean.",
-    "version": "3.1.0",
+    "description": "KISA-based security vulnerability assessment skills. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), Space Security (satellite/GSaaS/supply chain, 53 items), and Secure Coding Guide (JS/Python/Pseudo Code, 46 items, 49 CWE). Available in English and Korean.",
+    "version": "3.2.0",
     "license": "MIT"
   },
   "plugins": [
     {
       "name": "kesekit",
-      "description": "Security vulnerability assessment (EN/KO). CII infrastructure (560+), AI Security, Robot Security (IEC 62443), Space Security (satellite/GSaaS/supply chain, CMMC/NIS2). Use /kesekit-start, /kesekit-start-ko, /kesekit-check, /kesekit-fix, /kesekit-guide etc.",
+      "description": "Security vulnerability assessment (EN/KO). CII infrastructure (560+), AI Security, Robot Security (IEC 62443), Space Security (satellite/GSaaS/supply chain, CMMC/NIS2), Secure Coding (JS/Python/Pseudo Code, 46 CWE). Use /kesekit-start, /kesekit-start-ko, /kesekit-check, /kesekit-fix, /kesekit-guide etc.",
       "source": "./",
       "strict": false,
-      "keywords": ["security", "KISA", "CII", "vulnerability", "assessment", "infrastructure", "hardening", "AI security", "robot security", "IEC 62443", "space security", "satellite", "GSaaS", "CMMC", "NIS2", "보안", "취약점", "분석평가", "우주보안", "로봇보안"],
+      "keywords": ["security", "KISA", "CII", "vulnerability", "assessment", "infrastructure", "hardening", "AI security", "robot security", "IEC 62443", "space security", "satellite", "GSaaS", "CMMC", "NIS2", "secure coding", "CWE", "OWASP", "JavaScript", "Python", "보안", "취약점", "분석평가", "우주보안", "로봇보안", "시큐어코딩"],
       "category": "security",
       "skills": [
         "./skills/kesekit-start",

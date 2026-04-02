@@ -18,12 +18,16 @@ KISA 가이드라인에 따른 보안 취약점 분석평가를 수행합니다.
 | 1 | **주요정보통신기반시설(CII)** | 기술적(424)+관리적(127)+물리적(18) 취약점 | ~560 |
 | 2 | **AI 보안** | AI 개발자/서비스제공자/이용자 보안 요구사항 | ~54 |
 | 3 | **로봇 보안** | 산업용/서비스용/의료용 로봇 보안 체크리스트 (11개 카테고리) | ~103 |
+| 4 | **우주 보안** | 위성/GSaaS/공급망 체크리스트 (12개 분야) | 53 |
+| 5 | **시큐어코딩** | JavaScript/Python 시큐어코딩 (7개 카테고리, 46 CWE) | 46 |
 
 ### 자동 판별 기준
 
 - 서버, 네트워크, 데이터베이스, 웹 서비스, 방화벽 등 → **CII**
 - AI 모델, LLM, 생성형 AI, 머신러닝, 프롬프트 등 → **AI 보안**
 - 로봇, 산업용 로봇, 서비스 로봇, 의료용 로봇, ROS, PLC 등 → **로봇 보안**
+- 위성, 지상국, GSaaS, 우주 시스템, GNSS, VSAT, LEO 군집, 우주 공급망 → **우주 보안**
+- JavaScript, Python, 웹 애플리케이션 코드, 시큐어코딩, CWE, OWASP → **시큐어코딩**
 - 클라우드, 가상화 → 맥락에 따라 CII 또는 AI 보안
 
 ---
@@ -156,6 +160,25 @@ reports/robot-security/
 
 ### 보통 (개선 권고)
 - 하드닝 권고, 문서화 부족
+
+## 시큐어코딩 분기 시
+
+`references/secure-coding/`에서 개요와 의사 코드 패턴을, `templates/secure-coding/`에서 언어별 평가 템플릿을 읽어 평가를 수행합니다.
+
+| 주제 | reference 파일 |
+|------|---------------|
+| 개요 (7개 카테고리, 49 CWE) | `references/secure-coding/overview.md` |
+| 의사 코드 (46항목, 언어 무관) | `references/secure-coding/pseudocode.md` |
+| JavaScript (Express.js, Node.js, Sequelize) | `templates/secure-coding/javascript.md` |
+| Python (Django, Flask, SQLAlchemy) | `templates/secure-coding/python.md` |
+
+### 판단 기준
+- **양호**: 시큐어 코딩 패턴이 올바르게 적용됨
+- **부분이행**: 패턴이 부분적으로 적용됨, 개선 필요
+- **취약**: 취약한 패턴 감지됨 (UNSAFE 코드 존재)
+- **해당없음**: 코드베이스에 해당 없음
+
+---
 
 ## 참고사항
 - 평가 중 파일을 수정하지 마세요 — 읽기 전용입니다

@@ -15,12 +15,14 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 | 2 | **AI Security** | AI Developer/Service Provider/User requirements | ~54 |
 | 3 | **Robot Security** | Industrial/Service/Medical robot checklist (11 categories) | ~103 |
 | 4 | **Space Security** | Satellite/GSaaS/Supply chain checklist (12 domains) | 53 |
+| 5 | **Secure Coding** | JavaScript/Python secure coding (7 categories, 46 CWE) | 46 |
 
 ### Auto-detection
 - Servers, networks, databases, web services, firewalls → **CII**
 - AI models, LLM, generative AI, machine learning, prompts → **AI Security**
 - Robots, industrial robots, service robots, medical robots, ROS/ROS2, PLC-linked robot systems → **Robot Security**
 - Satellites, ground stations, GSaaS, space systems, GNSS, VSAT, LEO constellation, space supply chain → **Space Security**
+- JavaScript, Python, web application code, secure coding, CWE, OWASP → **Secure Coding**
 
 ---
 
@@ -101,6 +103,25 @@ Read from `references/space-security/` for overview and supply chain guidance, a
 | Supply Chain Management (SM) + Threat Scenarios | `references/space-security/supply-chain.md` |
 
 12 domains, 53 items. Standards: CMMC, K-RMF, NIS2, ISMS-P. Generate reports in `reports/space-security/`.
+
+---
+
+## Secure Coding Branch
+
+Read from `references/secure-coding/` for overview and pseudo code patterns, and `templates/secure-coding/` for language-specific assessment.
+
+| Topic | Reference File |
+|-------|---------------|
+| Overview (7 categories, 49 CWE) | `references/secure-coding/overview.md` |
+| Pseudo Code (46 items, language-agnostic) | `references/secure-coding/pseudocode.md` |
+| JavaScript (Express.js, Node.js, Sequelize) | `templates/secure-coding/javascript.md` |
+| Python (Django, Flask, SQLAlchemy) | `templates/secure-coding/python.md` |
+
+### Judgment Criteria
+- **Pass**: Secure coding pattern applied correctly
+- **Partial**: Pattern partially applied, improvement needed
+- **Fail**: Vulnerable pattern detected (UNSAFE code present)
+- **N/A**: Not applicable to the codebase
 
 ---
 
