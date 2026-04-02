@@ -280,15 +280,108 @@
 
 ---
 
+## 시큐어코딩 관련 (ref-011, ref-012)
+
+### 보안약점 카테고리
+
+| 한글 | 영문 | 항목 수 (JS/Py) |
+|------|------|:---------------:|
+| 입력데이터 검증 및 표현 | Input Data Validation and Representation | 13 / 16 |
+| 보안기능 | Security Features | 16 / 16 |
+| 시간 및 상태 | Time and State | 1 / 2 |
+| 에러처리 | Error Handling | 3 / 3 |
+| 코드오류 | Code Quality | 3 / 3 |
+| 캡슐화 | Encapsulation | 4 / 4 |
+| API 오용 | API Misuse | 2 / 2 |
+
+### 입력데이터 검증 및 표현
+
+| 한글 | 영문 | CWE | 비고 |
+|------|------|-----|------|
+| SQL 삽입 | SQL Injection | CWE-89 | JS/Py 공통 |
+| 코드 삽입 | Code Injection | CWE-94, 95 | eval() 등 |
+| 경로 조작 및 자원 삽입 | Path Traversal / Resource Injection | CWE-22, 99 | |
+| 크로스사이트 스크립트 | Cross-Site Scripting | CWE-79 | XSS |
+| 운영체제 명령어 삽입 | OS Command Injection | CWE-78 | |
+| 위험한 형식 파일 업로드 | Unrestricted File Upload | CWE-434 | |
+| 신뢰되지 않은 URL 자동접속 | Open Redirect | CWE-601 | |
+| 부적절한 XML 외부 개체 참조 | XML External Entity | CWE-611 | XXE |
+| XML 삽입 | XPath Injection | CWE-643 | |
+| LDAP 삽입 | LDAP Injection | CWE-90 | |
+| 크로스사이트 요청 위조 | Cross-Site Request Forgery | CWE-352 | CSRF |
+| 서버사이드 요청 위조 | Server-Side Request Forgery | CWE-918 | SSRF |
+| 보안기능 결정에 사용되는 부적절한 입력값 | Untrusted Input for Security Decision | CWE-807 | |
+| HTTP 응답분할 | HTTP Response Splitting | CWE-113 | Python만 |
+| 정수형 오버플로우 | Integer Overflow | CWE-190 | Python만 |
+| 포맷 스트링 삽입 | Format String Injection | CWE-134 | Python만 |
+
+### 보안기능
+
+| 한글 | 영문 | CWE | 비고 |
+|------|------|-----|------|
+| 적절한 인증 없는 중요 기능 허용 | Missing Authentication for Critical Function | CWE-306 | |
+| 부적절한 인가 | Improper Authorization | CWE-285 | |
+| 잘못된 권한 설정 | Incorrect Permission Assignment | CWE-732 | |
+| 취약한 암호화 알고리즘 사용 | Use of Broken Crypto Algorithm | CWE-327 | |
+| 암호화되지 않은 중요정보 | Cleartext Storage/Transmission | CWE-312, 319 | |
+| 하드코드된 중요정보 | Hard-coded Credentials | CWE-259, 321 | |
+| 충분하지 않은 키 길이 | Inadequate Encryption Strength | CWE-326 | |
+| 부적절한 난수 값 | Insufficient Randomness | CWE-330 | |
+| 취약한 패스워드 허용 | Weak Password Requirements | CWE-521 | |
+| 부적절한 전자서명 확인 | Improper Verification of Signature | CWE-347 | |
+| 부적절한 인증서 유효성 검증 | Improper Certificate Validation | CWE-295 | |
+| 쿠키를 통한 정보 노출 | Sensitive Info in Persistent Cookie | CWE-539 | |
+| 주석문 안에 포함된 시스템 주요정보 | Sensitive Info in Source Code Comments | CWE-615 | |
+| 솔트 없이 일방향 해쉬 함수 사용 | Use of One-Way Hash Without Salt | CWE-759 | |
+| 무결성 검사없는 코드 다운로드 | Download of Code Without Integrity Check | CWE-494 | |
+| 반복된 인증시도 제한 기능 부재 | Improper Restriction of Auth Attempts | CWE-307 | |
+
+### 기타 카테고리
+
+| 한글 | 영문 | CWE | 카테고리 |
+|------|------|-----|---------|
+| 경쟁조건 TOCTOU | Time-of-check Time-of-use | CWE-367 | 시간/상태 (Py만) |
+| 종료되지 않는 반복문/재귀 | Infinite Loop / Uncontrolled Recursion | CWE-835, 674 | 시간/상태 |
+| 오류 메시지 정보노출 | Information Exposure Through Error Message | CWE-209 | 에러처리 |
+| 오류상황 대응 부재 | Detection of Error Without Action | CWE-390 | 에러처리 |
+| 부적절한 예외 처리 | Improper Check for Exceptional Conditions | CWE-754 | 에러처리 |
+| Null Pointer 역참조 | NULL Pointer Dereference | CWE-476 | 코드오류 |
+| 부적절한 자원 해제 | Improper Resource Shutdown or Release | CWE-404 | 코드오류 |
+| 신뢰할 수 없는 데이터의 역직렬화 | Deserialization of Untrusted Data | CWE-502 | 코드오류 |
+| 잘못된 세션에 의한 정보 노출 | Exposure of Data from Wrong Session | CWE-488 | 캡슐화 |
+| 제거되지 않은 디버그 코드 | Active Debug Code | CWE-489 | 캡슐화 |
+| DNS lookup에 의존한 보안결정 | Reliance on Reverse DNS Resolution | CWE-350 | API 오용 |
+
+### 프레임워크/라이브러리
+
+| 이름 | 언어 | 용도 | 비고 |
+|------|------|------|------|
+| Express.js | JavaScript | 웹 서버 | Node.js 기반 |
+| Sequelize | JavaScript | ORM | SQL 삽입 방지 |
+| Mongoose | JavaScript | ODM | MongoDB |
+| helmet | JavaScript | HTTP 보안 헤더 | Express 미들웨어 |
+| csurf | JavaScript | CSRF 방지 | Express 미들웨어 |
+| Django | Python | 웹 프레임워크 | ORM, CSRF 내장 |
+| Flask | Python | 웹 프레임워크 | 경량 |
+| SQLAlchemy | Python | ORM | SQL 삽입 방지 |
+| cryptography | Python | 암호화 라이브러리 | |
+| hashlib | Python | 해시 함수 | 표준 라이브러리 |
+| secrets | Python | 보안 난수 | 표준 라이브러리 |
+
+---
+
 ## 사용 규칙
 
 1. **첫 등장**: 전체 형식 사용
    - 예: 주요정보통신기반시설(Critical Information Infrastructure, CII)
+   - 예: SQL 삽입(SQL Injection, CWE-89)
 2. **이후 등장**: 한글 또는 약어 사용
    - 예: 주요정보통신기반시설 또는 CII
+   - 예: SQL 삽입 또는 CWE-89
 3. **새 용어 추가 시**: 이 파일에 등록 후 사용
 4. **점검 항목 코드**: 본문에서 `U-01`, `W-02`, `AC-01` 형식으로 직접 사용 가능
+5. **CWE 코드**: 본문에서 `CWE-89` 형식으로 직접 사용 가능
 
 ---
 
-*최종 업데이트: 2026-04-02 (ref-006~010 우주 보안 용어 추가)*
+*최종 업데이트: 2026-04-02 (ref-011/012 시큐어코딩 가이드 용어 추가)*

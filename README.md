@@ -294,7 +294,7 @@ KESE-KIT/
 ├── .claude-plugin/
 │   └── marketplace.json              ← 플러그인 메타데이터
 ├── skills/                            ← 영문 스킬
-│   ├── kesekit-start/
+│   ├── start/
 │   │   ├── SKILL.md                  ← 라우터 (~80줄)
 │   │   ├── references/               ← 순수 설명/기준 문서
 │   │   │   ├── ai-security/          ← 개요, 서비스제공자, 이용자 가이드
@@ -307,9 +307,9 @@ KESE-KIT/
 │   │   └── scripts/                  ← 실행 가능한 점검/수정 스크립트
 │   │       ├── cii/                  ← bash, PowerShell, SQL 스크립트
 │   │       └── robot-security/       ← 방화벽, SBOM, 인증서 스크립트
-│   ├── kesekit-check/
-│   ├── kesekit-fix/                   ← scripts/space-security/ 추가 포함
-│   └── kesekit-guide/
+│   ├── check/
+│   ├── fix/                           ← scripts/space-security/ 추가 포함
+│   └── guide/
 ├── skills-ko/                         ← 한글 스킬 (동일 구조)
 ├── 문서/                              ← 원본 PDF 문서 (8개)
 ├── authorkit/                         ← 변환 산출물 및 작업 파일
