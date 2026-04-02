@@ -1,5 +1,5 @@
 ---
-name: kesekit-fix
+name: fix
 description: Auto-fix security vulnerabilities found in CII, AI, robot, and space systems. Generates hardening scripts for Unix/Linux, Windows, web servers, databases, AI, robot, and space infrastructure (satellite/GSaaS/ground station). Use when "fix vulnerabilities", "apply hardening", "server hardening", "AI security fix", "robot security fix", "space security fix", "satellite hardening", "GSaaS hardening".
 ---
 

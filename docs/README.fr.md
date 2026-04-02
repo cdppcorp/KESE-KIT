@@ -16,10 +16,10 @@ KESE (KISA Enhanced Security Evaluation Kit) est un plugin Claude Code qui fourn
 
 | Skill | Description |
 |-------|-------------|
-| `/kesekit-start` | Exécuter une évaluation complète des vulnérabilités de sécurité (CII 560+ éléments ou sécurité IA) |
-| `/kesekit-check` | Checklist de conformité sécurité avant déploiement |
-| `/kesekit-fix` | Génération automatique de scripts de durcissement et de correctifs de sécurité |
-| `/kesekit-guide` | Générer des prompts de codage sécurisé pour les outils d'IA |
+| `/kesekit:start` | Exécuter une évaluation complète des vulnérabilités de sécurité (CII 560+ éléments ou sécurité IA) |
+| `/kesekit:check` | Checklist de conformité sécurité avant déploiement |
+| `/kesekit:fix` | Génération automatique de scripts de durcissement et de correctifs de sécurité |
+| `/kesekit:guide` | Générer des prompts de codage sécurisé pour les outils d'IA |
 
 ## Directives prises en charge
 
@@ -62,16 +62,16 @@ claude plugins install kesekit
 
 ```bash
 # Lancer l'évaluation complète de sécurité
-/kesekit-start
+/kesekit:start
 
 # Exécuter la checklist avant déploiement
-/kesekit-check
+/kesekit:check
 
 # Générer les scripts de durcissement
-/kesekit-fix
+/kesekit:fix
 
 # Obtenir les prompts de codage sécurisé
-/kesekit-guide
+/kesekit:guide
 ```
 
 ---

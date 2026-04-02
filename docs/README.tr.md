@@ -16,10 +16,10 @@ KESE (KISA Enhanced Security Evaluation Kit), KISA (Kore İnternet ve Güvenlik 
 
 | Beceri | Açıklama |
 |--------|----------|
-| `/kesekit-start` | Tam güvenlik zafiyet değerlendirmesi çalıştır (CII 560+ madde veya AI Güvenlik) |
-| `/kesekit-check` | Dağıtım öncesi güvenlik uyumluluk kontrol listesi |
-| `/kesekit-fix` | Sıkılaştırma betikleri ve güvenlik düzeltmeleri otomatik oluştur |
-| `/kesekit-guide` | AI araçları için güvenli kodlama komut istemi oluştur |
+| `/kesekit:start` | Tam güvenlik zafiyet değerlendirmesi çalıştır (CII 560+ madde veya AI Güvenlik) |
+| `/kesekit:check` | Dağıtım öncesi güvenlik uyumluluk kontrol listesi |
+| `/kesekit:fix` | Sıkılaştırma betikleri ve güvenlik düzeltmeleri otomatik oluştur |
+| `/kesekit:guide` | AI araçları için güvenli kodlama komut istemi oluştur |
 
 ## Desteklenen Kılavuzlar
 
@@ -62,16 +62,16 @@ claude plugins install kesekit
 
 ```bash
 # Tam güvenlik değerlendirmesini başlat
-/kesekit-start
+/kesekit:start
 
 # Dağıtım öncesi kontrol listesini çalıştır
-/kesekit-check
+/kesekit:check
 
 # Sıkılaştırma betikleri oluştur
-/kesekit-fix
+/kesekit:fix
 
 # Güvenli kodlama komut istemlerini al
-/kesekit-guide
+/kesekit:guide
 ```
 
 ---
