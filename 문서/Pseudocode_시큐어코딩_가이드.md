@@ -285,7 +285,7 @@ response.redirect(redirectUrl)
 
 | 언어 | 대응 | 주의점 |
 |------|:----:|--------|
-| JavaScript | O | Express `res.redirect()` 사용 전 URL 검증 필수, `//evil.com` 형태의 프로토콜 상대 URL 주의 |
+| JavaScript | O | Express `res.redirect()` 사용 전 URL 검증 필수, `//untrusted-origin.example.com` 형태의 프로토콜 상대 URL 주의 |
 | Python | O | Django `is_safe_url()` (deprecated), `url_has_allowed_host_and_scheme()` 사용 |
 
 ---

@@ -334,7 +334,7 @@ router.post("/safe/upload", safeUpload.single("file"), (req, res) => {
 router.get("/vuln/redirect", (req, res) => {
   const next = req.query.next;
   res.redirect(next);
-  // 공격: next=https://evil.com
+  // 공격: next=https://untrusted-origin.example.com
 });
 
 // SAFE — 허용된 도메인/경로만 리다이렉트
