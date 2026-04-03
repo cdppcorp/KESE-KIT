@@ -353,12 +353,14 @@ const expectedTemplateFileCounts = {
   "cii": 14,
   "robot-security": 6,
   "space-security": 5,
-  "ai-security": 2,
+  "ai-security": 3,
 };
 
 const expectedScriptFileCounts = {
   "cii": 8,
   "robot-security": 4,
+  "ai-security": 3,
+  "zero-trust": 3,
 };
 
 // fix skills have additional space-security scripts
@@ -456,7 +458,7 @@ check("script-content-parity", () => {
   // Scripts in cii/ and robot-security/ should be identical across all skills.
   // space-security/ scripts only exist in fix skills, so parity is checked between
   // skills/kesekit-fix and skills-ko/kesekit-fix-ko (handled by cross-language parity below).
-  const sharedSubDirs = ["cii", "robot-security"];
+  const sharedSubDirs = ["cii", "robot-security", "ai-security", "zero-trust"];
 
   for (const skillRoot of skillRoots) {
     for (const subDir of sharedSubDirs) {

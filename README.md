@@ -305,9 +305,32 @@ Korean versions are also available:
   → Request like "Python Flask authentication" → get secure coding prompt
 ```
 
+### Supported Guidelines
+
+#### 1. Critical Information Infrastructure (CII) — 560+ Items
+
+**Technical Assessment**
+| System | Code | Items |
+|--------|------|:-----:|
+| Unix/Linux Server | U-01~U-67 | 67 |
+| Windows Server | W-01~W-64 | 64 |
+| Web Service | WEB-01~WEB-26 | 26 |
+| Security Equipment | S-01~S-23 | 23 |
+| Network Equipment | N-01~N-38 | 38 |
+| Control System | C-01~C-51 | 46 |
+| PC | PC-01~PC-18 | 18 |
+| DBMS | D-01~D-26 | 26 |
+| Mobile | M-01~M-04 | 4 |
+| Web Application | 21 codes | 21 |
+| Virtualization | HV-01~HV-25 | 25 |
+| Cloud | CA-01~CA-19 | 19 |
+
+**Administrative Assessment**: A-1~A-127 (127 items, 14 domains)
+**Physical Assessment**: P-1~P-18 (18 items)
+
 ### Overview
 
-KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provides comprehensive vulnerability assessment capabilities based on KISA (Korea Internet & Security Agency) guidelines. Supports Critical Information Infrastructure (CII), AI Security, Robot Security, and Space Security assessments.
+KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provides comprehensive vulnerability assessment capabilities based on KISA (Korea Internet & Security Agency) guidelines. Supports Critical Information Infrastructure (CII), AI Security, Robot Security, Space Security, Secure Coding, and Zero Trust assessments.
 
 ### Features
 
