@@ -81,7 +81,8 @@
     "start": "",
     "check": "결과를 PR에 붙일 수 있게 마크다운 표로 정리",
     "fix": "스크립트는 만들기만 하고 적용하지 않음",
-    "guide": ""
+    "guide": "",
+    "advisory": ""
   }
 }
 ```
@@ -179,7 +180,7 @@ END_KESEKIT_PROFILE_INPUT
 | `environment` | `languages`, `frameworks`, `services`, `webServers`, `databases`, `containers`, `cloudClis`, `aiLibraries` |
 | `environmentSource` | 위 8개 목록 각각의 `auto` 또는 `manual` |
 | `assessment` | `purpose`, `scope`, `domains`, `ciiTargets`, `ztTargetMaturity`, `organizationType`, `source`, `custom` |
-| `notes` | `common`, `start`, `check`, `fix`, `guide` |
+| `notes` | `common`, `start`, `check`, `fix`, `guide`, `advisory` |
 
 입력 화면은 점검 설정 항목마다 **선택한 값 → 직접 입력 → 추천값** 순서로 값을 정합니다. 직접 입력만 있는 항목은 값이 `null`이고 `source`가 `custom`입니다. 이 값은 Claude가 "입력값 확정"에서 채웁니다.
 
@@ -246,6 +247,7 @@ CPU: Intel(R) Xeon(R) Silver 4310
 [check 요청]:
 [fix 요청]:
 [guide 요청]:
+[advisory 요청]:
 [END]
 ```
 

@@ -81,7 +81,8 @@ Create `.kesekit/` inside the working directory where Claude Code runs. The proj
     "start": "",
     "check": "Summarize results as a Markdown table for the PR",
     "fix": "Generate scripts only; do not apply them",
-    "guide": ""
+    "guide": "",
+    "advisory": ""
   }
 }
 ```
@@ -179,7 +180,7 @@ END_KESEKIT_PROFILE_INPUT
 | `environment` | `languages`, `frameworks`, `services`, `webServers`, `databases`, `containers`, `cloudClis`, `aiLibraries` |
 | `environmentSource` | `auto` or `manual` for each of the 8 lists above |
 | `assessment` | `purpose`, `scope`, `domains`, `ciiTargets`, `ztTargetMaturity`, `organizationType`, `source`, `custom` |
-| `notes` | `common`, `start`, `check`, `fix`, `guide` |
+| `notes` | `common`, `start`, `check`, `fix`, `guide`, `advisory` |
 
 The form decides each assessment item in the order **selected options → the user's own words → suggestion**. An item with only the user's own words has the value `null` and `source` `custom`; Claude fills it in "Resolving the Input".
 
@@ -246,6 +247,7 @@ Memory (GB): 64
 [check]:
 [fix]:
 [guide]:
+[advisory]:
 [END]
 ```
 

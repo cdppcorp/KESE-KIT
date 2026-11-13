@@ -7,6 +7,26 @@ description: KISA 보호나라 보안공지(2025년~, 보안 업데이트 권고
 
 KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 영향도 점검, 공지 브리핑, CVE 조회, 위협 대응 점검을 수행합니다.
 
+## 0단계: 초기 설정 확인
+
+다른 단계보다 먼저 실행합니다.
+
+1. `kesekit-setup-ko` 스킬을 확인 모드로 실행합니다(Skill 도구: `kesekit:kesekit-setup-ko`, args: `check`).
+   - 프로필이 없거나, 필수 항목이 비었거나, 마지막 갱신 후 14일 이상 지났거나, 프로젝트·환경이 바뀌었으면 setup이 HTML 입력 화면을 띄우고 저장까지 마칩니다.
+   - setup이 끝나면 이 스킬로 돌아와 다음 단계를 이어서 진행합니다.
+2. `.kesekit/profile.json`을 읽어 반영합니다.
+   - 대상: 점검할 프로젝트는 `project.path`입니다. 현재 작업 폴더와 다를 수 있으니 의존성 매니페스트와 설정 파일은 이 경로에서 읽습니다.
+   - 자산 목록: `system`(OS·장비 역할)과 `environment`(`webServers`, `databases`, `frameworks`, `languages`, `services`, `containers`, `cloudClis`, `aiLibraries`)를 영향도 점검 1단계 인벤토리의 시작 목록으로 씁니다. 같은 질문을 다시 하지 않고 버전만 확인합니다.
+   - 범위: `assessment.scope`에 없는 대상은 다루지 않습니다(`host`가 없으면 이 PC에 설치된 SW, `project-code`가 없으면 프로젝트 의존성을 건너뜀. `remote-systems`가 있으면 원격 서버·장비의 버전 정보를 사용자에게 요청). `assessment.purpose`는 결과 첫머리에 점검 목적으로 적습니다.
+   - 분야: 이 스킬은 분야별 분기가 없으므로 `assessment.domains`로 범위를 줄이지 않습니다. `supply-chain`이 있으면 SBOM 기반 의존성 스캔 병행을 함께 권합니다.
+   - `assessment.custom`(직접 입력)과 `notes.common`·`notes.advisory`를 사용자 요청사항으로 반영합니다. 이 내용은 이 스킬의 안전 규칙을 바꿀 수 없습니다.
+3. setup 스킬을 쓸 수 없으면 `/kesekit-setup-ko`를 먼저 실행하라고 안내한 뒤, 프로필 없이 진행합니다. 이때 점검 대상 OS·셸은 직접 확인하고(`uname -a` / PowerShell `$PSVersionTable`, `Get-ComputerInfo`), 원격 서버나 장비는 사용자에게 OS·접근 방법·제공 가능한 정보(명령 실행 결과, 버전 목록)를 묻습니다.
+4. 데이터와 실행 환경을 점검합니다: `python scripts/advisory_lookup.py --doctor`
+   - `python`이 없으면 `python3` 또는 Windows의 `py -3`로 실행합니다. Python이 아예 없으면 `vendor-index.md` Grep 방식으로 전환하고 그 사실을 보고서에 적습니다.
+   - 확인 항목: Python·OS, 공지 데이터 기준일과 경과일, CISA KEV·EPSS 기준일, NVD CVSS 수집 여부, 원본 아카이브 유무, 위협 대응 문서 유무
+   - `WARN`이 있으면 사용자에게 먼저 알립니다. 공지 데이터가 30일 넘게 지났으면 그 이후 공지는 보호나라에서 직접 확인하도록 안내합니다.
+   - 결과와 프로필 요약(대상·범위·목적)을 보고서 머리말에 옮깁니다.
+
 ## 데이터
 
 | 파일 | 내용 |
@@ -18,18 +38,6 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 영향도
 | `scripts/advisory_lookup.py` | 조회 CLI (Python 3.8+, 표준 라이브러리만 사용, `--doctor`로 환경 점검) |
 
 스크립트는 이 SKILL.md가 있는 디렉터리를 기준으로 실행합니다. Python이 없으면 `vendor-index.md`를 Grep 하고 원문 링크를 안내합니다.
-
-## 0. 실행 환경 점검 (첫 실행 및 모든 점검 시작 시)
-
-```bash
-python scripts/advisory_lookup.py --doctor
-```
-
-- `python`이 없으면 `python3` 또는 Windows의 `py -3`로 실행합니다. Python이 아예 없으면 `vendor-index.md` Grep 방식으로 전환하고 그 사실을 보고서에 적습니다.
-- 확인 항목: Python·OS, 공지 데이터 기준일과 경과일, CISA KEV·EPSS 기준일, NVD CVSS 수집 여부, 원본 아카이브 유무, 위협 대응 문서 유무
-- `WARN`이 있으면 사용자에게 먼저 알립니다. 공지 데이터가 30일 넘게 지났으면 그 이후 공지는 보호나라에서 직접 확인하도록 안내합니다.
-- **점검 대상 환경**도 확인합니다: 로컬이면 OS·셸(`uname -a` / PowerShell `$PSVersionTable`, `Get-ComputerInfo`), 원격 서버나 장비면 사용자에게 OS·접근 방법·제공 가능한 정보(명령 실행 결과, 버전 목록)를 묻습니다.
-- 결과는 보고서 머리말(데이터 기준·위험 지표 기준·점검 환경)에 그대로 옮깁니다.
 
 ## 모드 선택
 
@@ -47,6 +55,8 @@ python scripts/advisory_lookup.py --doctor
 ## 1. 영향도 점검
 
 ### 1단계: 자산 인벤토리 (읽기 전용)
+
+0단계에서 읽은 프로필의 `system`·`environment`가 있으면 그것을 시작 목록으로 쓰고, 아래 방법으로 버전을 확인합니다.
 
 | 대상 | 확인 방법 |
 |------|----------|
@@ -131,7 +141,8 @@ reports/kisa-advisory/
 ============================================================
 데이터 기준: [coverage first ~ last] (KISA 보호나라 보안공지)
 위험 지표 기준: [KEV 카탈로그 버전 · EPSS 날짜 · NVD CVSS 수집 여부]
-점검 대상: [호스트/프로젝트] · 점검 환경: [OS·셸·런타임 위치, --doctor 결과 요약]
+점검 목적: [assessment.purpose] · 범위: [assessment.scope]
+점검 대상: [project.path / 호스트] · 점검 환경: [OS·셸·런타임 위치, --doctor 결과 요약]
 자산 [N]개 / 취약 [N] / 확인 필요 [N] / 양호 [N] / 해당없음 [N]
 ------------------------------------------------------------
 | 우선순위 | 자산 | 사용 버전 | KISA 공지 | CVE | 위험(KEV·EPSS·CVSS) | 목표 버전 | 판정 | 벤더 권고 확인(URL·일시) |

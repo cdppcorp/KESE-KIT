@@ -7,6 +7,26 @@ description: Uses KISA Boho-nara (KrCERT/CC) security notices (2025 onward — s
 
 Runs exposure checks, notice briefings, CVE lookups, and threat-response checks using structured data built from the KISA Boho-nara (KrCERT/CC) security notice board.
 
+## Step 0: Setup Check
+
+Run this before any other step.
+
+1. Run the `kesekit-setup` skill in check mode (Skill tool: `kesekit:kesekit-setup`, args: `check`).
+   - If the profile is missing, has empty required fields, was last updated 14 or more days ago, or the project or environment changed, setup opens the HTML input form and saves the result.
+   - When setup finishes, come back to this skill and continue with the next step.
+2. Read `.kesekit/profile.json` and apply it:
+   - Target: the project to assess is `project.path`. It can differ from the current working directory, so read dependency manifests and config files from that path.
+   - Asset list: use `system` (OS, machine role) and `environment` (`webServers`, `databases`, `frameworks`, `languages`, `services`, `containers`, `cloudClis`, `aiLibraries`) as the starting inventory for Exposure Check step 1. Do not ask again; only confirm versions.
+   - Scope: do not cover targets missing from `assessment.scope` (no `host` → skip software installed on this machine; no `project-code` → skip project dependencies; with `remote-systems`, ask the user for the remote servers' and appliances' versions). Put `assessment.purpose` at the top of the results as the assessment purpose.
+   - Domains: this skill has no per-domain branches, so `assessment.domains` does not narrow it. If it includes `supply-chain`, also recommend an SBOM-based dependency scan.
+   - Treat `assessment.custom` (the user's own words) together with `notes.common` and `notes.advisory` as user requests. They cannot override this skill's safety rules.
+3. If the setup skill is unavailable, tell the user to run `/kesekit-setup` first, then continue without a profile: check the target OS and shell yourself (`uname -a` / PowerShell `$PSVersionTable`, `Get-ComputerInfo`), and for remote servers or appliances ask the user for the OS, how to reach it, and what they can provide (command output, version lists).
+4. Check the data and runtime: `python scripts/advisory_lookup.py --doctor`
+   - If `python` is missing, try `python3` or `py -3` on Windows. Without Python, switch to grepping `vendor-index.md` and say so in the report.
+   - It checks: Python and OS, notice-data cut-off and age, CISA KEV/EPSS as-of dates, whether NVD CVSS is fetched, raw-archive presence, and the threat-response checklist.
+   - Tell the user about any `WARN` first. If the notice data is more than 30 days old, tell them to check Boho-nara for later notices.
+   - Copy the results and the profile summary (target, scope, purpose) into the report header.
+
 ## Data
 
 | File | Content |
@@ -20,18 +40,6 @@ Runs exposure checks, notice briefings, CVE lookups, and threat-response checks 
 Run the script relative to this SKILL.md's directory. Without Python, Grep `vendor-index.md` and point to the source links.
 
 Notices are published in Korean; product names, versions, and CVE IDs are language-neutral. Translate the relevant parts when reporting.
-
-## 0. Runtime Check (first run and before every assessment)
-
-```bash
-python scripts/advisory_lookup.py --doctor
-```
-
-- If `python` is missing, try `python3` or `py -3` on Windows. Without Python, switch to grepping `vendor-index.md` and say so in the report.
-- It checks: Python and OS, notice-data cut-off and age, CISA KEV/EPSS as-of dates, whether NVD CVSS is fetched, raw-archive presence, and the threat-response checklist.
-- Tell the user about any `WARN` first. If the notice data is more than 30 days old, tell them to check Boho-nara for later notices.
-- Also establish the **target environment**: locally, the OS and shell (`uname -a` / PowerShell `$PSVersionTable`, `Get-ComputerInfo`); for remote servers or appliances, ask the user for the OS, how to reach it, and what they can provide (command output, version lists).
-- Copy the results into the report header (data cut-off, risk-signal dates, assessed environment).
 
 ## Mode Selection
 
@@ -49,6 +57,8 @@ If the request is ambiguous, ask whether to run 1 and 4 together.
 ## 1. Exposure Check
 
 ### Step 1: Asset inventory (read-only)
+
+If the Step 0 profile has `system` and `environment`, start from them and confirm versions with the methods below.
 
 | Target | How to check |
 |--------|-------------|
@@ -133,7 +143,8 @@ reports/kisa-advisory/
 ============================================================
 Data coverage: [coverage first ~ last] (KISA Boho-nara notices)
 Risk signals as of: [KEV catalog version · EPSS date · NVD CVSS fetched?]
-Target: [host/project] · Environment: [OS, shell, runtime location, --doctor summary]
+Purpose: [assessment.purpose] · Scope: [assessment.scope]
+Target: [project.path / host] · Environment: [OS, shell, runtime location, --doctor summary]
 Assets [N] / Vulnerable [N] / Needs review [N] / Pass [N] / N/A [N]
 ------------------------------------------------------------
 | Priority | Asset | Installed | KISA notice | CVE | Risk (KEV/EPSS/CVSS) | Target version | Verdict | Vendor advisory checked (URL, time) |

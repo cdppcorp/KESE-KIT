@@ -12,7 +12,7 @@
   const MAX_REMOTE = 300;
   const MAX_ITEM = 80;
   const MAX_ITEMS = 50;
-  const NOTE_KEYS = ["common", "start", "check", "fix", "guide"];
+  const NOTE_KEYS = ["common", "start", "check", "fix", "guide", "advisory"];
   const ENV_KEYS = ["languages", "frameworks", "services", "webServers", "databases", "containers", "cloudClis", "aiLibraries"];
   const CHOICE_KEYS = ["purpose", "scope", "domains", "ciiTargets", "ztTargetMaturity", "organizationType"];
   const MULTI_KEYS = ["scope", "domains", "ciiTargets"];

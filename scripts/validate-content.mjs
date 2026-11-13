@@ -898,6 +898,26 @@ check("advisory-threat-response-parity", () => {
   assertObjectEqual(codes[1], codes[0], "skills-ko/kesekit-advisory-ko threat-response.md TR codes vs EN");
 });
 
+check("advisory-runs-setup-gate", () => {
+  for (const skill of advisorySkills) {
+    const filePath = advisoryPath(skill, "SKILL.md");
+    if (!fs.existsSync(filePath)) continue;
+    const content = read(filePath);
+    const heading = gateHeadings[skill.root];
+    assert(content.indexOf(heading) !== -1 && content.indexOf(heading) === content.indexOf("\n## ") + 1,
+      `${rel(filePath)} must start with the "${heading}" section`);
+    const required = [`\`kesekit:${setupSkillDirs[skill.root]}\``, "`notes.advisory`", "`assessment.scope`", "`project.path`",
+      "`assessment.custom`", "`environment`", "--doctor"];
+    for (const token of required) {
+      assert(content.includes(token), `${rel(filePath)} Step 0 is missing ${token}`);
+    }
+  }
+  for (const skillRoot of skillRoots) {
+    assertIncludes(setupPath(skillRoot, "templates", "setup-form.js"), /NOTE_KEYS = \[[^\]]*"advisory"/, "the advisory notes field");
+    assertIncludes(setupPath(skillRoot, "references", "profile-schema.md"), "`guide`, `advisory`", "notes.advisory in the schema");
+  }
+});
+
 check("marketplace-skills-exist", () => {
   const marketplace = JSON.parse(read(path.join(rootDir, ".claude-plugin", "marketplace.json")));
   const listed = marketplace.plugins.flatMap((plugin) => plugin.skills);
