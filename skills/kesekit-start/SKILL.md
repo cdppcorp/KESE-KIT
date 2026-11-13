@@ -18,6 +18,7 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 | 5 | **Secure Coding** | JavaScript/Python secure coding (7 categories, 46 CWE) | 46 |
 | 6 | **Zero Trust** | Zero Trust maturity assessment (8 elements, 4 maturity levels) | ~396 |
 | 7 | **SW Supply Chain** | SBOM-based supply chain security (5 phases, 29 items) | 29 |
+| 8 | **KISA Security Notices** | Installed versions vs. KISA Boho-nara notices, briefings, CVE lookup, threat response (`/kesekit-advisory`) | - |
 
 ### Auto-detection
 - Servers, networks, databases, web services, firewalls → **CII**
@@ -27,6 +28,7 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 - JavaScript, Python, web application code, secure coding, CWE, OWASP → **Secure Coding**
 - Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **Zero Trust**
 - SBOM, supply chain, 공급망, C-SCRM, SCA, CycloneDX, SPDX, npm audit, pip-audit, software bill of materials, 소프트웨어 공급망 → **SW Supply Chain**
+- KISA notice, KrCERT, Boho-nara, security update advisory, "are we affected", CVE exposure, patch status, BPFDoor, rootkit, ransomware readiness → **KISA Security Notices**
 
 ---
 
@@ -177,6 +179,12 @@ Read from `references/supply-chain/` for overview and threat scenarios, and `tem
 4. Critical items (SC-10, SC-14, SC-15) must ALL pass
 5. Use `scripts/supply-chain/sbom-generate.md` for SBOM creation commands
 6. Use `scripts/supply-chain/sbom-vuln-scan.md` for vulnerability scanning
+
+---
+
+## KISA Security Notices Branch
+
+Hand off to the `kesekit-advisory` skill (`/kesekit-advisory`). It checks installed products against KISA Boho-nara (KrCERT/CC) notices (affected/fixed versions), briefs recent notices, looks up CVEs, and runs threat-response checks (BPFDoor, rootkits, ransomware, exposed credentials, dev supply chain). During a full CII assessment, run its exposure check for the detected products and cite the results under the patch-management items.
 
 ---
 

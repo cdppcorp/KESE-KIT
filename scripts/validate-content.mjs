@@ -542,6 +542,102 @@ check("cross-language-script-parity", () => {
   }
 });
 
+// --- KISA security notice (advisory) skills ---
+
+const advisorySkills = [
+  { root: "skills", dir: "kesekit-advisory", statsPattern: /\*\*(\d+) notices\*\*/ },
+  { root: "skills-ko", dir: "kesekit-advisory-ko", statsPattern: /총 \*\*(\d+)건\*\*/ },
+];
+
+const advisoryRequiredFiles = [
+  "SKILL.md",
+  "scripts/advisory_lookup.py",
+  "references/kisa-advisories/overview.md",
+  "references/kisa-advisories/advisories.json",
+  "references/kisa-advisories/vendor-index.md",
+  "references/kisa-advisories/threat-response.md",
+];
+
+const advisoryStringKeys = ["no", "ntt", "date", "type", "title", "vendor", "url", "summary", "text"];
+const advisoryArrayKeys = ["cves", "affected", "attachments"];
+const statsBegin = "<!-- BEGIN:STATS";
+const statsEnd = "<!-- END:STATS -->";
+
+function advisoryPath(skill, ...rest) {
+  return path.join(rootDir, skill.root, skill.dir, ...rest);
+}
+
+check("advisory-skill-files", () => {
+  for (const skill of advisorySkills) {
+    for (const file of advisoryRequiredFiles) {
+      assert(fs.existsSync(advisoryPath(skill, file)), `${skill.root}/${skill.dir}/${file} is missing`);
+    }
+    if (fs.existsSync(advisoryPath(skill, "SKILL.md"))) {
+      assertIncludes(advisoryPath(skill, "SKILL.md"), new RegExp(`^name: ${skill.dir}$`, "m"), `frontmatter name ${skill.dir}`);
+    }
+  }
+});
+
+check("advisory-data-parity", () => {
+  const [en, ko] = advisorySkills;
+  for (const file of ["scripts/advisory_lookup.py", "references/kisa-advisories/advisories.json"]) {
+    assert(
+      read(advisoryPath(en, file)) === read(advisoryPath(ko, file)),
+      `${ko.root}/${ko.dir}/${file} diverged from ${en.root}/${en.dir}/${file}`,
+    );
+  }
+});
+
+check("advisory-data-schema", () => {
+  const data = JSON.parse(read(advisoryPath(advisorySkills[0], "references/kisa-advisories/advisories.json")));
+  assert(data.schema === 1, "advisories.json schema must be 1");
+  assert(Array.isArray(data.advisories) && data.advisories.length > 0, "advisories.json has no advisories");
+  const total = data.advisories.length;
+  assert(data.coverage?.count === total, `advisories.json coverage.count ${data.coverage?.count} != ${total}`);
+
+  const seenNtt = new Set();
+  for (const advisory of data.advisories) {
+    const label = `advisory ${advisory?.no}/${advisory?.ntt}`;
+    const badStrings = advisoryStringKeys.filter((key) => typeof advisory?.[key] !== "string");
+    const badArrays = advisoryArrayKeys.filter((key) => !Array.isArray(advisory?.[key]));
+    assert(badStrings.length === 0, `${label} needs string field(s): ${badStrings.join(", ")}`);
+    assert(badArrays.length === 0, `${label} needs array field(s): ${badArrays.join(", ")}`);
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(advisory?.date ?? ""), `${label} has invalid date ${advisory?.date}`);
+    assert(/^\d+$/.test(advisory?.ntt ?? ""), `${label} has no numeric nttId`);
+    assert(!seenNtt.has(advisory?.ntt), `duplicate advisory nttId ${advisory?.ntt}`);
+    seenNtt.add(advisory?.ntt);
+  }
+
+  for (const skill of advisorySkills) {
+    const overview = read(advisoryPath(skill, "references/kisa-advisories/overview.md"));
+    const block = sectionBetween(overview, statsBegin, statsEnd) ?? "";
+    const match = block.match(skill.statsPattern);
+    assert(
+      match && Number(match[1]) === total,
+      `${skill.root}/${skill.dir} overview stats do not match ${total} advisories (rerun scripts/build_kisa_advisories.py)`,
+    );
+  }
+});
+
+check("advisory-threat-response-parity", () => {
+  const codes = advisorySkills.map((skill) =>
+    [...read(advisoryPath(skill, "references/kisa-advisories/threat-response.md")).matchAll(/^### (TR-\d+)/gm)].map((m) => m[1]),
+  );
+  assert(codes[0].length > 0, "skills/kesekit-advisory threat-response.md has no TR items");
+  assertObjectEqual(codes[1], codes[0], "skills-ko/kesekit-advisory-ko threat-response.md TR codes vs EN");
+});
+
+check("marketplace-skills-exist", () => {
+  const marketplace = JSON.parse(read(path.join(rootDir, ".claude-plugin", "marketplace.json")));
+  const listed = marketplace.plugins.flatMap((plugin) => plugin.skills);
+  for (const skill of listed) {
+    assert(fs.existsSync(path.join(rootDir, skill, "SKILL.md")), `marketplace.json lists ${skill} but its SKILL.md is missing`);
+  }
+  for (const skill of advisorySkills) {
+    assert(listed.includes(`./${skill.root}/${skill.dir}`), `marketplace.json does not list ./${skill.root}/${skill.dir}`);
+  }
+});
+
 if (errors.length > 0) {
   console.error(`Validation failed with ${errors.length} issue(s):`);
   for (const error of errors) {

@@ -17,9 +17,11 @@ description: 보안 취약점 자동 수정 및 하드닝 스크립트를 생성
 | 4 | **우주 보안 조치** | 우주 시스템 하드닝 (CMMC, K-RMF, NIS2, NIST IR 8401) |
 | 5 | **시큐어코딩 수정** | 취약 코드 패턴 자동 수정 (JS/Python, 46 CWE) |
 | 6 | **제로트러스트 조치** | 제로트러스트 갭 분석 기반 조치 가이드 (8개 핵심요소, ~396항목) |
+| 7 | **KISA 보안공지 조치** | `kesekit-advisory-ko` 영향도 점검 결과 기반 해결 버전 업데이트 계획 |
 
 서버, 인프라, 웹 서비스, DB → **CII** / AI 모델, LLM, AI 서비스 → **AI 보안** / 로봇, ROS/ROS2, 로봇 펌웨어, 무선 제어 인터페이스 → **로봇 보안** / 위성, 지상국, GSaaS, 우주 공급망 → **우주 보안** / JavaScript, Python, 웹 앱 코드 → **시큐어코딩**
 Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **제로트러스트**
+KISA 보안공지, 보호나라, `reports/kisa-advisory/` 점검 결과 → **KISA 보안공지 조치**
 
 ---
 
@@ -124,6 +126,12 @@ scripts/kese-hardening/
 | OT 배포 가이드 | `references/zero-trust/ot-guide.md` |
 
 8개 핵심요소, ~396개 항목, 4단계 성숙도. 표준: KISA 제로트러스트 가이드라인 2.0, NIST SP 800-207, CISA ZT Maturity Model.
+
+---
+
+## KISA 보안공지 조치 분기 시
+
+`kesekit-advisory-ko`의 `reports/kisa-advisory/findings.md`를 입력으로 사용합니다 (없으면 영향도 점검을 먼저 수행). 취약 항목마다 목표 버전(가장 높은 해결 버전)으로의 업데이트 계획을 생성합니다: 사전 백업·스냅샷, 벤더/패키지 관리자 업데이트 명령, 서비스 재시작 순서, 업데이트 후 버전 확인. 지원 종료(EoL) 제품은 교체 계획을 작성합니다. 적용 전 벤더 최신 권고로 목표 버전을 재확인하고, 사용자 승인 없이 적용하지 않습니다.
 
 ---
 

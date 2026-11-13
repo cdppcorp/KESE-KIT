@@ -21,3 +21,11 @@ jobs:
 
       - name: Validate repository content
         run: node scripts/validate-content.mjs
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test KISA advisory build and lookup scripts
+        run: python -m unittest discover -s scripts -p "test_*.py" -v
