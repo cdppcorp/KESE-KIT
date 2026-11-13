@@ -444,6 +444,30 @@ class LookupTest(unittest.TestCase):
         self.assertEqual(match["rows"][1]["risk"]["kev"], ["CVE-2026-2135"])
         self.assertNotIn("risk", json.loads(self.run_main("--id", "1", "--format", "json"))["results"][0]["matches"][0])
 
+    def test_doctor_reports_freshness(self):
+        import datetime as dt
+        with tempfile.TemporaryDirectory() as tmp:
+            fresh = lookup.render_doctor(SAMPLE_DATA, lookup.LABELS["en"], dt.date(2026, 11, 20), Path(tmp), Path(tmp) / "x.md")
+            text = "\n".join(fresh)
+            self.assertIn("[WARN] 6 notices, newest 2026-03-01 (264 day(s) ago)", text)
+            self.assertIn("[OK] CISA KEV catalog 2026.11.10\n", text + "\n")  # no release date -> no age
+            self.assertIn("[OK] EPSS scores 2026-11-13 (7 day(s) ago)", text)
+            self.assertIn("[INFO] NVD CVSS not fetched", text)
+            self.assertIn("[INFO] Raw notice archive present", text)
+            self.assertIn("[WARN] Threat-response checklist (threat-response.md) missing", text)
+            stale = "\n".join(lookup.render_doctor(SAMPLE_DATA, lookup.LABELS["en"], dt.date(2026, 12, 31),
+                                                    Path(tmp) / "none", lookup.THREAT_RESPONSE))
+            self.assertIn("older than 30 days", stale)
+            self.assertIn("[WARN] EPSS scores", stale)
+            bare = {**SAMPLE_DATA, "risk_sources": {}}
+            self.assertIn("[WARN] No CVE risk signals",
+                          "\n".join(lookup.render_doctor(bare, lookup.LABELS["en"], dt.date(2026, 3, 5))))
+            future = "\n".join(lookup.render_doctor(SAMPLE_DATA, lookup.LABELS["en"], dt.date(2026, 1, 1)))
+            self.assertIn("[OK] EPSS scores 2026-11-13\n", future + "\n")  # clock skew: no negative age
+
+    def test_doctor_cli(self):
+        self.assertIn("## 실행 환경 점검", self.run_main("--doctor", "--lang", "ko"))
+
     def test_id_accepts_ntt_for_pinned_notices(self):
         out = self.run_main("--id", "72207", "--lang", "en")
         self.assertIn("#공지 (nttId 72207)", out)

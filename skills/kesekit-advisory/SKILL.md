@@ -15,11 +15,23 @@ Runs exposure checks, notice briefings, CVE lookups, and threat-response checks 
 | `references/kisa-advisories/advisories.json` | Affected/fixed version rows, CVEs, summaries, reference links, attachment names, CVE risk signals (KEV/EPSS/CVSS), searchable body text per notice (~4 MB — **do not Read it whole**; query with the script) |
 | `references/kisa-advisories/vendor-index.md` | Notices grouped by vendor (for Grep) |
 | `references/kisa-advisories/threat-response.md` | TR check items derived from hardening/caution advisories |
-| `scripts/advisory_lookup.py` | Query CLI (Python 3.8+, standard library only) |
+| `scripts/advisory_lookup.py` | Query CLI (Python 3.8+, standard library only; `--doctor` checks the runtime) |
 
 Run the script relative to this SKILL.md's directory. Without Python, Grep `vendor-index.md` and point to the source links.
 
 Notices are published in Korean; product names, versions, and CVE IDs are language-neutral. Translate the relevant parts when reporting.
+
+## 0. Runtime Check (first run and before every assessment)
+
+```bash
+python scripts/advisory_lookup.py --doctor
+```
+
+- If `python` is missing, try `python3` or `py -3` on Windows. Without Python, switch to grepping `vendor-index.md` and say so in the report.
+- It checks: Python and OS, notice-data cut-off and age, CISA KEV/EPSS as-of dates, whether NVD CVSS is fetched, raw-archive presence, and the threat-response checklist.
+- Tell the user about any `WARN` first. If the notice data is more than 30 days old, tell them to check Boho-nara for later notices.
+- Also establish the **target environment**: locally, the OS and shell (`uname -a` / PowerShell `$PSVersionTable`, `Get-ComputerInfo`); for remote servers or appliances, ask the user for the OS, how to reach it, and what they can provide (command output, version lists).
+- Copy the results into the report header (data cut-off, risk-signal dates, assessed environment).
 
 ## Mode Selection
 
@@ -47,6 +59,10 @@ If the request is ambiguous, ask whether to run 1 and 4 together.
 | Application dependencies | `package.json` + lockfile, `requirements.txt` / `poetry.lock`, `pom.xml` / `build.gradle`, `go.mod`, `composer.json`, `Gemfile.lock` |
 | Network / security appliances | Ask the user for vendor, model, firmware (VPN, firewall, gateway, NAS, router) |
 | End-user software | Ask the user (browsers, archivers, remote support, video conferencing, e-signature/security plug-ins) |
+| Local install locations (Windows) | `Get-Command <name> -All`, XAMPP/Laragon/WAMP/scoop/`Program Files` paths, `wsl -l -v`, `docker ps -a` / `docker images` |
+| Source in the workspace | Search for `composer.json`, `*.php`, `package.json`, `requirements.txt`, `Dockerfile` (skip `vendor`, `node_modules`, `.git`) |
+
+If the runtime is not installed locally and only source exists (it runs on a deployment server), **assess code and configuration**, and ask the user for the server's real versions (`php -v`, `phpinfo()` output, …). Until then, version verdicts are **Needs review**.
 
 Record the result as `product | version | location (host/file)`.
 
@@ -117,7 +133,7 @@ reports/kisa-advisory/
 ============================================================
 Data coverage: [coverage first ~ last] (KISA Boho-nara notices)
 Risk signals as of: [KEV catalog version · EPSS date · NVD CVSS fetched?]
-Target: [host/project]
+Target: [host/project] · Environment: [OS, shell, runtime location, --doctor summary]
 Assets [N] / Vulnerable [N] / Needs review [N] / Pass [N] / N/A [N]
 ------------------------------------------------------------
 | Priority | Asset | Installed | KISA notice | CVE | Risk (KEV/EPSS/CVSS) | Target version | Verdict | Vendor advisory checked (URL, time) |

@@ -8,6 +8,7 @@ Examples:
   python advisory_lookup.py --vendor Cisco --limit 5
   python advisory_lookup.py --id 2632 --max-rows 0                  # one notice (number or nttId), every row
   python advisory_lookup.py --stats
+  python advisory_lookup.py --doctor                               # runtime/data freshness check (run first)
   python advisory_lookup.py --kev --since 2026-10-01 --sort risk   # actively exploited (CISA KEV) first
 
 A query matches when every word appears in the notice. Each result says where it matched:
@@ -22,6 +23,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import platform
 import re
 import sys
 from collections import Counter
@@ -32,6 +34,8 @@ DEFAULT_DATA = SCRIPT_DIR.parent / "references" / "kisa-advisories" / "advisorie
 # Raw notice archive (본문 + attachments) when the skill runs inside the KESE-KIT repository.
 REPO_SOURCE = SCRIPT_DIR.parents[2] / "문서" / "KISA_보안공지_2025-2026" / "KISA_보안공지_2025-2026"
 REFS_SHOWN = 15
+STALE_DAYS = 30  # notice data / EPSS older than this triggers a warning
+THREAT_RESPONSE = SCRIPT_DIR.parent / "references" / "kisa-advisories" / "threat-response.md"
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.I)
 ROW_FIELDS = ("cve", "vendor", "product", "ecosystem", "affected", "fixed", "severity")
 REQUIRED_STR = ("no", "date", "type", "title", "vendor", "url", "summary")
@@ -105,6 +109,21 @@ LABELS = {
                  "affected": "영향받는 버전", "fixed": "해결 버전", "severity": "심각도", "risk": "위험"},
         "brief_cols": "| 게시일 | 번호 | 유형 | 벤더 | 제목 | CVE 수 | 위험 |",
         "stats_type": "유형별", "stats_vendor": "벤더 상위", "stats_month": "월별",
+        "doctor_title": "## 실행 환경 점검",
+        "doctor_python": "Python {ver} · {os} · {exe}",
+        "doctor_data": "공지 데이터 {count}건, 최신 공지 {last}{age}",
+        "doctor_data_stale": " — {days}일 이상 지남: 이후 공지는 보호나라에서 확인하거나 데이터를 갱신하세요",
+        "doctor_kev": "CISA KEV 카탈로그 {version}{age}",
+        "doctor_epss": "EPSS 점수 {date}{age}",
+        "ago": " ({n}일 전)",
+        "doctor_epss_stale": " — 오래됨: scripts/fetch_cve_enrichment.py 로 갱신 권장",
+        "doctor_risk_missing": "CVE 위험 지표 없음 — 우선순위는 요약 키워드로만 판단 (scripts/fetch_cve_enrichment.py 실행 후 재빌드)",
+        "doctor_nvd": "NVD CVSS {n}건 수집",
+        "doctor_nvd_missing": "NVD CVSS 미수집 — 우선순위는 KEV·EPSS·요약 키워드로 판단",
+        "doctor_archive": "원본 아카이브 있음 (본문·첨부 열람 가능): {path}",
+        "doctor_archive_missing": "원본 아카이브 없음 — 첨부는 공지 원문 링크로 확인",
+        "doctor_threat": "위협 대응 점검 문서 (threat-response.md) {state}",
+        "present": "있음", "missing": "없음",
     },
     "en": {
         "coverage": "Data coverage: {first} ~ {last} ({count} KISA Boho-nara notices)",
@@ -137,6 +156,21 @@ LABELS = {
                  "affected": "Affected", "fixed": "Fixed", "severity": "Severity", "risk": "Risk"},
         "brief_cols": "| Date | No. | Type | Vendor | Title | CVEs | Risk |",
         "stats_type": "By type", "stats_vendor": "Top vendors", "stats_month": "By month",
+        "doctor_title": "## Runtime check",
+        "doctor_python": "Python {ver} · {os} · {exe}",
+        "doctor_data": "{count} notices, newest {last}{age}",
+        "doctor_data_stale": " — older than {days} days: check Boho-nara for later notices or refresh the data",
+        "doctor_kev": "CISA KEV catalog {version}{age}",
+        "doctor_epss": "EPSS scores {date}{age}",
+        "ago": " ({n} day(s) ago)",
+        "doctor_epss_stale": " — stale: refresh with scripts/fetch_cve_enrichment.py",
+        "doctor_risk_missing": "No CVE risk signals — priority falls back to summary keywords (run scripts/fetch_cve_enrichment.py, then rebuild)",
+        "doctor_nvd": "NVD CVSS fetched for {n} CVE(s)",
+        "doctor_nvd_missing": "NVD CVSS not fetched — priority uses KEV, EPSS and summary keywords",
+        "doctor_archive": "Raw notice archive present (bodies and attachments readable): {path}",
+        "doctor_archive_missing": "Raw notice archive absent — open attachments via the notice URL",
+        "doctor_threat": "Threat-response checklist (threat-response.md) {state}",
+        "present": "present", "missing": "missing",
     },
 }
 
@@ -522,6 +556,51 @@ def risk_sources_line(data: dict, labels: dict) -> str | None:
                                          nvd=nvd if nvd else labels["nvd_none"])
 
 
+def days_since(text: str, today: dt.date) -> int | None:
+    try:
+        return (today - dt.date.fromisoformat(str(text)[:10])).days
+    except ValueError:
+        return None
+
+
+def render_doctor(data: dict, labels: dict, today: dt.date, archive: Path = REPO_SOURCE,
+                  threat: Path = THREAT_RESPONSE) -> list[str]:
+    """Runtime and data-freshness report. Status: OK / WARN / INFO."""
+    out = [labels["doctor_title"], ""]
+
+    def line(status: str, text: str) -> None:
+        out.append(f"- [{status}] {text}")
+
+    def ago(days: int | None) -> str:  # omitted when unknown or in the future (clock skew)
+        return labels["ago"].format(n=days) if days is not None and days >= 0 else ""
+
+    python_ok = sys.version_info >= (3, 8)
+    line("OK" if python_ok else "WARN", labels["doctor_python"].format(
+        ver=platform.python_version(), os=f"{platform.system()} {platform.release()}", exe=sys.executable))
+    cov = data.get("coverage", {})
+    age = days_since(cov.get("last", ""), today)
+    stale = age is None or age > STALE_DAYS
+    line("WARN" if stale else "OK", labels["doctor_data"].format(count=cov.get("count"), last=cov.get("last"), age=ago(age))
+         + (labels["doctor_data_stale"].format(days=STALE_DAYS) if stale else ""))
+    src = data.get("risk_sources") or {}
+    if src.get("kev") or src.get("epss"):
+        kev, epss = src.get("kev") or {}, src.get("epss") or {}
+        kev_age = days_since(kev.get("released", ""), today)
+        line("OK" if kev else "WARN", labels["doctor_kev"].format(version=kev.get("version", "-"), age=ago(kev_age)))
+        epss_age = days_since(epss.get("date", ""), today)
+        epss_stale = epss_age is None or epss_age > STALE_DAYS
+        line("WARN" if epss_stale else "OK", labels["doctor_epss"].format(date=epss.get("date", "-"), age=ago(epss_age))
+             + (labels["doctor_epss_stale"] if epss_stale else ""))
+    else:
+        line("WARN", labels["doctor_risk_missing"])
+    nvd = (src.get("nvd") or {}).get("fetched")
+    line("OK" if nvd else "INFO", labels["doctor_nvd"].format(n=nvd) if nvd else labels["doctor_nvd_missing"])
+    line("INFO", labels["doctor_archive"].format(path=archive) if archive.is_dir() else labels["doctor_archive_missing"])
+    has_threat = threat.is_file()
+    line("OK" if has_threat else "WARN", labels["doctor_threat"].format(state=labels["present" if has_threat else "missing"]))
+    return out
+
+
 # --------------------------------------------------------------------------- CLI
 
 
@@ -547,6 +626,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--kev", action="store_true", help="only notices with a CVE in the CISA KEV catalog")
     parser.add_argument("--sort", choices=("date", "risk"), default="date", help="order results (risk = KEV, EPSS, CVSS)")
     parser.add_argument("--stats", action="store_true", help="print counts by type/vendor/month")
+    parser.add_argument("--doctor", action="store_true", help="check runtime and data freshness, then exit")
     parser.add_argument("--lang", choices=("ko", "en"), default=default_lang())
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
@@ -568,6 +648,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     data = load(args.data)
     labels = LABELS[args.lang]
+    if args.doctor:
+        sys.stdout.write("\n".join(render_doctor(data, labels, dt.date.today())) + "\n")
+        return 0
     meta = data.get("cve_meta", {})
     vendor_query = build_query(args.vendor) if args.vendor else None
     advisories = [a for a in data["advisories"] if passes_filters(a, args, vendor_query, meta)]
