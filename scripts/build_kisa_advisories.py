@@ -8,7 +8,8 @@ and writes, for both the English and Korean skill:
   references/kisa-advisories/vendor-index.md   grep-friendly vendor index
   references/kisa-advisories/overview.md       stats block between STATS markers
 
-Re-run whenever new notices are added to the source folder:
+CVE risk signals (KEV/EPSS/CVSS) are merged from scripts/data/cve-enrichment.json, produced by
+scripts/fetch_cve_enrichment.py. Re-run whenever new notices are added to the source folder:
 
   python scripts/build_kisa_advisories.py
   python scripts/build_kisa_advisories.py --source "<dir containing 목록.csv>"
@@ -38,6 +39,8 @@ SKILL_TARGETS = {
     "en": REPO_ROOT / "skills" / "kesekit-advisory" / "references" / "kisa-advisories",
     "ko": REPO_ROOT / "skills-ko" / "kesekit-advisory-ko" / "references" / "kisa-advisories",
 }
+
+DEFAULT_ENRICHMENT = REPO_ROOT / "scripts" / "data" / "cve-enrichment.json"
 
 SCHEMA_VERSION = 1
 SUMMARY_MAX_CHARS = 500
@@ -556,7 +559,9 @@ def render_vendor_index(records: list[dict], lang: str) -> str:
     return "\n".join(lines)
 
 
-def compute_stats(records: list[dict]) -> dict:
+def compute_stats(records: list[dict], cve_meta: dict | None = None, risk_sources: dict | None = None) -> dict:
+    cve_meta = cve_meta or {}
+    risk_sources = risk_sources or {}
     return {
         "total": len(records),
         "first": records[-1]["date"] if records else None,
@@ -566,6 +571,10 @@ def compute_stats(records: list[dict]) -> dict:
         "top_vendors": Counter(r["vendor"] for r in records if r["vendor"] != "기타").most_common(TOP_VENDOR_COUNT),
         "unique_cves": len({c for r in records for c in r["cves"]}),
         "rows": sum(len(r["affected"]) for r in records),
+        "kev_cves": sum(1 for m in cve_meta.values() if "kev" in m),
+        "epss_cves": sum(1 for m in cve_meta.values() if "epss" in m),
+        "cvss_cves": sum(1 for m in cve_meta.values() if "cvss" in m),
+        "risk_sources": risk_sources,
     }
 
 
@@ -577,6 +586,7 @@ def render_stats(stats: dict, lang: str) -> str:
             "- 유형별: " + ", ".join(f"{t} {n}" for t, n in stats["by_type"]),
             "- 연도별: " + ", ".join(f"{y}년 {n}" for y, n in stats["by_year"]),
             f"- 공지 빈도 상위 {TOP_VENDOR_COUNT}개 벤더: " + ", ".join(f"{v}({n})" for v, n in stats["top_vendors"]),
+            risk_line(stats, "ko"),
         ]
     else:
         head = [
@@ -585,8 +595,66 @@ def render_stats(stats: dict, lang: str) -> str:
             "- By type: " + ", ".join(f"{t} {n}" for t, n in stats["by_type"]),
             "- By year: " + ", ".join(f"{y}: {n}" for y, n in stats["by_year"]),
             f"- Top {TOP_VENDOR_COUNT} vendors by notice count: " + ", ".join(f"{v}({n})" for v, n in stats["top_vendors"]),
+            risk_line(stats, "en"),
         ]
     return "\n".join([STATS_BEGIN, *head, STATS_END])
+
+
+def risk_line(stats: dict, lang: str) -> str:
+    src = stats.get("risk_sources") or {}
+    if not src:
+        return ("- CVE 위험 지표: 없음 (`python scripts/fetch_cve_enrichment.py` 실행 후 재빌드)" if lang == "ko"
+                else "- CVE risk signals: none (run `python scripts/fetch_cve_enrichment.py`, then rebuild)")
+    kev = src.get("kev", {}).get("version", "-")
+    epss = src.get("epss", {}).get("date", "-")
+    nvd = src.get("nvd", {}).get("fetched")
+    if lang == "ko":
+        return (f"- CVE 위험 지표: KEV 등재 **{stats['kev_cves']}개**, EPSS {stats['epss_cves']}개, "
+                f"CVSS {stats['cvss_cves']}개 (KEV {kev} · EPSS {epss} · NVD {f'{nvd}건 수집' if nvd else '미수집'})")
+    return (f"- CVE risk signals: **{stats['kev_cves']}** in KEV, EPSS for {stats['epss_cves']}, "
+            f"CVSS for {stats['cvss_cves']} (KEV {kev} · EPSS {epss} · NVD {f'{nvd} fetched' if nvd else 'not fetched'})")
+
+
+def clean_risk(entry: object) -> dict:
+    """Keep only well-formed risk fields; enrichment comes from external feeds and is untrusted."""
+    if not isinstance(entry, dict):
+        return {}
+    out: dict = {}
+    if isinstance(entry.get("kev"), str) and entry["kev"]:
+        out["kev"] = entry["kev"]
+    if entry.get("ransomware") is True:
+        out["ransomware"] = True
+    for key, upper in (("epss", 1.0), ("pct", 1.0), ("cvss", 10.0)):
+        value = entry.get(key)
+        if isinstance(value, (int, float)) and not isinstance(value, bool) and 0 <= value <= upper:
+            out[key] = value
+    for key in ("cvss_v", "sev"):
+        if isinstance(entry.get(key), str) and entry[key]:
+            out[key] = entry[key]
+    cwes = [c for c in entry.get("cwe") or [] if isinstance(c, str) and c.startswith("CWE-")]
+    if cwes:
+        out["cwe"] = cwes
+    return out
+
+
+def load_enrichment(path: Path | None) -> tuple[dict, dict]:
+    """(source summary, per-CVE risk signals) from scripts/fetch_cve_enrichment.py; ({}, {}) when absent."""
+    if path is None or not path.exists():
+        return {}, {}
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    cves = doc.get("cves") if isinstance(doc, dict) else None
+    if not isinstance(cves, dict):
+        raise ValueError(f"{path}: missing 'cves' object")
+    raw = doc.get("sources") if isinstance(doc.get("sources"), dict) else {}
+    sources = {}
+    if isinstance(raw.get("kev"), dict):
+        sources["kev"] = {"version": str(raw["kev"].get("catalogVersion", "")), "released": str(raw["kev"].get("dateReleased", ""))}
+    if isinstance(raw.get("epss"), dict):
+        sources["epss"] = {"date": str(raw["epss"].get("score_date", ""))[:10], "model": str(raw["epss"].get("model_version", ""))}
+    if isinstance(raw.get("nvd"), dict) and isinstance(raw["nvd"].get("fetched"), int):
+        sources["nvd"] = {"fetched": raw["nvd"]["fetched"]}
+    risk = {cve: cleaned for cve, entry in cves.items() if CVE_RE.fullmatch(cve) and (cleaned := clean_risk(entry))}
+    return sources, risk
 
 
 def write_lf(path: Path, content: str) -> None:
@@ -607,22 +675,31 @@ def replace_stats_block(path: Path, block: str) -> bool:
 
 
 def render_json(payload: dict) -> str:
-    """Valid JSON with one advisory per line, so rebuilds produce line-level git diffs."""
+    """Valid JSON with one CVE / one advisory per line, so rebuilds produce line-level git diffs."""
     compact = {"separators": (",", ":"), "ensure_ascii": False}
-    head = {k: v for k, v in payload.items() if k != "advisories"}
-    lines = [json.dumps(head, **compact)[:-1] + ',"advisories":[']
+    head = {k: v for k, v in payload.items() if k not in ("cve_meta", "advisories")}
+    meta = sorted(payload.get("cve_meta", {}).items())
+    lines = [json.dumps(head, **compact)[:-1] + ',"cve_meta":{']
+    lines += [f"{json.dumps(k)}:{json.dumps(v, **compact)}" + ("," if i < len(meta) - 1 else "")
+              for i, (k, v) in enumerate(meta)]
+    lines.append('},"advisories":[')
     items = [json.dumps(a, **compact) for a in payload["advisories"]]
     lines += [item + ("," if i < len(items) - 1 else "") for i, item in enumerate(items)]
     lines.append("]}")
     return "\n".join(lines) + "\n"
 
 
-def write_outputs(records: list[dict], targets: dict[str, Path]) -> dict:
-    stats = compute_stats(records)
+def write_outputs(records: list[dict], targets: dict[str, Path], enrichment: tuple[dict, dict] = ({}, {})) -> dict:
+    sources, risk = enrichment
+    dataset_cves = sorted({c for r in records for c in r["cves"]})
+    cve_meta = {c: risk[c] for c in dataset_cves if c in risk}
+    stats = compute_stats(records, cve_meta, sources)
     payload = {
         "schema": SCHEMA_VERSION,
         "source": "KISA 보호나라(KrCERT/CC) 보안공지 https://www.boho.or.kr/kr/bbs/list.do?bbsId=B0000133&menuNo=205020",
         "coverage": {"first": stats["first"], "last": stats["last"], "count": stats["total"]},
+        "risk_sources": sources,
+        "cve_meta": cve_meta,
         "advisories": records,
     }
     blob = render_json(payload)
@@ -638,15 +715,20 @@ def write_outputs(records: list[dict], targets: dict[str, Path]) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE, help="folder containing 목록.csv")
+    parser.add_argument("--enrichment", type=Path, default=DEFAULT_ENRICHMENT,
+                        help="CVE risk signals from scripts/fetch_cve_enrichment.py (optional)")
     args = parser.parse_args(argv)
     if not (args.source / INDEX_CSV).exists():
         print(f"error: {args.source / INDEX_CSV} not found", file=sys.stderr)
         return 1
+    if not args.enrichment.exists():
+        print(f"warning: {args.enrichment} not found; building without KEV/EPSS/CVSS", file=sys.stderr)
     records = build_records(args.source)
-    stats = write_outputs(records, SKILL_TARGETS)
+    stats = write_outputs(records, SKILL_TARGETS, load_enrichment(args.enrichment))
     print(
         f"built {stats['total']} advisories ({stats['first']} ~ {stats['last']}), "
-        f"{stats['unique_cves']} CVEs, {stats['rows']} version rows"
+        f"{stats['unique_cves']} CVEs, {stats['rows']} version rows, "
+        f"KEV {stats['kev_cves']} / EPSS {stats['epss_cves']} / CVSS {stats['cvss_cves']}"
     )
     return 0
 

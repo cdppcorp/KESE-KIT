@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import contextlib
 import csv
+import gzip
 import importlib.util
 import io
 import json
@@ -28,6 +29,7 @@ def load_module(name: str, path: Path):
 
 build = load_module("build_kisa_advisories", ROOT / "scripts" / "build_kisa_advisories.py")
 lookup = load_module("advisory_lookup", ROOT / "skills-ko" / "kesekit-advisory-ko" / "scripts" / "advisory_lookup.py")
+fetch = load_module("fetch_cve_enrichment", ROOT / "scripts" / "fetch_cve_enrichment.py")
 
 IVANTI_TABLE = """
 <p>□ 영향받는 제품 및 해결 방안</p>
@@ -226,6 +228,33 @@ class RecordAndOutputTest(unittest.TestCase):
         self.assertEqual(record["url"], "")
         self.assertTrue(any("unexpected source URL" in i for i in issues))
 
+    def test_enrichment_is_embedded_for_dataset_cves_only(self):
+        out = Path(self.tmp.name) / "out2"
+        out.mkdir()
+        (out / "overview.md").write_text(f"{build.STATS_BEGIN}\n{build.STATS_END}\n", encoding="utf-8")
+        enrichment = (
+            {"kev": {"version": "2026.11.10"}, "epss": {"date": "2026-11-13"}},
+            {"CVE-2025-0282": {"kev": "2025-01-08", "epss": 0.99}, "CVE-1999-0001": {"epss": 0.1}},
+        )
+        stats = build.write_outputs(build.build_records(self.source), {"ko": out}, enrichment)
+        data = json.loads((out / "advisories.json").read_text(encoding="utf-8"))
+        self.assertEqual(list(data["cve_meta"]), ["CVE-2025-0282"])
+        self.assertEqual(data["risk_sources"]["kev"]["version"], "2026.11.10")
+        self.assertEqual(stats["kev_cves"], 1)
+        self.assertIn("KEV 등재 **1개**", (out / "overview.md").read_text(encoding="utf-8"))
+
+    def test_load_enrichment_drops_malformed_values(self):
+        path = Path(self.tmp.name) / "enrichment.json"
+        path.write_text(json.dumps({"sources": {"nvd": {"fetched": 3}}, "cves": {
+            "CVE-2026-1001": {"kev": "2026-01-01", "epss": 1.5, "pct": 0.9, "cvss": "9.8", "cwe": ["CWE-79", 7]},
+            "not-a-cve": {"epss": 0.5},
+            "CVE-2026-1002": {"epss": True},
+        }}), encoding="utf-8")
+        sources, risk = build.load_enrichment(path)
+        self.assertEqual(sources, {"nvd": {"fetched": 3}})
+        self.assertEqual(risk, {"CVE-2026-1001": {"kev": "2026-01-01", "pct": 0.9, "cwe": ["CWE-79"]}})
+        self.assertEqual(build.load_enrichment(Path(self.tmp.name) / "missing.json"), ({}, {}))
+
     def test_write_outputs_creates_json_index_and_stats(self):
         out = Path(self.tmp.name) / "out"
         out.mkdir()
@@ -236,7 +265,7 @@ class RecordAndOutputTest(unittest.TestCase):
         raw = (out / "advisories.json").read_text(encoding="utf-8")
         data = json.loads(raw)
         self.assertEqual(data["coverage"]["count"], len(data["advisories"]))
-        self.assertEqual(len(raw.splitlines()), 3)  # header line, one advisory, closing line
+        self.assertEqual(len(raw.splitlines()), 4)  # header + empty cve_meta, advisories opener, one advisory, closer
         self.assertIn("## Ivanti (1)", (out / "vendor-index.md").read_text(encoding="utf-8"))
         overview = (out / "overview.md").read_text(encoding="utf-8")
         self.assertIn("총 **1건**", overview)
@@ -267,8 +296,14 @@ SAMPLE_DATA = {
                  affected=[{"product": "Google Chrome", "affected": "140 이하", "fixed": "141"}]),
         advisory("공지", "2026-01-05", "Linux 제품 보안 업데이트 권고", "Linux", ntt="72207",
                  text="Ubuntu, Debian 배포판별 업데이트 확인 ASP.NET Core",
-                 affected=[{"product": "sudo", "affected": "1.9.16 이하", "fixed": "1.9.17"}]),
+                 affected=[{"product": "sudo", "affected": "1.9.16 이하", "fixed": "미배포(차기 정기 업데이트 예정)"}]),
     ],
+    "risk_sources": {"kev": {"version": "2026.11.10"}, "epss": {"date": "2026-11-13"}},
+    "cve_meta": {
+        "CVE-2026-2135": {"kev": "2026-01-15", "ransomware": True, "epss": 0.9, "pct": 0.9999},
+        "CVE-2026-21359": {"epss": 0.2, "pct": 0.95, "cvss": 9.8},
+        "CVE-2026-3": {"epss": 0.01, "pct": 0.5},
+    },
 }
 
 
@@ -373,6 +408,42 @@ class LookupTest(unittest.TestCase):
             finally:
                 lookup.REPO_SOURCE = original
 
+    def test_risk_aggregation(self):
+        risk = lookup.risk_of(["CVE-2026-21359", "CVE-2026-2135", "CVE-2026-404"], SAMPLE_DATA["cve_meta"])
+        self.assertEqual(risk["kev"], ["CVE-2026-2135"])
+        self.assertTrue(risk["ransomware"])
+        self.assertEqual((risk["cvss"], risk["cvss_cve"]), (9.8, "CVE-2026-21359"))
+        self.assertEqual((risk["epss"], risk["epss_cve"]), (0.9, "CVE-2026-2135"))
+        self.assertEqual(lookup.compact_risk(risk), "KEV · CVSS 9.8 · EPSS 0.90")
+        self.assertEqual(lookup.risk_of(["CVE-2026-404"], SAMPLE_DATA["cve_meta"]), {})
+
+    def test_risk_signals_in_markdown(self):
+        out = self.run_main("--id", "4")
+        self.assertIn("> 위험 지표 기준: KEV 2026.11.10 · EPSS 2026-11-13 · NVD CVSS 미수집", out)
+        self.assertIn("KEV 등재 1건 (CVE-2026-2135) · 랜섬웨어 악용 · 최고 CVSS 9.8 (CVE-2026-21359)", out)
+        self.assertIn("(상위 <0.1%, CVE-2026-2135)", out)
+        self.assertIn("| CVE-2026-2135 | FortiProxy | 7.2.0 | 7.2.1 | KEV · EPSS 0.90 |", out)
+
+    def test_kev_filter_and_risk_sort(self):
+        out = self.run_main("--kev", "--lang", "en")
+        self.assertIn("| 2026-01-10 | 4 |", out)
+        self.assertNotIn("| 2026-03-01 | 3 |", out)
+        ranked = self.run_main("--sort", "risk", "--lang", "en").splitlines()
+        rows = [line for line in ranked if line.startswith("| 2026")]
+        self.assertTrue(rows[0].startswith("| 2026-01-10 | 4 |"))  # KEV first
+        self.assertTrue(rows[1].startswith("| 2026-03-01 | 3 |"))  # then EPSS 0.01, then no signals by date
+
+    def test_pending_fix_warning(self):
+        self.assertTrue(lookup.is_pending(self.by_no("공지")))
+        self.assertFalse(lookup.is_pending(self.by_no("3")))
+        self.assertIn("fix not released", self.run_main("--id", "72207", "--lang", "en"))
+
+    def test_json_includes_risk(self):
+        match = json.loads(self.run_main("--id", "4", "--format", "json"))["results"][0]["matches"][0]
+        self.assertEqual(match["risk"]["kev"], ["CVE-2026-2135"])
+        self.assertEqual(match["rows"][1]["risk"]["kev"], ["CVE-2026-2135"])
+        self.assertNotIn("risk", json.loads(self.run_main("--id", "1", "--format", "json"))["results"][0]["matches"][0])
+
     def test_id_accepts_ntt_for_pinned_notices(self):
         out = self.run_main("--id", "72207", "--lang", "en")
         self.assertIn("#공지 (nttId 72207)", out)
@@ -394,6 +465,72 @@ class LookupTest(unittest.TestCase):
             with self.subTest(argv=argv), contextlib.redirect_stderr(io.StringIO()):
                 with self.assertRaises(SystemExit):
                     lookup.parse_args(argv)
+
+
+KEV_SAMPLE = json.dumps({
+    "catalogVersion": "2026.11.10", "dateReleased": "2026-11-10T19:03:29Z",
+    "vulnerabilities": [
+        {"cveID": "CVE-2025-0282", "dateAdded": "2025-01-08", "knownRansomwareCampaignUse": "Known"},
+        {"cveID": "CVE-2024-0001", "dateAdded": "2024-01-01", "knownRansomwareCampaignUse": "Unknown"},
+        {"cveID": "CVE-2026-0002", "dateAdded": "bogus"},
+        "junk",
+    ],
+}).encode()
+
+NVD_SAMPLE = json.dumps({"vulnerabilities": [{"cve": {
+    "id": "CVE-2025-0282",
+    "metrics": {
+        "cvssMetricV31": [
+            {"type": "Secondary", "cvssData": {"version": "3.1", "baseScore": 8.0, "baseSeverity": "HIGH"}},
+            {"type": "Primary", "cvssData": {"version": "3.1", "baseScore": 9.0, "baseSeverity": "CRITICAL"}},
+        ],
+        "ssvcV203": [{"source": "x", "ssvcData": {}}],
+    },
+    "weaknesses": [{"description": [{"value": "CWE-121"}, {"value": "NVD-CWE-noinfo"}]},
+                   {"description": [{"value": "CWE-787"}]}],
+}}]}).encode()
+
+
+class FetchEnrichmentTest(unittest.TestCase):
+    def test_parse_kev(self):
+        found, meta = fetch.parse_kev(KEV_SAMPLE, {"CVE-2025-0282", "CVE-2026-0002"})
+        self.assertEqual(found, {"CVE-2025-0282": {"kev": "2025-01-08", "ransomware": True},
+                                 "CVE-2026-0002": {"kev": "unknown"}})
+        self.assertEqual((meta["catalogVersion"], meta["entries"]), ("2026.11.10", 4))
+        with self.assertRaises(ValueError):
+            fetch.parse_kev(b"{}", set())
+
+    def test_parse_epss(self):
+        csv_text = "#model_version:v2026.06.15,score_date:2026-11-13T12:03:22Z\ncve,epss,percentile\n" \
+                   "CVE-2025-0282,0.99981,0.99981\nCVE-2025-0283,1.7,0.5\nCVE-2020-1,0.1,0.2\n"
+        found, meta = fetch.parse_epss(gzip.compress(csv_text.encode()), {"CVE-2025-0282", "CVE-2025-0283"})
+        self.assertEqual(found, {"CVE-2025-0282": {"epss": 0.99981, "pct": 0.99981}})
+        self.assertEqual(meta["score_date"], "2026-11-13T12:03:22Z")
+        with self.assertRaises(ValueError):
+            fetch.parse_epss(gzip.compress(csv_text.encode()), {"CVE-1999-9999"})
+
+    def test_parse_nvd_prefers_primary_and_skips_non_cvss(self):
+        self.assertEqual(fetch.parse_nvd(NVD_SAMPLE),
+                         {"cvss": 9.0, "cvss_v": "3.1", "sev": "CRITICAL", "cwe": ["CWE-121", "CWE-787"]})
+        self.assertEqual(fetch.parse_nvd(b'{"vulnerabilities": []}'), {})
+        v2 = json.dumps({"vulnerabilities": [{"cve": {"metrics": {"cvssMetricV2": [
+            {"type": "Primary", "baseSeverity": "HIGH", "cvssData": {"version": "2.0", "baseScore": 7.5}}]}}}]}).encode()
+        self.assertEqual(fetch.parse_nvd(v2), {"cvss": 7.5, "cvss_v": "2.0", "sev": "HIGH"})
+
+    def test_merge_keeps_nvd_and_refreshes_kev_epss(self):
+        cache = {"CVE-1": {"kev": "2020-01-01", "epss": 0.5, "pct": 0.9, "cvss": 9.8, "nvd": "2026-11-01"},
+                 "CVE-OLD": {"epss": 0.1}}
+        merged = fetch.merge_risk(cache, {"CVE-1", "CVE-2"}, {}, {"CVE-2": {"epss": 0.2, "pct": 0.8}})
+        self.assertEqual(merged, {"CVE-1": {"cvss": 9.8, "nvd": "2026-11-01"}, "CVE-2": {"epss": 0.2, "pct": 0.8}})
+
+    def test_cache_round_trip_is_lf_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "data" / "cve-enrichment.json"
+            fetch.write_cache(path, {"kev": {"catalogVersion": "x"}}, {"CVE-2": {"epss": 0.2}, "CVE-1": {"kev": "d"}})
+            self.assertNotIn(b"\r", path.read_bytes())
+            self.assertEqual(path.read_text(encoding="utf-8").splitlines()[1], '"CVE-1":{"kev":"d"},')
+            sources, cves = fetch.load_cache(path)
+            self.assertEqual((sources["kev"]["catalogVersion"], len(cves)), ("x", 2))
 
 
 class LoadTest(unittest.TestCase):
@@ -430,6 +567,12 @@ class BundledDataTest(unittest.TestCase):
         self.assertEqual(data["coverage"]["count"], len(data["advisories"]))
         ntts = [a["ntt"] for a in data["advisories"]]
         self.assertEqual(len(ntts), len(set(ntts)))
+
+    def test_bundled_risk_signals(self):
+        data = lookup.load(ROOT / "skills" / "kesekit-advisory" / "references" / "kisa-advisories" / "advisories.json")
+        referenced = {c for a in data["advisories"] for c in a["cves"]}
+        self.assertTrue(set(data["cve_meta"]) <= referenced)
+        self.assertIn("kev", data["cve_meta"]["CVE-2025-0282"])  # Ivanti Connect Secure, exploited in the wild
 
     def test_oracle_2180_regression_in_bundle(self):
         data = lookup.load(ROOT / "skills" / "kesekit-advisory" / "references" / "kisa-advisories" / "advisories.json")

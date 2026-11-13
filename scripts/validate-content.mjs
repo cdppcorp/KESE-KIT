@@ -610,6 +610,16 @@ check("advisory-data-schema", () => {
     seenNtt.add(advisory?.ntt);
   }
 
+  const cveMeta = data.cve_meta ?? {};
+  assert(typeof cveMeta === "object" && !Array.isArray(cveMeta), "advisories.json cve_meta must be an object");
+  const referenced = new Set(data.advisories.flatMap((advisory) => (Array.isArray(advisory?.cves) ? advisory.cves : [])));
+  const inRange = (value, upper) => value === undefined || (typeof value === "number" && value >= 0 && value <= upper);
+  for (const [cve, meta] of Object.entries(cveMeta)) {
+    assert(referenced.has(cve), `cve_meta lists ${cve}, which no advisory references`);
+    assert(inRange(meta?.epss, 1) && inRange(meta?.pct, 1) && inRange(meta?.cvss, 10), `cve_meta ${cve} has an out-of-range score`);
+    assert(meta?.kev === undefined || typeof meta.kev === "string", `cve_meta ${cve} kev must be a date string`);
+  }
+
   for (const skill of advisorySkills) {
     const overview = read(advisoryPath(skill, "references/kisa-advisories/overview.md"));
     const block = sectionBetween(overview, statsBegin, statsEnd) ?? "";

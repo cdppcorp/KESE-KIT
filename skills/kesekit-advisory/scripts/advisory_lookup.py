@@ -8,6 +8,7 @@ Examples:
   python advisory_lookup.py --vendor Cisco --limit 5
   python advisory_lookup.py --id 2632 --max-rows 0                  # one notice (number or nttId), every row
   python advisory_lookup.py --stats
+  python advisory_lookup.py --kev --since 2026-10-01 --sort risk   # actively exploited (CISA KEV) first
 
 A query matches when every word appears in the notice. Each result says where it matched:
 title/vendor (all rows shown), table rows (only matching rows shown, hidden rows counted),
@@ -36,6 +37,8 @@ ROW_FIELDS = ("cve", "vendor", "product", "ecosystem", "affected", "fixed", "sev
 REQUIRED_STR = ("no", "date", "type", "title", "vendor", "url", "summary")
 REQUIRED_LIST = ("cves", "affected")
 MATCH_RANK = {"title": 3, "rows": 2, "body": 1}
+# Notices whose fix is not out yet: the vendor advisory must be checked live.
+PENDING_RE = re.compile(r"업데이트 예정|미배포|제조사 미공개|패치 미제공")
 
 # Spellings that appear in KISA titles/tables. Every member of a group expands to the others.
 ALIAS_GROUPS = [
@@ -76,7 +79,7 @@ LABELS = {
         "query": "질의",
         "found": "{n}건",
         "none": "일치하는 공지 없음 — 데이터 기준일 이후 공지는 보호나라에서 직접 확인하세요. 없다고 안전하다는 뜻은 아닙니다.",
-        "none_filtered": "일치하는 공지 없음 (--since/--until/--vendor/--type 필터 적용 중)",
+        "none_filtered": "일치하는 공지 없음 (--since/--until/--vendor/--type/--kev 필터 적용 중)",
         "source": "원문",
         "match": "일치",
         "match_title": "제목·벤더 (전체 행 표시)",
@@ -86,13 +89,21 @@ LABELS = {
         "cves": "CVE",
         "attachments": "첨부",
         "refs": "참고사이트",
+        "risk": "위험 지표",
+        "risk_sources": "위험 지표 기준: KEV {kev} · EPSS {epss} · NVD CVSS {nvd}",
+        "nvd_none": "미수집",
+        "kev_count": "KEV 등재 {n}건 ({cves})",
+        "ransomware": "랜섬웨어 악용",
+        "max_cvss": "최고 CVSS {score:g} ({cve})",
+        "max_epss": "최고 EPSS {score:.3f} (상위 {top}%, {cve})",
+        "pending": "주의: 해결 버전 미배포·후속 업데이트 예정 공지 — 참고사이트의 벤더 권고를 실시간으로 확인하세요",
         "local": "원본 폴더 (본문·첨부 열람)",
         "more_rows": "… {n}행 생략 (전체: --id {id} --max-rows 0)",
         "hidden_rows": "… 질의와 무관한 행 {n}개 숨김 (전체: --id {id})",
         "more_items": "… {n}건 더 있음 (--limit 0 으로 전체 보기)",
         "cols": {"cve": "CVE", "vendor": "제조사", "product": "제품", "ecosystem": "생태계",
-                 "affected": "영향받는 버전", "fixed": "해결 버전", "severity": "심각도"},
-        "brief_cols": "| 게시일 | 번호 | 유형 | 벤더 | 제목 | CVE 수 |",
+                 "affected": "영향받는 버전", "fixed": "해결 버전", "severity": "심각도", "risk": "위험"},
+        "brief_cols": "| 게시일 | 번호 | 유형 | 벤더 | 제목 | CVE 수 | 위험 |",
         "stats_type": "유형별", "stats_vendor": "벤더 상위", "stats_month": "월별",
     },
     "en": {
@@ -100,7 +111,7 @@ LABELS = {
         "query": "Query",
         "found": "{n} notice(s)",
         "none": "No matching notice — check Boho-nara directly for notices after the coverage date. No match does not mean safe.",
-        "none_filtered": "No matching notice (--since/--until/--vendor/--type filters are active)",
+        "none_filtered": "No matching notice (--since/--until/--vendor/--type/--kev filters are active)",
         "source": "Source",
         "match": "Matched in",
         "match_title": "title/vendor (all rows shown)",
@@ -110,13 +121,21 @@ LABELS = {
         "cves": "CVEs",
         "attachments": "Attachments",
         "refs": "References",
+        "risk": "Risk signals",
+        "risk_sources": "Risk signals as of: KEV {kev} · EPSS {epss} · NVD CVSS {nvd}",
+        "nvd_none": "not fetched",
+        "kev_count": "{n} in CISA KEV ({cves})",
+        "ransomware": "used in ransomware",
+        "max_cvss": "max CVSS {score:g} ({cve})",
+        "max_epss": "max EPSS {score:.3f} (top {top}%, {cve})",
+        "pending": "Caution: fix not released / notice to be updated — check the vendor advisory in References live",
         "local": "Source folder (notice body and attachments)",
         "more_rows": "… {n} more row(s) (all rows: --id {id} --max-rows 0)",
         "hidden_rows": "… {n} row(s) unrelated to the query hidden (all rows: --id {id})",
         "more_items": "… {n} more notice(s) (use --limit 0 for all)",
         "cols": {"cve": "CVE", "vendor": "Vendor", "product": "Product", "ecosystem": "Ecosystem",
-                 "affected": "Affected", "fixed": "Fixed", "severity": "Severity"},
-        "brief_cols": "| Date | No. | Type | Vendor | Title | CVEs |",
+                 "affected": "Affected", "fixed": "Fixed", "severity": "Severity", "risk": "Risk"},
+        "brief_cols": "| Date | No. | Type | Vendor | Title | CVEs | Risk |",
         "stats_type": "By type", "stats_vendor": "Top vendors", "stats_month": "By month",
     },
 }
@@ -143,6 +162,9 @@ def load(path: Path) -> dict:
         problem = record_problem(advisory)
         if problem:
             raise SystemExit(f"error: {path}: advisory #{index} {problem}")
+    meta = data.get("cve_meta", {})
+    if not isinstance(meta, dict) or not all(isinstance(v, dict) for v in meta.values()):
+        raise SystemExit(f"error: {path}: 'cve_meta' must map CVE ids to objects")
     return data
 
 
@@ -236,7 +258,45 @@ def vendor_matches(advisory: dict, variants: list[list[list[re.Pattern]]]) -> bo
     return any(all(token_hits(t, advisory["vendor"]) for t in v) for v in variants)
 
 
-def passes_filters(advisory: dict, args: argparse.Namespace, vendor_query) -> bool:
+def number(value: object) -> float | None:
+    return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+
+
+def risk_of(cves: list[str], meta: dict) -> dict:
+    """Aggregate KEV / CVSS / EPSS over the given CVE ids."""
+    entries = [(c, meta[c]) for c in dict.fromkeys(c.upper() for c in cves) if c in meta]
+    out: dict = {}
+    kev = [c for c, m in entries if m.get("kev")]
+    if kev:
+        out["kev"] = kev
+    if any(m.get("ransomware") is True for _, m in entries):
+        out["ransomware"] = True
+    cvss = [(number(m.get("cvss")), c) for c, m in entries if number(m.get("cvss")) is not None]
+    if cvss:
+        out["cvss"], out["cvss_cve"] = max(cvss)
+    epss = [(number(m.get("epss")), number(m.get("pct")), c) for c, m in entries if number(m.get("epss")) is not None]
+    if epss:
+        score, pct, cve = max(epss, key=lambda e: e[0])
+        out.update(epss=score, epss_cve=cve, **({"epss_pct": pct} if pct is not None else {}))
+    return out
+
+
+def row_cves(row: dict) -> list[str]:
+    return CVE_RE.findall(row.get("cve", ""))
+
+
+def risk_key(risk: dict) -> tuple:
+    return (bool(risk.get("kev")), risk.get("epss", 0.0), risk.get("cvss", 0.0))
+
+
+def is_pending(advisory: dict) -> bool:
+    texts = [advisory.get("text", "")] + [r.get("fixed", "") for r in advisory["affected"]]
+    return any(PENDING_RE.search(t) for t in texts)
+
+
+def passes_filters(advisory: dict, args: argparse.Namespace, vendor_query, meta: dict | None = None) -> bool:
+    if getattr(args, "kev", False) and not risk_of(advisory["cves"], meta or {}).get("kev"):
+        return False
     if args.since and advisory["date"] < args.since:
         return False
     if args.until and advisory["date"] > args.until:
@@ -286,13 +346,45 @@ def limit(items: list, count: int) -> list:
     return items if count <= 0 else items[:count]
 
 
-def render_rows(rows: list[dict], args: argparse.Namespace, labels: dict, ident: str) -> list[str]:
+def compact_risk(risk: dict) -> str:
+    parts = []
+    if risk.get("kev"):
+        parts.append("KEV" if len(risk["kev"]) == 1 else f"KEV×{len(risk['kev'])}")
+    if "cvss" in risk:
+        parts.append(f"CVSS {risk['cvss']:g}")
+    if "epss" in risk:
+        parts.append(f"EPSS {risk['epss']:.2f}")
+    return " · ".join(parts)
+
+
+def format_risk(risk: dict, labels: dict) -> str:
+    parts = []
+    if risk.get("kev"):
+        shown = risk["kev"][:5] + ([f"… +{len(risk['kev']) - 5}"] if len(risk["kev"]) > 5 else [])
+        parts.append(labels["kev_count"].format(n=len(risk["kev"]), cves=", ".join(shown)))
+    if risk.get("ransomware"):
+        parts.append(labels["ransomware"])
+    if "cvss" in risk:
+        parts.append(labels["max_cvss"].format(score=risk["cvss"], cve=risk["cvss_cve"]))
+    if "epss" in risk:
+        top = (1 - risk["epss_pct"]) * 100 if "epss_pct" in risk else 100.0
+        top_text = "<0.1" if top < 0.1 else f"{top:.1f}"
+        parts.append(labels["max_epss"].format(score=risk["epss"], top=top_text, cve=risk["epss_cve"]))
+    return " · ".join(parts)
+
+
+def render_rows(rows: list[dict], args: argparse.Namespace, labels: dict, ident: str, meta: dict | None = None) -> list[str]:
+    meta = meta or {}
+    shown = limit(rows, args.max_rows)
+    risks = [compact_risk(risk_of(row_cves(r), meta)) for r in shown]
     cols = [f for f in ROW_FIELDS if any(r.get(f) for r in rows)]
     if not cols:
         return []
-    shown = limit(rows, args.max_rows)
-    out = ["| " + " | ".join(labels["cols"][c] for c in cols) + " |", "|" + "---|" * len(cols)]
-    out += ["| " + " | ".join(md(r.get(c, "")) for c in cols) + " |" for r in shown]
+    with_risk = any(risks)
+    header = [labels["cols"][c] for c in cols] + ([labels["cols"]["risk"]] if with_risk else [])
+    out = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
+    out += ["| " + " | ".join([md(r.get(c, "")) for c in cols] + ([risk] if with_risk else [])) + " |"
+            for r, risk in zip(shown, risks)]
     if len(rows) > len(shown):
         out.append(labels["more_rows"].format(n=len(rows) - len(shown), id=ident))
     return out
@@ -322,7 +414,8 @@ def local_folder(advisory: dict) -> str | None:
     return str(path) if path.is_dir() else None
 
 
-def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.Namespace, labels: dict) -> list[str]:
+def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.Namespace, labels: dict,
+                    meta: dict | None = None) -> list[str]:
     a = advisory
     ident = ref_id(a)
     number = a["no"] if a["no"].isdigit() else f"{a['no']} (nttId {a.get('ntt', '?')})"
@@ -331,6 +424,11 @@ def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.
         f"- {labels['source']}: {a['url'] or '-'}",
         f"- {labels['match']}: {match_label(kind, rows, a, labels)}",
     ]
+    risk = risk_of(a["cves"], meta or {})
+    if risk:
+        out.append(f"- {labels['risk']}: {format_risk(risk, labels)}")
+    if is_pending(a):
+        out.append(f"- {labels['pending']}")
     if a["summary"]:
         out.append(f"- {labels['summary']}: {a['summary']}")
     if a["cves"]:
@@ -342,7 +440,7 @@ def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.
     folder = local_folder(a)
     if folder:
         out.append(f"- {labels['local']}: {folder}")
-    table = render_rows(rows, args, labels, ident)
+    table = render_rows(rows, args, labels, ident, meta)
     if table:
         out += [""] + table
     hidden = len(a["affected"]) - len(rows)
@@ -351,10 +449,11 @@ def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.
     return out + [""]
 
 
-def render_brief(items: list[dict], labels: dict) -> list[str]:
-    out = [labels["brief_cols"], "|---|---|---|---|---|:-:|"]
+def render_brief(items: list[dict], labels: dict, meta: dict | None = None) -> list[str]:
+    out = [labels["brief_cols"], "|---|---|---|---|---|:-:|---|"]
     out += [
-        f"| {a['date']} | {a['no']} | {md(a['type'])} | {md(a['vendor'])} | {md(a['title'])} | {len(a['cves'])} |"
+        f"| {a['date']} | {a['no']} | {md(a['type'])} | {md(a['vendor'])} | {md(a['title'])} | {len(a['cves'])} | "
+        f"{compact_risk(risk_of(a['cves'], meta or {}))} |"
         for a in items
     ]
     return out
@@ -371,31 +470,56 @@ def render_stats(advisories: list[dict], labels: dict) -> list[str]:
     ]
 
 
-def slim(advisory: dict) -> dict:
+def slim(advisory: dict, meta: dict | None = None) -> dict:
     """Advisory without bulky fields, for JSON output."""
     out = {k: v for k, v in advisory.items() if k not in ("affected", "tables", "text")}
     out["rows_total"] = len(advisory["affected"])
+    risk = risk_of(advisory["cves"], meta or {})
+    if risk:
+        out["risk"] = risk
+    if is_pending(advisory):
+        out["fix_pending"] = True
     folder = local_folder(advisory)
     if folder:
         out["local_folder"] = folder
     return out
 
 
-def json_payload(cov: dict, groups: list, advisories: list[dict], args: argparse.Namespace) -> dict:
+def json_rows(rows: list[dict], meta: dict) -> list[dict]:
+    out = []
+    for row in rows:
+        risk = risk_of(row_cves(row), meta)
+        out.append({**row, "risk": risk} if risk else row)
+    return out
+
+
+def json_payload(data: dict, groups: list, advisories: list[dict], args: argparse.Namespace) -> dict:
+    meta = data.get("cve_meta", {})
+    base = {"coverage": data.get("coverage", {}), "risk_sources": data.get("risk_sources", {})}
     if not groups:
         shown = limit(advisories, args.limit)
-        return {"coverage": cov, "total": len(advisories), "truncated": len(shown) < len(advisories),
-                "advisories": [slim(a) for a in shown]}
+        return {**base, "total": len(advisories), "truncated": len(shown) < len(advisories),
+                "advisories": [slim(a, meta) for a in shown]}
     results = []
     for key, found in groups:
         shown = limit(found, args.limit)
         matches = []
         for advisory, kind, rows in shown:
             kept = limit(rows, args.max_rows)
-            matches.append({**slim(advisory), "match": kind, "rows_matched": len(rows),
-                            "rows_truncated": len(kept) < len(rows), "rows": kept})
+            matches.append({**slim(advisory, meta), "match": kind, "rows_matched": len(rows),
+                            "rows_truncated": len(kept) < len(rows), "rows": json_rows(kept, meta)})
         results.append({"query": key, "total": len(found), "truncated": len(shown) < len(found), "matches": matches})
-    return {"coverage": cov, "results": results}
+    return {**base, "results": results}
+
+
+def risk_sources_line(data: dict, labels: dict) -> str | None:
+    src = data.get("risk_sources") or {}
+    if not src:
+        return None
+    nvd = (src.get("nvd") or {}).get("fetched")
+    return labels["risk_sources"].format(kev=(src.get("kev") or {}).get("version", "-"),
+                                         epss=(src.get("epss") or {}).get("date", "-"),
+                                         nvd=nvd if nvd else labels["nvd_none"])
 
 
 # --------------------------------------------------------------------------- CLI
@@ -420,6 +544,8 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=20, help="max notices per query (0 = all, default 20)")
     parser.add_argument("--max-rows", type=int, default=15, help="max table rows per notice (0 = all, default 15)")
     parser.add_argument("--format", choices=("md", "json"), default="md")
+    parser.add_argument("--kev", action="store_true", help="only notices with a CVE in the CISA KEV catalog")
+    parser.add_argument("--sort", choices=("date", "risk"), default="date", help="order results (risk = KEV, EPSS, CVSS)")
     parser.add_argument("--stats", action="store_true", help="print counts by type/vendor/month")
     parser.add_argument("--lang", choices=("ko", "en"), default=default_lang())
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA, help=argparse.SUPPRESS)
@@ -442,19 +568,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     data = load(args.data)
     labels = LABELS[args.lang]
+    meta = data.get("cve_meta", {})
     vendor_query = build_query(args.vendor) if args.vendor else None
-    advisories = [a for a in data["advisories"] if passes_filters(a, args, vendor_query)]
-    filtered = bool(args.since or args.until or args.vendor or args.type)
+    advisories = [a for a in data["advisories"] if passes_filters(a, args, vendor_query, meta)]
+    if args.sort == "risk":
+        advisories = sorted(advisories, key=lambda a: risk_key(risk_of(a["cves"], meta)), reverse=True)
+    filtered = bool(args.since or args.until or args.vendor or args.type or args.kev)
     cov = data.get("coverage", {})
     groups = run_matches(advisories, args)
 
     if args.format == "json":
-        json.dump(json_payload(cov, groups, advisories, args), sys.stdout, ensure_ascii=False, indent=1)
+        json.dump(json_payload(data, groups, advisories, args), sys.stdout, ensure_ascii=False, indent=1)
         print()
         return 0
 
     coverage = labels["coverage"].format(first=cov.get("first"), last=cov.get("last"), count=cov.get("count"))
-    out = [f"> {coverage}", ""]
+    sources = risk_sources_line(data, labels)
+    out = [f"> {coverage}"] + ([f"> {sources}"] if sources else []) + [""]
     if args.stats:
         out += render_stats(advisories, labels) + [""]
     if groups:
@@ -465,12 +595,12 @@ def main(argv: list[str] | None = None) -> int:
                 continue
             shown = limit(found, args.limit)
             for advisory, kind, rows in shown:
-                out += render_advisory(advisory, kind, rows, args, labels)
+                out += render_advisory(advisory, kind, rows, args, labels, meta)
             if len(shown) < len(found):
                 out += [labels["more_items"].format(n=len(found) - len(shown)), ""]
     elif not args.stats or filtered:
         shown = limit(advisories, args.limit)
-        out += render_brief(shown, labels)
+        out += render_brief(shown, labels, meta)
         if len(shown) < len(advisories):
             out.append(labels["more_items"].format(n=len(advisories) - len(shown)))
     sys.stdout.write("\n".join(out).rstrip() + "\n")

@@ -15,6 +15,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 수집·구조화한 데이터입�
 - 유형별: 보안 업데이트 권고 428, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
 - 연도별: 2025년 217, 2026년 302
 - 공지 빈도 상위 25개 벤더: Cisco(30), Microsoft(29), Fortinet(18), Apache(15), WordPress(15), Ivanti(13), Linux(11), Oracle(10), Google(10), Linux Kernel(9), Citrix(8), 삼성전자 (Samsung)(8), Adobe(7), SAP(6), SonicWall(6), GitLab(6), Apple(6), Broadcom(6), Synology(5), IBM(5), Palo Alto Networks(5), F5(5), 보안인증 소프트웨어(5), NGINX(5), Spring(5)
+- CVE 위험 지표: KEV 등재 **248개**, EPSS 8815개, CVSS 0개 (KEV 2026.11.10 · EPSS 2026-11-13 · NVD 미수집)
 <!-- END:STATS -->
 
 ## 공지 유형과 활용
@@ -42,6 +43,12 @@ KISA 보호나라(KrCERT/CC) 보안공지를 수집·구조화한 데이터입�
   "schema": 1,
   "source": "...",
   "coverage": {"first": "YYYY-MM-DD", "last": "YYYY-MM-DD", "count": N},
+  "risk_sources": {"kev": {"version": "2026.11.10"}, "epss": {"date": "2026-11-13"}, "nvd": {"fetched": N}},
+  "cve_meta": {                ← CVE별 위험 지표, 한 줄에 한 CVE (scripts/fetch_cve_enrichment.py)
+    "CVE-2025-0282": {"kev": "2025-01-08", "ransomware": true,     ← CISA KEV 등재일, 랜섬웨어 악용
+                      "epss": 0.99981, "pct": 0.99981,             ← FIRST EPSS 점수·백분위
+                      "cvss": 9.0, "cvss_v": "3.1", "sev": "CRITICAL", "cwe": ["CWE-787"]}   ← NVD (--nvd 수집 시)
+  },
   "advisories": [            ← 최신순, 한 줄에 한 공지
     {
       "no": "2632",           ← 보호나라 게시 번호 (상단 고정 공지는 "공지")
@@ -77,6 +84,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 수집·구조화한 데이터입�
 - **수집 기간 이후 공지는 포함되지 않습니다.** 보고서에 데이터 기준일을 명시합니다.
 - MS 정기 보안 업데이트 공지는 버전 표 대신 `제품 카테고리 | CVE 번호 | CVE 제목` 표입니다. 빌드 번호·KB는 원문과 MSRC에서 확인합니다.
 - CVE 목록은 본문에 보이는 텍스트와 표에서만 추출합니다. (KISA 게시물 HTML에 남아 있는 숨은 링크의 무관한 CVE는 제외)
+- **위험 지표**: KEV는 "실제 악용 확인", EPSS는 "30일 내 악용 확률"이며 매일 바뀝니다. 보고서에 기준일(`risk_sources`)을 함께 적고, KEV 미등재·EPSS 낮음이 안전하다는 뜻은 아님을 명시합니다. CVSS는 NVD 수집 전에는 비어 있습니다.
 - 표기 예: `X 이상 Y 미만`, `X 이상 ~ Y 이하`, `Y 이전 버전`, `모든 버전`, `EoL(지원 종료)`. 브랜치별로 해결 버전이 다른 경우가 많습니다.
 
 ## 원본 데이터 품질 메모 (2026-11-14 검토)
@@ -93,6 +101,8 @@ KISA 보호나라(KrCERT/CC) 보안공지를 수집·구조화한 데이터입�
 1. 새 공지 폴더와 `목록.csv` 행을 `문서/KISA_보안공지_2025-2026/KISA_보안공지_2025-2026/`에 추가합니다.
 2. 저장소 루트에서 빌드합니다. EN/KO 스킬의 `advisories.json`, `vendor-index.md`, 이 파일의 통계 블록이 함께 갱신됩니다.
    ```bash
+   python scripts/fetch_cve_enrichment.py      # CVE 위험 지표(KEV·EPSS) 갱신 → scripts/data/cve-enrichment.json
+   # NVD API 키가 있으면 CVSS·CWE까지: NVD_API_KEY=<키> python scripts/fetch_cve_enrichment.py --nvd  (중단 후 재실행 시 이어받음)
    python scripts/build_kisa_advisories.py
    # 원본 위치가 다르면: python scripts/build_kisa_advisories.py --source "<목록.csv가 있는 폴더>"
    ```

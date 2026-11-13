@@ -16,6 +16,7 @@ Structured data collected from the KISA Boho-nara (KrCERT/CC) security notice bo
 - By type: 보안 업데이트 권고 428, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
 - By year: 2025: 217, 2026: 302
 - Top 25 vendors by notice count: Cisco(30), Microsoft(29), Fortinet(18), Apache(15), WordPress(15), Ivanti(13), Linux(11), Oracle(10), Google(10), Linux Kernel(9), Citrix(8), 삼성전자 (Samsung)(8), Adobe(7), SAP(6), SonicWall(6), GitLab(6), Apple(6), Broadcom(6), Synology(5), IBM(5), Palo Alto Networks(5), F5(5), 보안인증 소프트웨어(5), NGINX(5), Spring(5)
+- CVE risk signals: **248** in KEV, EPSS for 8815, CVSS for 0 (KEV 2026.11.10 · EPSS 2026-11-13 · NVD not fetched)
 <!-- END:STATS -->
 
 ## Notice types and how this skill uses them
@@ -43,6 +44,12 @@ Structured data collected from the KISA Boho-nara (KrCERT/CC) security notice bo
   "schema": 1,
   "source": "...",
   "coverage": {"first": "YYYY-MM-DD", "last": "YYYY-MM-DD", "count": N},
+  "risk_sources": {"kev": {"version": "2026.11.10"}, "epss": {"date": "2026-11-13"}, "nvd": {"fetched": N}},
+  "cve_meta": {                ← per-CVE risk signals, one CVE per line (scripts/fetch_cve_enrichment.py)
+    "CVE-2025-0282": {"kev": "2025-01-08", "ransomware": true,     ← CISA KEV date added, ransomware use
+                      "epss": 0.99981, "pct": 0.99981,             ← FIRST EPSS score and percentile
+                      "cvss": 9.0, "cvss_v": "3.1", "sev": "CRITICAL", "cwe": ["CWE-787"]}   ← NVD (with --nvd)
+  },
   "advisories": [            ← newest first, one notice per line
     {
       "no": "2632",           ← Boho-nara post number ("공지" for pinned posts)
@@ -80,6 +87,7 @@ Common Korean version phrases: `이상` = "or later" (≥), `이하` = "or earli
 - **Notices after the coverage end date are not included.** State the data cut-off in every report.
 - Microsoft Patch Tuesday notices have a `Product category | CVE | CVE title` table instead of version ranges; get builds/KBs from the notice and MSRC.
 - CVE lists are extracted from visible text and tables only (hidden link residue in KISA's HTML that references unrelated CVEs is ignored).
+- **Risk signals**: KEV means exploitation is confirmed; EPSS is the probability of exploitation within 30 days and changes daily. Report the as-of dates (`risk_sources`) and state that not being in KEV or a low EPSS does not mean safe. CVSS stays empty until NVD data is fetched.
 - Fixed versions often differ per release branch — compare within the same branch.
 
 ## Source data quality notes (reviewed 2026-11-14)
@@ -96,6 +104,8 @@ Common Korean version phrases: `이상` = "or later" (≥), `이하` = "or earli
 1. Add new notice folders and `목록.csv` rows under `문서/KISA_보안공지_2025-2026/KISA_보안공지_2025-2026/`.
 2. Build from the repository root. This regenerates `advisories.json`, `vendor-index.md`, and this file's statistics block for both EN and KO skills.
    ```bash
+   python scripts/fetch_cve_enrichment.py      # refresh CVE risk signals (KEV, EPSS) → scripts/data/cve-enrichment.json
+   # with an NVD API key, also CVSS/CWE: NVD_API_KEY=<key> python scripts/fetch_cve_enrichment.py --nvd  (resumable)
    python scripts/build_kisa_advisories.py
    # different source location: python scripts/build_kisa_advisories.py --source "<folder with 목록.csv>"
    ```
