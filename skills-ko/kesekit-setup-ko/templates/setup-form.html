@@ -591,8 +591,9 @@
     document.querySelectorAll("fieldset, label.field").forEach((node) => {
       const needs = Boolean(node.id) && targets.has(node.id);
       node.dataset.needs = needs ? "true" : "false";
-      node.dataset.needsLabel = t("needsInput");
       node.setAttribute("aria-invalid", needs ? "true" : "false");
+      const caption = node.querySelector(":scope > legend, :scope > span:first-child");
+      if (caption) caption.dataset.needsLabel = t("needsInput");
     });
   }
 
