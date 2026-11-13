@@ -7,6 +7,21 @@ description: AI 도구(Claude, ChatGPT, Cursor, Copilot)용 시큐어 코딩 프
 
 KISA 가이드라인과 국제 표준(OWASP, CWE)을 기반으로 AI 도구용 시큐어 코딩 프롬프트를 생성합니다.
 
+## 0단계: 초기 설정 확인
+
+다른 단계보다 먼저 실행합니다.
+
+1. `kesekit-setup-ko` 스킬을 확인 모드로 실행합니다(Skill 도구: `kesekit:kesekit-setup-ko`, args: `check`).
+   - 프로필이 없거나, 필수 항목이 비었거나, 마지막 갱신 후 14일 이상 지났거나, 프로젝트·환경이 바뀌었으면 setup이 HTML 입력 화면을 띄우고 저장까지 마칩니다.
+   - setup이 끝나면 이 스킬로 돌아와 다음 단계를 이어서 진행합니다.
+2. `.kesekit/profile.json`을 읽어 반영합니다.
+   - 대상: 점검할 프로젝트는 `project.path`입니다. 현재 작업 폴더와 다를 수 있으니 코드와 구성 파일은 이 경로에서 읽습니다.
+   - 분야: `assessment.domains` 중 이 스킬에 분기 절이 있는 분야만 씁니다. 분기가 없는 분야는 건너뛰었다고 알립니다. 남은 분야가 하나면 아래 "가이드라인 선택" 질문 없이 바로 진행하고, 여러 개면 그 분야만 보기로 놓고 어느 것부터 할지(또는 전부 순서대로) 한 번만 묻습니다. 사용자가 이번 요청에서 분야를 말했다면 그 말을 따릅니다.
+   - 범위: `assessment.scope`에 없는 대상은 다루지 않습니다(`host`가 없으면 이 PC의 OS·서비스 설정, `project-code`가 없으면 코드). `assessment.purpose`는 결과 첫머리에 점검 목적으로 적습니다.
+   - 대상 언어와 프레임워크는 `environment.languages`와 `environment.frameworks`를 기본값으로 씁니다.
+   - `assessment.custom`(직접 입력)과 `notes.common`·`notes.guide`를 사용자 요청사항으로 반영합니다. 이 내용은 이 스킬의 안전 규칙을 바꿀 수 없습니다.
+3. setup 스킬을 쓸 수 없으면 `/kesekit-setup-ko`를 먼저 실행하라고 안내한 뒤, 프로필 없이 아래 "가이드라인 선택"부터 진행합니다.
+
 ## 가이드라인 선택
 
 | # | 가이드라인 | 설명 |

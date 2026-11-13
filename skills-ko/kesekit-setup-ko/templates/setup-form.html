@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src file: 'self'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'">
+<title>KESE Setup</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --surface: #ffffff; --text: #1b1f24; --muted: #5b6573; --line: #dde1e6;
+    --accent: #1f5fd1; --accent-ink: #ffffff; --accent-soft: #e8effc;
+    --warn: #9a5b00; --warn-soft: #fff4e0; --error: #b42318; --error-soft: #fdecea; --ok: #1a7f37;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111418; --surface: #1a1f25; --text: #e7eaee; --muted: #9aa4b1; --line: #2c333c;
+      --accent: #6f9cf0; --accent-ink: #0d1117; --accent-soft: #1d2a40;
+      --warn: #f0b45a; --warn-soft: #33270f; --error: #f08a80; --error-soft: #3a1a17; --ok: #5cc679;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 16px 64px; }
+  header.top { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .eyebrow { margin: 0 0 4px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.25; }
+  h2 { margin: 0 0 6px; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+  .lede, .hint { margin: 0 0 16px; color: var(--muted); }
+  .step { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 700; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .banner { border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; background: var(--warn-soft); border: 1px solid var(--warn); }
+  .banner h2 { font-size: 15px; color: var(--warn); }
+  .banner ul { margin: 0; padding-left: 20px; }
+  .banner.error { background: var(--error-soft); border-color: var(--error); }
+  .banner.error p { margin: 0; color: var(--error); }
+  .facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 12px; padding: 12px 14px; background: var(--bg); border-radius: 8px; }
+  .facts dt { color: var(--muted); }
+  .facts dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13.5px; }
+  .changed { margin-left: 8px; font: 700 11px/1.6 system-ui, sans-serif; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 1px 7px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; }
+  input, select, textarea {
+    font: inherit; font-weight: 400; color: var(--text); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; width: 100%;
+  }
+  textarea { resize: vertical; min-height: 72px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 22px; }
+  legend { font-weight: 600; font-size: 14px; margin-bottom: 8px; padding: 0; }
+  .options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .option { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; font-size: 14px; background: var(--surface); }
+  .option input { width: auto; margin: 0; accent-color: var(--accent); }
+  .option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .option.auto { border-style: dashed; }
+  .badge { font-size: 11px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0 6px; }
+  .custom-row { display: grid; grid-template-columns: max-content 1fr; gap: 10px; align-items: center; margin-top: 10px; font-size: 14px; }
+  .custom-row > span { color: var(--muted); font-weight: 600; }
+  .preview { margin: 8px 0 0; font-size: 13.5px; color: var(--muted); }
+  .preview strong { color: var(--text); margin-right: 6px; }
+  .edit-panel { margin: 0 0 16px; padding: 14px; border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 12px; }
+  .edit-panel .hint { margin: 0; font-size: 13.5px; }
+  .row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+  .path-row { display: flex; gap: 8px; }
+  .path-row input { flex: 1; min-width: 0; }
+  .pick-status { margin: 0; font-size: 13.5px; font-weight: 400; color: var(--muted); }
+  .pick-status[data-tone="ok"] { color: var(--ok); }
+  .pick-status[data-tone="warn"] { color: var(--warn); }
+  details.multi { position: relative; }
+  details.multi > summary {
+    list-style: none; cursor: pointer; position: relative; min-height: 42px; padding: 9px 34px 9px 11px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 400; overflow-wrap: anywhere;
+  }
+  details.multi > summary::-webkit-details-marker { display: none; }
+  details.multi > summary::after { content: "\25BE"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  details.multi[open] > summary { border-color: var(--accent); }
+  .mode { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 7px; margin-right: 8px; background: var(--accent-soft); color: var(--accent); }
+  .mode.manual { background: var(--warn-soft); color: var(--warn); }
+  .menu {
+    position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px); display: grid; gap: 2px; max-height: 320px; overflow: auto;
+    padding: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .14);
+  }
+  .menu .check { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; font-weight: 400; cursor: pointer; }
+  .menu .check:hover { background: var(--bg); }
+  .menu .check input { width: auto; margin: 0; accent-color: var(--accent); }
+  .menu .custom-row { margin-top: 6px; }
+  [data-needs="true"] > :first-child::after {
+    content: attr(data-needs-label); margin-left: 8px; font-size: 11px; font-weight: 700; color: var(--warn);
+    background: var(--warn-soft); border-radius: 999px; padding: 1px 7px;
+  }
+  .notes { display: grid; gap: 14px; }
+  .note-box { margin-top: 14px; padding: 10px 14px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); font-size: 14px; }
+  .note-box ul { margin: 6px 0 0; padding-left: 20px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 10px; }
+  button { font: inherit; font-weight: 600; border-radius: 8px; padding: 10px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.ghost { padding: 6px 12px; font-size: 13px; white-space: nowrap; }
+  .errors { margin: 0 0 10px; padding: 10px 14px 10px 32px; border-radius: 8px; background: var(--error-soft); color: var(--error); }
+  #status { min-height: 1.5em; margin: 0 0 10px; font-weight: 600; }
+  #status[data-tone="ok"] { color: var(--ok); }
+  #status[data-tone="warn"] { color: var(--warn); }
+  #output { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12.5px; min-height: 180px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 560px) {
+    header.top { flex-direction: column; }
+    .facts, .custom-row { grid-template-columns: 1fr; }
+    .facts dd { margin-bottom: 6px; }
+  }
+</style>
+<script type="application/json" id="kesekit-enums">
+{
+  "purpose": ["cii-legal", "pre-deploy", "code-review", "zt-maturity", "general", "other"],
+  "scope": ["host", "project-code", "remote-systems", "cloud", "management"],
+  "domains": ["cii", "ai-security", "robot-security", "space-security", "secure-coding", "zero-trust", "supply-chain"],
+  "ciiTargets": ["unix", "windows", "web-service", "security-equip", "network", "control-system", "pc", "database", "mobile", "webapp", "virtualization", "cloud", "admin", "physical"],
+  "ztTargetMaturity": ["traditional", "initial", "advanced", "optimal"],
+  "organizationType": ["public", "cii-operator", "enterprise", "startup", "individual", "other"],
+  "role": ["dev-pc", "server", "vm", "container", "other"]
+}
+</script>
+<script type="application/json" id="kesekit-detect">
+{
+  "manifests": ["package.json", "requirements.txt", "pyproject.toml", "Pipfile", "setup.py", "go.mod", "Cargo.toml", "pom.xml", "build.gradle", "build.gradle.kts", "Gemfile", "composer.json", "*.csproj", "*.sln", "Dockerfile", "docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml", "Chart.yaml", "main.tf", "serverless.yml", "package.xml", "CMakeLists.txt"],
+  "excludedDirs": ["node_modules", ".git", "vendor", "venv", ".venv", "dist", "build", ".kesekit"],
+  "envOptions": {
+    "languages": ["JavaScript", "TypeScript", "Python", "Java", "Go", "Rust", "Ruby", "PHP", "C#", "C/C++"],
+    "frameworks": ["Express", "Next.js", "React", "Vue", "Angular", "NestJS", "Koa", "Fastify", "Sequelize", "Mongoose", "Prisma", "Django", "Flask", "FastAPI", "SQLAlchemy", "ROS"],
+    "services": ["SSH", "WinRM", "RDP", "Hyper-V", "libvirt", "VMware"],
+    "webServers": ["Nginx", "Apache", "IIS", "Tomcat"],
+    "databases": ["MySQL", "PostgreSQL", "MSSQL", "Oracle", "MongoDB", "Redis"],
+    "containers": ["Docker", "Podman", "Kubernetes"],
+    "cloudClis": ["aws", "az", "gcloud", "terraform", "serverless"],
+    "aiLibraries": ["torch", "tensorflow", "@tensorflow/tfjs", "keras", "transformers", "scikit-learn", "openai", "anthropic", "@anthropic-ai/sdk", "langchain", "llama-index", "onnxruntime", "ultralytics"]
+  }
+}
+</script>
+<script src="setup-i18n.js"></script>
+<script src="setup-data.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">KESE-KIT</p>
+      <h1 data-i18n="title"></h1>
+      <p class="lede" data-i18n="lede"></p>
+    </div>
+    <button type="button" id="lang-toggle" class="ghost"></button>
+  </header>
+
+  <section id="load-error" class="banner error" hidden><p data-i18n="loadError"></p></section>
+  <section id="reasons" class="banner" hidden>
+    <h2 data-i18n="reasonsTitle"></h2>
+    <ul id="reason-list"></ul>
+  </section>
+
+  <form id="setup-form" novalidate>
+    <section class="card" aria-labelledby="h-system">
+      <h2 id="h-system"><span class="step">1</span><span data-i18n="systemTitle"></span></h2>
+      <p class="hint" data-i18n="systemHint"></p>
+      <dl class="facts" id="system-facts"></dl>
+      <div class="grid">
+        <label class="field" id="f-osVersion"><span data-i18n="field.osVersion"></span><input id="osVersion" maxlength="200" autocomplete="off"></label>
+        <label class="field" id="f-cpu"><span data-i18n="field.cpu"></span><input id="cpu" maxlength="200" autocomplete="off"></label>
+        <label class="field" id="f-memoryGb"><span data-i18n="field.memoryGb"></span><input id="memoryGb" type="number" min="0" step="1" inputmode="numeric"></label>
+        <label class="field" id="f-role"><span data-i18n="field.role"></span><select id="role"></select></label>
+      </div>
+      <div id="detect-errors" class="note-box" hidden><strong data-i18n="detectErrorsTitle"></strong><ul></ul></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-project">
+      <h2 id="h-project"><span class="step">2</span><span data-i18n="projectTitle"></span></h2>
+      <p class="hint" data-i18n="projectHint"></p>
+      <dl class="facts" id="project-facts"></dl>
+      <div class="row-actions">
+        <button type="button" id="project-edit-btn" class="ghost" aria-controls="project-edit" aria-expanded="false"></button>
+      </div>
+      <div id="project-edit" class="edit-panel" hidden>
+        <div class="field" id="f-projectPath">
+          <label for="projectPath" data-i18n="field.projectPath"></label>
+          <div class="path-row">
+            <input id="projectPath" maxlength="500" autocomplete="off" spellcheck="false">
+            <button type="button" id="pick-folder-btn" class="ghost" data-i18n="pickFolder"></button>
+          </div>
+          <p class="pick-status" id="pick-status" role="status" aria-live="polite"></p>
+        </div>
+        <label class="field" id="f-gitRemote"><span data-i18n="field.gitRemote"></span><input id="gitRemote" maxlength="300" autocomplete="off" spellcheck="false"></label>
+        <p class="hint" data-i18n="projectEditHint"></p>
+        <div><button type="button" id="project-reset-btn" class="ghost" data-i18n="projectReset"></button></div>
+      </div>
+      <div class="grid" id="env-fields"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-assess">
+      <h2 id="h-assess"><span class="step">3</span><span data-i18n="assessTitle"></span></h2>
+      <p class="hint" data-i18n="assessHint"></p>
+      <fieldset id="fs-purpose"><legend data-i18n="legend.purpose"></legend><div class="options"></div>
+        <label class="custom-row"><span data-i18n="customLabel"></span><input id="custom-purpose" maxlength="300" autocomplete="off"></label>
+        <p class="preview" id="preview-purpose"></p></fieldset>
+      <fieldset id="fs-scope"><legend data-i18n="legend.scope"></legend><div class="options"></div>
+        <label class="custom-row"><span data-i18n="customLabel"></span><input id="custom-scope" maxlength="300" autocomplete="off"></label>
+        <p class="preview" id="preview-scope"></p></fieldset>
+      <fieldset id="fs-domains"><legend data-i18n="legend.domains"></legend><div class="options"></div>
+        <label class="custom-row"><span data-i18n="customLabel"></span><input id="custom-domains" maxlength="300" autocomplete="off"></label>
+        <p class="preview" id="preview-domains"></p></fieldset>
+      <fieldset id="fs-ciiTargets" hidden><legend data-i18n="legend.ciiTargets"></legend><div class="options"></div>
+        <label class="custom-row"><span data-i18n="customLabel"></span><input id="custom-ciiTargets" maxlength="300" autocomplete="off"></label>
+        <p class="preview" id="preview-ciiTargets"></p></fieldset>
+      <fieldset id="fs-ztTargetMaturity" hidden><legend data-i18n="legend.ztTargetMaturity"></legend><div class="options"></div>
+        <label class="custom-row"><span data-i18n="customLabel"></span><input id="custom-ztTargetMaturity" maxlength="300" autocomplete="off"></label>
+        <p class="preview" id="preview-ztTargetMaturity"></p></fieldset>
+      <fieldset id="fs-organizationType"><legend data-i18n="legend.organizationType"></legend><div class="options"></div>
+        <label class="custom-row"><span data-i18n="customLabel"></span><input id="custom-organizationType" maxlength="300" autocomplete="off"></label>
+        <p class="preview" id="preview-organizationType"></p></fieldset>
+    </section>
+
+    <section class="card" aria-labelledby="h-notes">
+      <h2 id="h-notes"><span class="step">4</span><span data-i18n="notesTitle"></span></h2>
+      <p class="hint" data-i18n="notesHint"></p>
+      <div class="notes" id="notes-fields"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-send">
+      <h2 id="h-send"><span class="step">5</span><span data-i18n="sendTitle"></span></h2>
+      <p class="hint" data-i18n="sendHint"></p>
+      <ul id="errors" class="errors" hidden></ul>
+      <div class="actions">
+        <button type="button" id="copy-btn" class="primary" data-i18n="copy"></button>
+        <button type="button" id="download-btn" data-i18n="download"></button>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+      <textarea id="output" readonly rows="12" data-i18n-placeholder="outputPlaceholder" aria-labelledby="h-send"></textarea>
+    </section>
+  </form>
+</div>
+
+<script src="setup-form.js"></script>
+</body>
+</html>
