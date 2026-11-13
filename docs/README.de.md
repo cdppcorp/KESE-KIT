@@ -143,13 +143,13 @@ Zielgruppe: Unternehmen mit Zero-Trust-Einfuehrung, OT/ICS-Umgebungen, Cloud-Mig
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 > **Zum Aktualisieren:**
 > ```
-> /plugin marketplace update cdppcorp-KESE-KIT
-> /plugin update kesekit@cdppcorp-KESE-KIT
+> /plugin marketplace update kesekit
+> /plugin update kesekit@kesekit
 > /reload-plugins
 > ```
 

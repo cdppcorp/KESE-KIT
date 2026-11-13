@@ -100,7 +100,7 @@ grep -rn "password\|secret\|api_key\|token" /var/log/ai-service/ 2>/dev/null
 
 ```bash
 # Check CORS configuration
-curl -s -I -H "Origin: http://evil.com" \
+curl -s -I -H "Origin: http://untrusted-origin.example.com" \
   http://localhost:8080/api/v1/predict | \
   grep -i "access-control"
 

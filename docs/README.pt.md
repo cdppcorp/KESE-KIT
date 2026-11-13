@@ -143,13 +143,13 @@ Publico-alvo: empresas adotando Zero Trust, ambientes OT/ICS, organizacoes em mi
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 > **Para atualizar:**
 > ```
-> /plugin marketplace update cdppcorp-KESE-KIT
-> /plugin update kesekit@cdppcorp-KESE-KIT
+> /plugin marketplace update kesekit
+> /plugin update kesekit@kesekit
 > /reload-plugins
 > ```
 

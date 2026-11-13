@@ -801,6 +801,134 @@ check("setup-skill-registered", () => {
   assertIncludes(path.join(rootDir, "README.md"), /\/kesekit-setup\s/, "the English setup command");
 });
 
+// --- KISA security notice (advisory) skills ---
+
+const advisorySkills = [
+  { root: "skills", dir: "kesekit-advisory", statsPattern: /\*\*(\d+) notices\*\*/ },
+  { root: "skills-ko", dir: "kesekit-advisory-ko", statsPattern: /총 \*\*(\d+)건\*\*/ },
+];
+
+const advisoryRequiredFiles = [
+  "SKILL.md",
+  "scripts/advisory_lookup.py",
+  "references/kisa-advisories/overview.md",
+  "references/kisa-advisories/advisories.json",
+  "references/kisa-advisories/vendor-index.md",
+  "references/kisa-advisories/threat-response.md",
+];
+
+const advisoryStringKeys = ["no", "ntt", "date", "type", "title", "vendor", "url", "summary", "text"];
+const advisoryArrayKeys = ["cves", "affected", "attachments", "refs"];
+const statsBegin = "<!-- BEGIN:STATS";
+const statsEnd = "<!-- END:STATS -->";
+
+function advisoryPath(skill, ...rest) {
+  return path.join(rootDir, skill.root, skill.dir, ...rest);
+}
+
+check("advisory-skill-files", () => {
+  for (const skill of advisorySkills) {
+    for (const file of advisoryRequiredFiles) {
+      assert(fs.existsSync(advisoryPath(skill, file)), `${skill.root}/${skill.dir}/${file} is missing`);
+    }
+    if (fs.existsSync(advisoryPath(skill, "SKILL.md"))) {
+      assertIncludes(advisoryPath(skill, "SKILL.md"), new RegExp(`^name: ${skill.dir}$`, "m"), `frontmatter name ${skill.dir}`);
+    }
+  }
+});
+
+check("advisory-data-parity", () => {
+  const [en, ko] = advisorySkills;
+  for (const file of ["scripts/advisory_lookup.py", "references/kisa-advisories/advisories.json"]) {
+    assert(
+      read(advisoryPath(en, file)) === read(advisoryPath(ko, file)),
+      `${ko.root}/${ko.dir}/${file} diverged from ${en.root}/${en.dir}/${file}`,
+    );
+  }
+});
+
+check("advisory-data-schema", () => {
+  const data = JSON.parse(read(advisoryPath(advisorySkills[0], "references/kisa-advisories/advisories.json")));
+  assert(data.schema === 1, "advisories.json schema must be 1");
+  assert(Array.isArray(data.advisories) && data.advisories.length > 0, "advisories.json has no advisories");
+  const total = data.advisories.length;
+  assert(data.coverage?.count === total, `advisories.json coverage.count ${data.coverage?.count} != ${total}`);
+
+  const seenNtt = new Set();
+  for (const advisory of data.advisories) {
+    const label = `advisory ${advisory?.no}/${advisory?.ntt}`;
+    const badStrings = advisoryStringKeys.filter((key) => typeof advisory?.[key] !== "string");
+    const badArrays = advisoryArrayKeys.filter((key) => !Array.isArray(advisory?.[key]));
+    assert(badStrings.length === 0, `${label} needs string field(s): ${badStrings.join(", ")}`);
+    assert(badArrays.length === 0, `${label} needs array field(s): ${badArrays.join(", ")}`);
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(advisory?.date ?? ""), `${label} has invalid date ${advisory?.date}`);
+    assert(/^\d+$/.test(advisory?.ntt ?? ""), `${label} has no numeric nttId`);
+    const badRefs = (Array.isArray(advisory?.refs) ? advisory.refs : []).filter((ref) => !/^https?:\/\/\S+$/.test(ref?.url ?? ""));
+    assert(badRefs.length === 0, `${label} has malformed reference URL(s): ${badRefs.map((ref) => ref?.url).join(", ")}`);
+    assert(!seenNtt.has(advisory?.ntt), `duplicate advisory nttId ${advisory?.ntt}`);
+    seenNtt.add(advisory?.ntt);
+  }
+
+  const cveMeta = data.cve_meta ?? {};
+  assert(typeof cveMeta === "object" && !Array.isArray(cveMeta), "advisories.json cve_meta must be an object");
+  const referenced = new Set(data.advisories.flatMap((advisory) => (Array.isArray(advisory?.cves) ? advisory.cves : [])));
+  const inRange = (value, upper) => value === undefined || (typeof value === "number" && value >= 0 && value <= upper);
+  for (const [cve, meta] of Object.entries(cveMeta)) {
+    assert(referenced.has(cve), `cve_meta lists ${cve}, which no advisory references`);
+    assert(inRange(meta?.epss, 1) && inRange(meta?.pct, 1) && inRange(meta?.cvss, 10), `cve_meta ${cve} has an out-of-range score`);
+    assert(meta?.kev === undefined || typeof meta.kev === "string", `cve_meta ${cve} kev must be a date string`);
+  }
+
+  for (const skill of advisorySkills) {
+    const overview = read(advisoryPath(skill, "references/kisa-advisories/overview.md"));
+    const block = sectionBetween(overview, statsBegin, statsEnd) ?? "";
+    const match = block.match(skill.statsPattern);
+    assert(
+      match && Number(match[1]) === total,
+      `${skill.root}/${skill.dir} overview stats do not match ${total} advisories (rerun scripts/build_kisa_advisories.py)`,
+    );
+  }
+});
+
+check("advisory-threat-response-parity", () => {
+  const codes = advisorySkills.map((skill) =>
+    [...read(advisoryPath(skill, "references/kisa-advisories/threat-response.md")).matchAll(/^### (TR-\d+)/gm)].map((m) => m[1]),
+  );
+  assert(codes[0].length > 0, "skills/kesekit-advisory threat-response.md has no TR items");
+  assertObjectEqual(codes[1], codes[0], "skills-ko/kesekit-advisory-ko threat-response.md TR codes vs EN");
+});
+
+check("advisory-runs-setup-gate", () => {
+  for (const skill of advisorySkills) {
+    const filePath = advisoryPath(skill, "SKILL.md");
+    if (!fs.existsSync(filePath)) continue;
+    const content = read(filePath);
+    const heading = gateHeadings[skill.root];
+    assert(content.indexOf(heading) !== -1 && content.indexOf(heading) === content.indexOf("\n## ") + 1,
+      `${rel(filePath)} must start with the "${heading}" section`);
+    const required = [`\`kesekit:${setupSkillDirs[skill.root]}\``, "`notes.advisory`", "`assessment.scope`", "`project.path`",
+      "`assessment.custom`", "`environment`", "--doctor"];
+    for (const token of required) {
+      assert(content.includes(token), `${rel(filePath)} Step 0 is missing ${token}`);
+    }
+  }
+  for (const skillRoot of skillRoots) {
+    assertIncludes(setupPath(skillRoot, "templates", "setup-form.js"), /NOTE_KEYS = \[[^\]]*"advisory"/, "the advisory notes field");
+    assertIncludes(setupPath(skillRoot, "references", "profile-schema.md"), "`guide`, `advisory`", "notes.advisory in the schema");
+  }
+});
+
+check("marketplace-skills-exist", () => {
+  const marketplace = JSON.parse(read(path.join(rootDir, ".claude-plugin", "marketplace.json")));
+  const listed = marketplace.plugins.flatMap((plugin) => plugin.skills);
+  for (const skill of listed) {
+    assert(fs.existsSync(path.join(rootDir, skill, "SKILL.md")), `marketplace.json lists ${skill} but its SKILL.md is missing`);
+  }
+  for (const skill of advisorySkills) {
+    assert(listed.includes(`./${skill.root}/${skill.dir}`), `marketplace.json does not list ./${skill.root}/${skill.dir}`);
+  }
+});
+
 if (errors.length > 0) {
   console.error(`Validation failed with ${errors.length} issue(s):`);
   for (const error of errors) {

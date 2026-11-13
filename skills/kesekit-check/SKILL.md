@@ -33,16 +33,18 @@ Run this before any other step.
 | 5 | **Secure Coding Checklist** | JavaScript/Python code review (7 categories, 46 CWE) |
 | 6 | **Zero Trust Checklist** | Zero Trust maturity assessment (8 elements, 4 maturity levels, ~396 items) |
 | 7 | **SW Supply Chain Checklist** | SBOM-based supply chain security (5 phases, 29 items) |
+| 8 | **KISA Security Notices** | Deployed product versions vs. KISA Boho-nara notices (`/kesekit-advisory`) |
 
 Servers, infrastructure → **CII** / AI models, LLM → **AI Security** / robots, ROS/ROS2 → **Robot Security** / satellites, ground stations, GSaaS, space supply chain → **Space Security** / JavaScript, Python, web app code → **Secure Coding**
 Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **Zero Trust**
 SBOM, supply chain, 공급망, C-SCRM, SCA, CycloneDX, SPDX, npm audit, pip-audit → **SW Supply Chain**
+KISA notice, KrCERT, Boho-nara, "are we affected", patch status → **KISA Security Notices**
 
 ---
 
 ## CII Branch
 
-Load reference files from `templates/cii/` based on detected environment. Check commands available in `scripts/cii/` directory. Check categories: Account Security (15), Access Control (15), Encryption (12), Logging (10), Service Hardening (12), Patch Management (6).
+Load reference files from `templates/cii/` based on detected environment. Check commands available in `scripts/cii/` directory. Check categories: Account Security (15), Access Control (15), Encryption (12), Logging (10), Service Hardening (12), Patch Management (6). For the CVE item under Patch Management, cite the `kesekit-advisory` exposure check (KISA notice data) as evidence.
 
 Severity: Critical (deployment blocker) → High → Medium → Low
 
@@ -95,6 +97,12 @@ Load from `references/zero-trust/` for overview and maturity model, and `templat
 Load from `references/supply-chain/overview.md` for context, then use `templates/supply-chain/sbom-checklist.md` for the 29-item pre-deployment checklist. Use `scripts/supply-chain/sbom-generate.md` and `scripts/supply-chain/sbom-vuln-scan.md` for verification commands.
 
 5 phases: Design (5) → Development (11) → Supply (3) → Operations (7) → Maintenance (3). Critical items: SC-10, SC-14, SC-15 must ALL pass. Block deployment if any Critical item fails. Standards: NIST SP 800-161r1, NIST SP 800-218, NTIA SBOM, NIS-SBOM.
+
+---
+
+## KISA Security Notices Branch
+
+Run the `kesekit-advisory` exposure check (Mode 1) for every product and version being deployed. A Vulnerable verdict with Critical priority blocks deployment; High is a conditional pass with a documented update plan; Needs-review items must be resolved or risk-accepted. State the data cut-off date in the readiness report.
 
 ---
 

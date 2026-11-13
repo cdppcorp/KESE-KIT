@@ -143,7 +143,7 @@ KESE (KISA Enhanced Security Evaluation Kit) เป็นปลั๊กอิ�
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## วิธีใช้งาน

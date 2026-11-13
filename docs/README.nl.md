@@ -143,7 +143,7 @@ Doelgroep: Organisaties die Zero Trust implementeren, OT/ICS-omgevingen, Organis
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## Gebruik

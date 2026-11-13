@@ -143,7 +143,7 @@ Destinatari: Aziende che adottano Zero Trust, ambienti OT/ICS, organizzazioni in
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## Utilizzo

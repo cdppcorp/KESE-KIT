@@ -143,7 +143,7 @@ KESE (KISA Enhanced Security Evaluation Kit) एक Claude Code प्लगइ�
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## उपयोग

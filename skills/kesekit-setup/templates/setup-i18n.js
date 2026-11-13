@@ -73,7 +73,8 @@ window.KESEKIT_I18N = {
       start: ["/kesekit-start — 취약점 분석평가", "예: 관리적·물리적 항목은 담당자 인터뷰 질문지로 만들어 주세요."],
       check: ["/kesekit-check — 배포 전 체크리스트", "예: 결과를 PR에 붙일 수 있게 마크다운 표로 정리해 주세요."],
       fix: ["/kesekit-fix — 하드닝·수정", "예: 스크립트는 만들기만 하고 실제 적용은 하지 마세요."],
-      guide: ["/kesekit-guide — 시큐어코딩 프롬프트", "예: Cursor 규칙 파일 형식으로 만들어 주세요."]
+      guide: ["/kesekit-guide — 시큐어코딩 프롬프트", "예: Cursor 규칙 파일 형식으로 만들어 주세요."],
+      advisory: ["/kesekit-advisory — KISA 보안공지 대응", "예: 인터넷에 노출된 서버의 취약 판정만 긴급으로 분류해 주세요."]
     },
     sendTitle: "Claude에 전달",
     sendHint: "[복사]를 누른 뒤 Claude Code 창에 붙여넣으세요. 붙여넣기가 어렵다면 [파일로 저장]을 누르고 Claude에게 \"저장했어\"라고 말하면 다운로드 폴더에서 읽어 갑니다.",
@@ -165,7 +166,8 @@ window.KESEKIT_I18N = {
       start: ["/kesekit-start — assessment", "e.g. Turn administrative and physical items into an interview questionnaire."],
       check: ["/kesekit-check — pre-deployment checklist", "e.g. Summarize the results as a Markdown table I can paste into a PR."],
       fix: ["/kesekit-fix — hardening & fixes", "e.g. Generate scripts only; do not apply them."],
-      guide: ["/kesekit-guide — secure coding prompts", "e.g. Format the output as a Cursor rules file."]
+      guide: ["/kesekit-guide — secure coding prompts", "e.g. Format the output as a Cursor rules file."],
+      advisory: ["/kesekit-advisory — KISA security notices", "e.g. Only rate vulnerable internet-facing servers as critical."]
     },
     sendTitle: "Hand back to Claude",
     sendHint: "Press [Copy] and paste into the Claude Code window. If pasting is awkward, press [Save as file] and tell Claude \"saved\"; it will read the file from your Downloads folder.",

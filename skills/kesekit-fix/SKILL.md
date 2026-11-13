@@ -33,9 +33,11 @@ Run this before any other step.
 | 5 | **Secure Coding Fixes** | Auto-fix vulnerable code patterns (JS/Python, 46 CWE) |
 | 6 | **Zero Trust Fixes** | Zero Trust gap remediation (8 elements, 4 maturity levels, ~396 items) |
 | 7 | **SW Supply Chain Fixes** | SBOM generation, vulnerability scanning, remediation (29 items) |
+| 8 | **KISA Notice Remediation** | Update plans to fixed versions from a `kesekit-advisory` exposure report |
 
 Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **Zero Trust**
 SBOM, supply chain, 공급망, C-SCRM, SCA, CycloneDX, SPDX, npm audit, pip-audit → **SW Supply Chain**
+KISA notice, KrCERT, Boho-nara, `reports/kisa-advisory/` findings → **KISA Notice Remediation**
 
 ## CII Branch
 
@@ -84,6 +86,12 @@ Load from `references/zero-trust/` for maturity model and architecture, and `tem
 Load from `references/supply-chain/overview.md` for C-SCRM/SBOM context. Use `scripts/supply-chain/sbom-generate.md` for SBOM generation commands (Syft, CycloneDX, language-specific tools). Use `scripts/supply-chain/sbom-vuln-scan.md` for vulnerability scanning (Grype, npm audit, pip-audit, govulncheck) and license compliance checks. Reference `templates/supply-chain/sbom-checklist.md` for the 29-item remediation checklist.
 
 Fix workflow: Generate SBOM → Scan vulnerabilities → Prioritize by CVSS → Apply patches → Verify → Update SBOM.
+
+---
+
+## KISA Notice Remediation Branch
+
+Use `reports/kisa-advisory/findings.md` from the `kesekit-advisory` skill (run its exposure check first if the file is missing). For each Vulnerable item, generate an update plan to the target (highest fixed) version: pre-update backup/snapshot, vendor or package-manager upgrade commands, service restart order, and a post-update version check. For end-of-support products, produce a replacement plan instead. Confirm the target against the vendor's latest advisory before applying, and apply nothing without user approval.
 
 ---
 
