@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' file: 'self'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'">
+<title>KESE Setup</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --surface: #ffffff; --text: #1b1f24; --muted: #5b6573; --line: #dde1e6;
+    --accent: #1f5fd1; --accent-ink: #ffffff; --accent-soft: #e8effc;
+    --warn: #9a5b00; --warn-soft: #fff4e0; --error: #b42318; --error-soft: #fdecea; --ok: #1a7f37;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111418; --surface: #1a1f25; --text: #e7eaee; --muted: #9aa4b1; --line: #2c333c;
+      --accent: #6f9cf0; --accent-ink: #0d1117; --accent-soft: #1d2a40;
+      --warn: #f0b45a; --warn-soft: #33270f; --error: #f08a80; --error-soft: #3a1a17; --ok: #5cc679;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text); line-height: 1.55;
+    font: 15px/1.55 "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 16px 64px; }
+  header.top { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .eyebrow { margin: 0 0 4px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.25; }
+  h2 { margin: 0 0 6px; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+  .lede, .hint { margin: 0 0 16px; color: var(--muted); }
+  .step { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 700; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .banner { border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; background: var(--warn-soft); border: 1px solid var(--warn); }
+  .banner h2 { font-size: 15px; color: var(--warn); }
+  .banner ul { margin: 0; padding-left: 20px; }
+  .banner.error { background: var(--error-soft); border-color: var(--error); }
+  .banner.error p { margin: 0; color: var(--error); }
+  .facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 16px; padding: 12px 14px; background: var(--bg); border-radius: 8px; }
+  .facts dt { color: var(--muted); }
+  .facts dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13.5px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; }
+  input, select, textarea {
+    font: inherit; font-weight: 400; color: var(--text); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; width: 100%;
+  }
+  textarea { resize: vertical; min-height: 72px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 18px; }
+  legend { font-weight: 600; font-size: 14px; margin-bottom: 8px; padding: 0; }
+  .options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .option { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; font-size: 14px; background: var(--surface); }
+  .option input { width: auto; margin: 0; accent-color: var(--accent); }
+  .option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .badge { font-size: 11px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0 6px; }
+  [data-needs="true"] > legend::after, [data-needs="true"] > span:first-child::after {
+    content: attr(data-needs-label); margin-left: 8px; font-size: 11px; font-weight: 700; color: var(--warn);
+    background: var(--warn-soft); border-radius: 999px; padding: 1px 7px;
+  }
+  .notes { display: grid; gap: 14px; }
+  .note-box { margin-top: 14px; padding: 10px 14px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); font-size: 14px; }
+  .note-box ul { margin: 6px 0 0; padding-left: 20px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 10px; }
+  button { font: inherit; font-weight: 600; border-radius: 8px; padding: 10px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.ghost { padding: 6px 12px; font-size: 13px; white-space: nowrap; }
+  .errors { margin: 0 0 10px; padding: 10px 14px 10px 32px; border-radius: 8px; background: var(--error-soft); color: var(--error); }
+  #status { min-height: 1.5em; margin: 0 0 10px; font-weight: 600; }
+  #status[data-tone="ok"] { color: var(--ok); }
+  #status[data-tone="warn"] { color: var(--warn); }
+  #output { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12.5px; min-height: 180px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 560px) {
+    header.top { flex-direction: column; }
+    .facts { grid-template-columns: 1fr; }
+    .facts dd { margin-bottom: 6px; }
+  }
+</style>
+<script type="application/json" id="kesekit-enums">
+{
+  "purpose": ["cii-legal", "pre-deploy", "code-review", "zt-maturity", "general", "other"],
+  "scope": ["host", "project-code", "remote-systems", "cloud", "management"],
+  "domains": ["cii", "ai-security", "robot-security", "space-security", "secure-coding", "zero-trust", "supply-chain"],
+  "ciiTargets": ["unix", "windows", "web-service", "security-equip", "network", "control-system", "pc", "database", "mobile", "webapp", "virtualization", "cloud", "admin", "physical"],
+  "ztTargetMaturity": ["traditional", "initial", "advanced", "optimal"],
+  "organizationType": ["public", "cii-operator", "enterprise", "startup", "individual", "other"],
+  "role": ["dev-pc", "server", "vm", "container", "other"]
+}
+</script>
+<script src="setup-data.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">KESE-KIT</p>
+      <h1 data-i18n="title"></h1>
+      <p class="lede" data-i18n="lede"></p>
+    </div>
+    <button type="button" id="lang-toggle" class="ghost"></button>
+  </header>
+
+  <section id="load-error" class="banner error" hidden><p data-i18n="loadError"></p></section>
+  <section id="reasons" class="banner" hidden>
+    <h2 data-i18n="reasonsTitle"></h2>
+    <ul id="reason-list"></ul>
+  </section>
+
+  <form id="setup-form" novalidate>
+    <section class="card" aria-labelledby="h-system">
+      <h2 id="h-system"><span class="step">1</span><span data-i18n="systemTitle"></span></h2>
+      <p class="hint" data-i18n="systemHint"></p>
+      <dl class="facts" id="system-facts"></dl>
+      <div class="grid">
+        <label class="field" id="f-osVersion"><span data-i18n="field.osVersion"></span><input id="osVersion" maxlength="200" autocomplete="off"></label>
+        <label class="field" id="f-cpu"><span data-i18n="field.cpu"></span><input id="cpu" maxlength="200" autocomplete="off"></label>
+        <label class="field" id="f-memoryGb"><span data-i18n="field.memoryGb"></span><input id="memoryGb" type="number" min="0" step="1" inputmode="numeric"></label>
+        <label class="field" id="f-role"><span data-i18n="field.role"></span><select id="role"></select></label>
+      </div>
+      <div id="detect-errors" class="note-box" hidden><strong data-i18n="detectErrorsTitle"></strong><ul></ul></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-project">
+      <h2 id="h-project"><span class="step">2</span><span data-i18n="projectTitle"></span></h2>
+      <p class="hint" data-i18n="projectHint"></p>
+      <dl class="facts" id="project-facts"></dl>
+      <div class="grid" id="env-fields"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-assess">
+      <h2 id="h-assess"><span class="step">3</span><span data-i18n="assessTitle"></span></h2>
+      <p class="hint" data-i18n="assessHint"></p>
+      <fieldset id="fs-purpose"><legend data-i18n="legend.purpose"></legend><div class="options"></div></fieldset>
+      <fieldset id="fs-scope"><legend data-i18n="legend.scope"></legend><div class="options"></div></fieldset>
+      <fieldset id="fs-domains"><legend data-i18n="legend.domains"></legend><div class="options"></div></fieldset>
+      <fieldset id="fs-ciiTargets" hidden><legend data-i18n="legend.ciiTargets"></legend><div class="options"></div></fieldset>
+      <fieldset id="fs-ztTargetMaturity" hidden><legend data-i18n="legend.ztTargetMaturity"></legend><div class="options"></div></fieldset>
+      <label class="field" id="f-organizationType"><span data-i18n="legend.organizationType"></span><select id="organizationType"></select></label>
+    </section>
+
+    <section class="card" aria-labelledby="h-notes">
+      <h2 id="h-notes"><span class="step">4</span><span data-i18n="notesTitle"></span></h2>
+      <p class="hint" data-i18n="notesHint"></p>
+      <div class="notes" id="notes-fields"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-send">
+      <h2 id="h-send"><span class="step">5</span><span data-i18n="sendTitle"></span></h2>
+      <p class="hint" data-i18n="sendHint"></p>
+      <ul id="errors" class="errors" hidden></ul>
+      <div class="actions">
+        <button type="button" id="copy-btn" class="primary" data-i18n="copy"></button>
+        <button type="button" id="download-btn" data-i18n="download"></button>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+      <textarea id="output" readonly rows="12" data-i18n-placeholder="outputPlaceholder" aria-labelledby="h-send"></textarea>
+    </section>
+  </form>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const BEGIN_MARKER = "KESEKIT_PROFILE_INPUT v1";
+  const END_MARKER = "END_KESEKIT_PROFILE_INPUT";
+  const DOWNLOAD_NAME = "kesekit-profile-input.txt";
+  const MAX_NOTE = 2000;
+  const MAX_TEXT = 200;
+  const MAX_ITEM = 80;
+  const MAX_ITEMS = 50;
+  const NOTE_KEYS = ["common", "start", "check", "fix", "guide"];
+  const ENV_KEYS = ["languages", "frameworks", "services", "webServers", "databases", "containers", "cloudClis", "aiLibraries"];
+  const ENUMS = JSON.parse(document.getElementById("kesekit-enums").textContent);
+
+  const I18N = {
+    ko: {
+      title: "KESE 초기 설정",
+      lede: "Claude가 이 PC와 프로젝트를 읽기 전용으로 확인한 결과입니다. 틀린 곳은 고치고 빈칸을 채운 뒤 맨 아래에서 Claude에 전달하세요. 이 페이지는 어디로도 데이터를 보내지 않습니다.",
+      langToggle: "English",
+      loadError: "탐지 결과(setup-data.js)를 불러오지 못해 이 화면으로는 설정을 전달할 수 없습니다. Claude Code 창에 \"화면에 오류가 떠\"라고 알려 주면 터미널 입력으로 바꿔 진행합니다.",
+      reasonsTitle: "설정이 필요한 이유",
+      reason: {
+        MISSING: "아직 초기 설정을 하지 않았습니다.",
+        INCOMPLETE: "필수 항목이 비어 있습니다.",
+        STALE: "마지막 설정 후 14일 이상 지났습니다.",
+        CHANGED: "프로젝트나 환경이 바뀌었습니다.",
+        MANUAL: "설정 화면을 직접 열었습니다."
+      },
+      systemTitle: "시스템",
+      systemHint: "자동으로 탐지한 값입니다. 탐지하지 못한 칸은 직접 채워 주세요.",
+      fact: { os: "운영체제", hostname: "호스트명", arch: "아키텍처", remoteSession: "원격 접속", path: "프로젝트 경로", gitRemote: "Git 원격 주소", manifests: "구성 파일" },
+      yes: "예", no: "아니오", unknown: "알 수 없음", none: "없음",
+      field: { osVersion: "OS 버전", cpu: "CPU", memoryGb: "메모리(GB)", role: "이 장비의 역할" },
+      detectErrorsTitle: "탐지하지 못한 항목",
+      projectTitle: "프로젝트·환경",
+      projectHint: "프로젝트 경로와 Git 원격 주소는 다음 실행 때 변경 여부를 비교하는 데 쓰입니다. 아래 목록은 쉼표로 구분해 고칠 수 있습니다.",
+      env: { languages: "언어", frameworks: "프레임워크", services: "실행 중인 서비스", webServers: "웹 서버", databases: "데이터베이스", containers: "컨테이너·오케스트레이션", cloudClis: "클라우드 도구", aiLibraries: "AI·ML 라이브러리" },
+      assessTitle: "점검 설정",
+      assessHint: "'추천'은 탐지 결과를 보고 고른 것입니다. 필요에 맞게 바꾸세요.",
+      legend: { purpose: "점검 목적", scope: "점검 범위 (여러 개 선택)", domains: "점검 분야 (여러 개 선택)", ciiTargets: "CII 점검 대상 시스템", ztTargetMaturity: "제로트러스트 목표 성숙도", organizationType: "조직 유형 (선택 사항)" },
+      recommended: "추천",
+      selectPlaceholder: "선택하세요",
+      enum: {
+        purpose: { "cii-legal": "주요정보통신기반시설 법정 취약점 분석·평가", "pre-deploy": "배포 전 보안 점검", "code-review": "시큐어코딩 코드 리뷰", "zt-maturity": "제로트러스트 성숙도 진단", "general": "일반 보안 점검", "other": "기타" },
+        scope: { "host": "이 PC·서버 자체", "project-code": "현재 프로젝트 코드", "remote-systems": "원격 서버·네트워크 장비", "cloud": "클라우드 계정·리소스", "management": "관리·물리 체계 (문서·인터뷰)" },
+        domains: { "cii": "주요정보통신기반시설(CII)", "ai-security": "AI 보안", "robot-security": "로봇 보안", "space-security": "우주 보안", "secure-coding": "시큐어코딩", "zero-trust": "제로트러스트", "supply-chain": "SW 공급망(SBOM)" },
+        ciiTargets: { "unix": "Unix/Linux 서버", "windows": "Windows 서버", "web-service": "웹 서비스", "security-equip": "보안 장비", "network": "네트워크 장비", "control-system": "제어시스템", "pc": "PC", "database": "DBMS", "mobile": "이동통신", "webapp": "Web Application", "virtualization": "가상화 장비", "cloud": "클라우드", "admin": "관리적 취약점", "physical": "물리적 취약점" },
+        ztTargetMaturity: { "traditional": "기존", "initial": "초기", "advanced": "향상", "optimal": "최적화" },
+        organizationType: { "public": "공공기관", "cii-operator": "주요정보통신기반시설 관리기관", "enterprise": "민간기업", "startup": "스타트업", "individual": "개인·1인 개발자", "other": "기타" },
+        role: { "dev-pc": "개발·업무용 PC", "server": "서버", "vm": "가상머신", "container": "컨테이너", "other": "기타" }
+      },
+      notesTitle: "스킬별 요청사항",
+      notesHint: "각 스킬이 시작할 때 읽는 메모입니다. 비워 둬도 됩니다. 스킬의 안전 규칙(예: 점검 중 읽기 전용)은 바꿀 수 없습니다.",
+      note: {
+        common: ["모든 스킬 공통", "예: 운영 중인 서버이니 서비스 재시작이 필요한 작업은 제안만 해 주세요."],
+        start: ["/kesekit-start — 취약점 분석평가", "예: 관리적·물리적 항목은 담당자 인터뷰 질문지로 만들어 주세요."],
+        check: ["/kesekit-check — 배포 전 체크리스트", "예: 결과를 PR에 붙일 수 있게 마크다운 표로 정리해 주세요."],
+        fix: ["/kesekit-fix — 하드닝·수정", "예: 스크립트는 만들기만 하고 실제 적용은 하지 마세요."],
+        guide: ["/kesekit-guide — 시큐어코딩 프롬프트", "예: Cursor 규칙 파일 형식으로 만들어 주세요."]
+      },
+      sendTitle: "Claude에 전달",
+      sendHint: "[복사]를 누른 뒤 Claude Code 창에 붙여넣으세요. 붙여넣기가 어렵다면 [파일로 저장]을 누르고 Claude에게 \"저장했어\"라고 말하면 다운로드 폴더에서 읽어 갑니다.",
+      copy: "Claude에 붙여넣을 텍스트 복사",
+      download: "파일로 저장",
+      copied: "복사했습니다. Claude Code 창에 붙여넣으세요.",
+      copyFailed: "자동 복사에 실패했습니다. 아래 상자의 내용을 직접 선택해 복사하세요.",
+      downloaded: "kesekit-profile-input.txt를 저장했습니다. Claude에게 \"저장했어\"라고 알려 주세요.",
+      outputPlaceholder: "필수 항목을 모두 채우면 여기에 전달할 텍스트가 만들어집니다.",
+      needsInput: "입력 필요",
+      err: {
+        purpose: "점검 목적을 고르세요.",
+        scope: "점검 범위를 하나 이상 고르세요.",
+        domains: "점검 분야를 하나 이상 고르세요.",
+        role: "장비 역할을 고르세요.",
+        ciiTargets: "CII를 골랐다면 점검 대상 시스템을 하나 이상 고르세요.",
+        ztTargetMaturity: "제로트러스트를 골랐다면 목표 성숙도를 고르세요.",
+        memoryGb: "메모리는 0 이상의 정수로 입력하세요.",
+        tooLong: "{field}: {max}자 이하로 줄여 주세요."
+      }
+    },
+    en: {
+      title: "KESE Setup",
+      lede: "This is what Claude found on this machine and project using read-only commands. Fix anything wrong, fill the blanks, then hand it back to Claude at the bottom. This page sends no data anywhere.",
+      langToggle: "한국어",
+      loadError: "Could not load the detection results (setup-data.js), so this page cannot hand settings back. Tell Claude \"the page shows an error\" and it will switch to terminal input.",
+      reasonsTitle: "Why setup is needed",
+      reason: {
+        MISSING: "Initial setup has not been done yet.",
+        INCOMPLETE: "Required fields are empty.",
+        STALE: "It has been 14 days or more since the last setup.",
+        CHANGED: "The project or environment has changed.",
+        MANUAL: "You opened the setup page yourself."
+      },
+      systemTitle: "System",
+      systemHint: "These values were detected automatically. Fill in anything that could not be detected.",
+      fact: { os: "Operating system", hostname: "Hostname", arch: "Architecture", remoteSession: "Remote session", path: "Project path", gitRemote: "Git remote", manifests: "Manifest files" },
+      yes: "Yes", no: "No", unknown: "Unknown", none: "None",
+      field: { osVersion: "OS version", cpu: "CPU", memoryGb: "Memory (GB)", role: "Role of this machine" },
+      detectErrorsTitle: "Could not detect",
+      projectTitle: "Project & environment",
+      projectHint: "The project path and Git remote are compared on the next run to detect changes. Edit the lists below as comma-separated values.",
+      env: { languages: "Languages", frameworks: "Frameworks", services: "Running services", webServers: "Web servers", databases: "Databases", containers: "Containers & orchestration", cloudClis: "Cloud tools", aiLibraries: "AI/ML libraries" },
+      assessTitle: "Assessment settings",
+      assessHint: "'Suggested' items were picked from the detection results. Adjust as needed.",
+      legend: { purpose: "Purpose", scope: "Scope (select all that apply)", domains: "Domains (select all that apply)", ciiTargets: "CII target systems", ztTargetMaturity: "Zero Trust target maturity", organizationType: "Organization type (optional)" },
+      recommended: "Suggested",
+      selectPlaceholder: "Select",
+      enum: {
+        purpose: { "cii-legal": "Legal CII vulnerability assessment", "pre-deploy": "Pre-deployment security check", "code-review": "Secure coding review", "zt-maturity": "Zero Trust maturity assessment", "general": "General security review", "other": "Other" },
+        scope: { "host": "This machine", "project-code": "Current project code", "remote-systems": "Remote servers & network devices", "cloud": "Cloud accounts & resources", "management": "Administrative & physical controls" },
+        domains: { "cii": "Critical Information Infrastructure (CII)", "ai-security": "AI Security", "robot-security": "Robot Security", "space-security": "Space Security", "secure-coding": "Secure Coding", "zero-trust": "Zero Trust", "supply-chain": "SW Supply Chain (SBOM)" },
+        ciiTargets: { "unix": "Unix/Linux server", "windows": "Windows server", "web-service": "Web service", "security-equip": "Security equipment", "network": "Network equipment", "control-system": "Control system", "pc": "PC", "database": "DBMS", "mobile": "Mobile network", "webapp": "Web application", "virtualization": "Virtualization", "cloud": "Cloud", "admin": "Administrative", "physical": "Physical" },
+        ztTargetMaturity: { "traditional": "Traditional", "initial": "Initial", "advanced": "Advanced", "optimal": "Optimal" },
+        organizationType: { "public": "Public institution", "cii-operator": "CII operator", "enterprise": "Private enterprise", "startup": "Startup", "individual": "Individual developer", "other": "Other" },
+        role: { "dev-pc": "Development / work PC", "server": "Server", "vm": "Virtual machine", "container": "Container", "other": "Other" }
+      },
+      notesTitle: "Requests per skill",
+      notesHint: "Each skill reads its note when it starts. Leave blank if you have none. Notes cannot override a skill's safety rules (for example, read-only during assessment).",
+      note: {
+        common: ["All skills", "e.g. This is a production server; for anything that needs a service restart, only propose it."],
+        start: ["/kesekit-start — assessment", "e.g. Turn administrative and physical items into an interview questionnaire."],
+        check: ["/kesekit-check — pre-deployment checklist", "e.g. Summarize the results as a Markdown table I can paste into a PR."],
+        fix: ["/kesekit-fix — hardening & fixes", "e.g. Generate scripts only; do not apply them."],
+        guide: ["/kesekit-guide — secure coding prompts", "e.g. Format the output as a Cursor rules file."]
+      },
+      sendTitle: "Hand back to Claude",
+      sendHint: "Press [Copy] and paste into the Claude Code window. If pasting is awkward, press [Save as file] and tell Claude \"saved\"; it will read the file from your Downloads folder.",
+      copy: "Copy text for Claude",
+      download: "Save as file",
+      copied: "Copied. Paste it into the Claude Code window.",
+      copyFailed: "Automatic copy failed. Select the text in the box below and copy it manually.",
+      downloaded: "Saved kesekit-profile-input.txt. Tell Claude \"saved\".",
+      outputPlaceholder: "The text to hand back appears here once all required fields are filled.",
+      needsInput: "Required",
+      err: {
+        purpose: "Choose a purpose.",
+        scope: "Choose at least one scope.",
+        domains: "Choose at least one domain.",
+        role: "Choose the role of this machine.",
+        ciiTargets: "With CII selected, choose at least one target system.",
+        ztTargetMaturity: "With Zero Trust selected, choose a target maturity.",
+        memoryGb: "Enter memory as a whole number of 0 or more.",
+        tooLong: "{field}: keep it to {max} characters or fewer."
+      }
+    }
+  };
+
+  const setup = isPlainObject(window.KESEKIT_SETUP) ? window.KESEKIT_SETUP : null;
+  const detected = isPlainObject(setup && setup.detected) ? setup.detected : {};
+  const previous = isPlainObject(setup && setup.previous) ? setup.previous : null;
+  let lang = pickLang();
+  let showErrors = false;
+
+  function isPlainObject(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function dig(source, path) {
+    return path.split(".").reduce((node, key) => (isPlainObject(node) ? node[key] : undefined), source);
+  }
+
+  function text(value) {
+    return typeof value === "string" ? value.trim() : (typeof value === "number" ? String(value) : "");
+  }
+
+  function list(value) {
+    if (!Array.isArray(value)) return [];
+    const items = value.map(text).filter(Boolean).map((item) => item.slice(0, MAX_ITEM));
+    return Array.from(new Set(items)).slice(0, MAX_ITEMS);
+  }
+
+  function allowed(value, key) {
+    return ENUMS[key].includes(value) ? value : "";
+  }
+
+  function allowedList(value, key) {
+    return list(value).filter((item) => ENUMS[key].includes(item));
+  }
+
+  function pickLang() {
+    const requested = text(setup && setup.lang);
+    if (requested === "ko" || requested === "en") return requested;
+    return (navigator.language || "").toLowerCase().startsWith("ko") ? "ko" : "en";
+  }
+
+  function t(key) {
+    const value = dig(I18N[lang], key);
+    return typeof value === "string" ? value : key;
+  }
+
+  function make(tag, props, children) {
+    const node = document.createElement(tag);
+    Object.entries(props || {}).forEach(([key, value]) => {
+      if (key === "text") node.textContent = value;
+      else if (key in node && key !== "list") node[key] = value;
+      else node.setAttribute(key, value);
+    });
+    (children || []).forEach((child) => node.appendChild(child));
+    return node;
+  }
+
+  function initialState() {
+    const prevOr = (path, fallback) => (previous ? dig(previous, path) : undefined) ?? fallback;
+    const recommended = isPlainObject(detected.recommended) ? detected.recommended : {};
+    const environment = {};
+    ENV_KEYS.forEach((key) => {
+      const fresh = dig(detected, "environment." + key);
+      environment[key] = list(Array.isArray(fresh) ? fresh : prevOr("environment." + key, []));
+    });
+    const notes = {};
+    NOTE_KEYS.forEach((key) => { notes[key] = text(prevOr("notes." + key, "")).slice(0, MAX_NOTE); });
+    const memory = dig(detected, "system.memoryGb") ?? prevOr("system.memoryGb", "");
+    return {
+      system: {
+        osVersion: text(dig(detected, "system.osVersion") ?? prevOr("system.osVersion", "")),
+        cpu: text(dig(detected, "system.cpu") ?? prevOr("system.cpu", "")),
+        memoryGb: typeof memory === "number" && Number.isFinite(memory) ? String(Math.max(0, Math.round(memory))) : text(memory),
+        role: allowed(prevOr("system.role", dig(detected, "system.role")), "role")
+      },
+      environment: environment,
+      assessment: {
+        purpose: allowed(prevOr("assessment.purpose", ""), "purpose"),
+        scope: allowedList(prevOr("assessment.scope", []), "scope"),
+        domains: allowedList(previous ? prevOr("assessment.domains", []) : recommended.domains, "domains"),
+        ciiTargets: allowedList(previous ? prevOr("assessment.ciiTargets", []) : recommended.ciiTargets, "ciiTargets"),
+        ztTargetMaturity: allowed(prevOr("assessment.ztTargetMaturity", ""), "ztTargetMaturity"),
+        organizationType: allowed(prevOr("assessment.organizationType", ""), "organizationType")
+      },
+      notes: notes
+    };
+  }
+
+  function renderStaticText() {
+    document.documentElement.lang = lang;
+    document.title = t("title");
+    document.querySelectorAll("[data-i18n]").forEach((node) => { node.textContent = t(node.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => { node.placeholder = t(node.dataset.i18nPlaceholder); });
+    document.getElementById("lang-toggle").textContent = t("langToggle");
+  }
+
+  function renderFacts(container, rows) {
+    container.replaceChildren();
+    rows.forEach(([label, value]) => {
+      container.appendChild(make("dt", { text: label }));
+      container.appendChild(make("dd", { text: value }));
+    });
+  }
+
+  function factValue(value) {
+    if (value === true) return t("yes");
+    if (value === false) return t("no");
+    if (Array.isArray(value)) return value.length ? list(value).join(", ") : t("none");
+    return text(value) || t("unknown");
+  }
+
+  function renderReasons() {
+    const reasons = Array.isArray(setup && setup.reasons) ? setup.reasons.filter(isPlainObject) : [];
+    const listNode = document.getElementById("reason-list");
+    listNode.replaceChildren();
+    reasons.forEach((reason) => {
+      const item = make("li", {}, [make("strong", { text: t("reason." + text(reason.code)) })]);
+      const detail = text(reason.detail);
+      if (detail) item.appendChild(document.createTextNode(" " + detail));
+      listNode.appendChild(item);
+    });
+    document.getElementById("reasons").hidden = reasons.length === 0;
+    document.getElementById("load-error").hidden = setup !== null;
+    ["copy-btn", "download-btn"].forEach((id) => { document.getElementById(id).disabled = setup === null; });
+  }
+
+  function renderDetectErrors() {
+    const errors = list(detected.errors);
+    const box = document.getElementById("detect-errors");
+    const target = box.querySelector("ul");
+    target.replaceChildren(...errors.map((item) => make("li", { text: item })));
+    box.hidden = errors.length === 0;
+  }
+
+  function renderSelect(select, key, selected) {
+    select.replaceChildren(make("option", { value: "", text: t("selectPlaceholder") }));
+    ENUMS[key].forEach((value) => select.appendChild(make("option", { value: value, text: t("enum." + key + "." + value) })));
+    select.value = selected || "";
+  }
+
+  function renderChoices(key, type, selected, suggestions) {
+    const container = document.querySelector("#fs-" + key + " .options");
+    const chosen = new Set(Array.isArray(selected) ? selected : [selected]);
+    const suggested = new Set(list(suggestions));
+    container.replaceChildren();
+    ENUMS[key].forEach((value) => {
+      const input = make("input", { type: type, name: key, value: value, checked: chosen.has(value) });
+      const children = [input, make("span", { text: t("enum." + key + "." + value) })];
+      if (suggested.has(value)) children.push(make("span", { className: "badge", text: t("recommended") }));
+      container.appendChild(make("label", { className: "option" }, children));
+    });
+  }
+
+  function renderEnvFields(environment) {
+    const container = document.getElementById("env-fields");
+    container.replaceChildren();
+    ENV_KEYS.forEach((key) => {
+      const input = make("input", { id: "env-" + key, value: environment[key].join(", "), autocomplete: "off" });
+      container.appendChild(make("label", { className: "field" }, [make("span", { text: t("env." + key) }), input]));
+    });
+  }
+
+  function renderNotes(notes) {
+    const container = document.getElementById("notes-fields");
+    container.replaceChildren();
+    NOTE_KEYS.forEach((key) => {
+      const [label, placeholder] = I18N[lang].note[key];
+      const area = make("textarea", { id: "note-" + key, maxLength: MAX_NOTE, placeholder: placeholder, value: notes[key], rows: 2 });
+      container.appendChild(make("label", { className: "field" }, [make("span", { text: label }), area]));
+    });
+  }
+
+  function render(state) {
+    const recommended = isPlainObject(detected.recommended) ? detected.recommended : {};
+    renderStaticText();
+    renderReasons();
+    renderDetectErrors();
+    renderFacts(document.getElementById("system-facts"), ["os", "hostname", "arch", "remoteSession"].map(
+      (key) => [t("fact." + key), factValue(dig(detected, "system." + key))]));
+    renderFacts(document.getElementById("project-facts"), ["path", "gitRemote", "manifests"].map(
+      (key) => [t("fact." + key), factValue(dig(detected, "project." + key))]));
+    document.getElementById("osVersion").value = state.system.osVersion;
+    document.getElementById("cpu").value = state.system.cpu;
+    document.getElementById("memoryGb").value = state.system.memoryGb;
+    renderSelect(document.getElementById("role"), "role", state.system.role);
+    renderSelect(document.getElementById("organizationType"), "organizationType", state.assessment.organizationType);
+    renderEnvFields(state.environment);
+    renderChoices("purpose", "radio", state.assessment.purpose, []);
+    renderChoices("scope", "checkbox", state.assessment.scope, []);
+    renderChoices("domains", "checkbox", state.assessment.domains, recommended.domains);
+    renderChoices("ciiTargets", "checkbox", state.assessment.ciiTargets, recommended.ciiTargets);
+    renderChoices("ztTargetMaturity", "radio", state.assessment.ztTargetMaturity, []);
+    renderNotes(state.notes);
+    refresh();
+  }
+
+  function checkedValues(key) {
+    return Array.from(document.querySelectorAll("#fs-" + key + " input:checked")).map((input) => input.value);
+  }
+
+  function splitList(raw) {
+    return list(String(raw).split(","));
+  }
+
+  function collect() {
+    const environment = {};
+    ENV_KEYS.forEach((key) => { environment[key] = splitList(document.getElementById("env-" + key).value); });
+    const notes = {};
+    NOTE_KEYS.forEach((key) => { notes[key] = document.getElementById("note-" + key).value.trim(); });
+    return {
+      system: {
+        osVersion: document.getElementById("osVersion").value.trim(),
+        cpu: document.getElementById("cpu").value.trim(),
+        memoryGb: document.getElementById("memoryGb").value.trim(),
+        role: document.getElementById("role").value
+      },
+      environment: environment,
+      assessment: {
+        purpose: checkedValues("purpose")[0] || "",
+        scope: checkedValues("scope"),
+        domains: checkedValues("domains"),
+        ciiTargets: checkedValues("ciiTargets"),
+        ztTargetMaturity: checkedValues("ztTargetMaturity")[0] || "",
+        organizationType: document.getElementById("organizationType").value
+      },
+      notes: notes
+    };
+  }
+
+  function validate(state) {
+    const errors = [];
+    const add = (target, message) => errors.push({ target: target, message: message });
+    const a = state.assessment;
+    if (!a.purpose) add("fs-purpose", t("err.purpose"));
+    if (a.scope.length === 0) add("fs-scope", t("err.scope"));
+    if (a.domains.length === 0) add("fs-domains", t("err.domains"));
+    if (a.domains.includes("cii") && a.ciiTargets.length === 0) add("fs-ciiTargets", t("err.ciiTargets"));
+    if (a.domains.includes("zero-trust") && !a.ztTargetMaturity) add("fs-ztTargetMaturity", t("err.ztTargetMaturity"));
+    if (!state.system.role) add("f-role", t("err.role"));
+    if (state.system.memoryGb !== "" && !/^\d{1,6}$/.test(state.system.memoryGb)) add("f-memoryGb", t("err.memoryGb"));
+    [["osVersion", MAX_TEXT], ["cpu", MAX_TEXT]].forEach(([key, max]) => {
+      if (state.system[key].length > max) add("f-" + key, t("err.tooLong").replace("{field}", t("field." + key)).replace("{max}", max));
+    });
+    NOTE_KEYS.forEach((key) => {
+      if (state.notes[key].length > MAX_NOTE) add("notes-fields", t("err.tooLong").replace("{field}", I18N[lang].note[key][0]).replace("{max}", MAX_NOTE));
+    });
+    return errors;
+  }
+
+  function buildPayload(state) {
+    const a = state.assessment;
+    return {
+      meta: {
+        projectPath: text(dig(detected, "project.path")) || null,
+        generatedAt: text(setup && setup.generatedAt) || null,
+        lang: lang
+      },
+      system: {
+        osVersion: state.system.osVersion || null,
+        cpu: state.system.cpu || null,
+        memoryGb: state.system.memoryGb === "" ? null : Number(state.system.memoryGb),
+        role: state.system.role
+      },
+      environment: state.environment,
+      assessment: {
+        purpose: a.purpose,
+        scope: a.scope,
+        domains: a.domains,
+        ciiTargets: a.domains.includes("cii") ? a.ciiTargets : [],
+        ztTargetMaturity: a.domains.includes("zero-trust") ? a.ztTargetMaturity : null,
+        organizationType: a.organizationType || null
+      },
+      notes: state.notes
+    };
+  }
+
+  function buildBlock(state) {
+    return BEGIN_MARKER + "\n" + JSON.stringify(buildPayload(state), null, 2) + "\n" + END_MARKER;
+  }
+
+  function markNeeds(errors) {
+    const targets = new Set(errors.map((error) => error.target));
+    document.querySelectorAll("fieldset, label.field").forEach((node) => {
+      const needs = Boolean(node.id) && targets.has(node.id);
+      node.dataset.needs = needs ? "true" : "false";
+      node.dataset.needsLabel = t("needsInput");
+      node.setAttribute("aria-invalid", needs ? "true" : "false");
+    });
+  }
+
+  function renderErrors(errors) {
+    const box = document.getElementById("errors");
+    box.replaceChildren(...errors.map((error) => make("li", { text: error.message })));
+    box.hidden = !showErrors || errors.length === 0;
+  }
+
+  function refresh() {
+    const state = collect();
+    const domains = state.assessment.domains;
+    document.getElementById("fs-ciiTargets").hidden = !domains.includes("cii");
+    document.getElementById("fs-ztTargetMaturity").hidden = !domains.includes("zero-trust");
+    const errors = validate(state);
+    markNeeds(errors);
+    renderErrors(errors);
+    document.getElementById("output").value = errors.length === 0 && setup !== null ? buildBlock(state) : "";
+    return { state: state, errors: errors };
+  }
+
+  function setStatus(message, tone) {
+    const node = document.getElementById("status");
+    node.textContent = message;
+    node.dataset.tone = tone;
+  }
+
+  function readyBlock() {
+    if (setup === null) return null;
+    showErrors = true;
+    const result = refresh();
+    if (result.errors.length > 0) {
+      setStatus("", "");
+      const first = document.getElementById(result.errors[0].target);
+      if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+      return null;
+    }
+    return buildBlock(result.state);
+  }
+
+  async function copyBlock() {
+    const block = readyBlock();
+    if (!block) return;
+    try {
+      await navigator.clipboard.writeText(block);
+      setStatus(t("copied"), "ok");
+    } catch (clipboardError) {
+      const output = document.getElementById("output");
+      output.focus();
+      output.select();
+      let copied = false;
+      try { copied = document.execCommand("copy"); } catch (execError) { copied = false; }
+      setStatus(copied ? t("copied") : t("copyFailed"), copied ? "ok" : "warn");
+    }
+  }
+
+  function downloadBlock() {
+    const block = readyBlock();
+    if (!block) return;
+    const url = URL.createObjectURL(new Blob([block + "\n"], { type: "text/plain;charset=utf-8" }));
+    const link = make("a", { href: url, download: DOWNLOAD_NAME });
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus(t("downloaded"), "ok");
+  }
+
+  document.getElementById("setup-form").addEventListener("input", refresh);
+  document.getElementById("setup-form").addEventListener("change", refresh);
+  document.getElementById("setup-form").addEventListener("submit", (event) => event.preventDefault());
+  document.getElementById("copy-btn").addEventListener("click", copyBlock);
+  document.getElementById("download-btn").addEventListener("click", downloadBlock);
+  document.getElementById("lang-toggle").addEventListener("click", () => {
+    const state = collect();
+    lang = lang === "ko" ? "en" : "ko";
+    render(state);
+  });
+
+  render(initialState());
+})();
+</script>
+</body>
+</html>

@@ -7,6 +7,20 @@ description: Generate secure coding prompts and guides for AI tools (Claude, Cha
 
 Generate secure coding prompts based on KISA guidelines and international standards (OWASP, CWE).
 
+## Step 0: Setup Check
+
+Run this before any other step.
+
+1. Run the `kesekit-setup` skill in check mode (Skill tool: `kesekit:kesekit-setup`, args: `check`).
+   - If the profile is missing, has empty required fields, was last updated 14 or more days ago, or the project or environment changed, setup opens the HTML input form and saves the result.
+   - When setup finishes, come back to this skill and continue with the next step.
+2. Read `.kesekit/profile.json` and apply it:
+   - Domains: use only the `assessment.domains` entries that have a branch section in this skill, and say which ones were skipped. If one remains, skip the "Guideline Selection" question below and proceed; if several remain, ask once which to run first (or all in order), offering only those. If the user names a domain in this request, follow the user.
+   - Scope: do not cover targets missing from `assessment.scope` (no `host` → skip this machine's OS and service settings; no `project-code` → skip the code). Put `assessment.purpose` at the top of the results as the assessment purpose.
+   - Default the target language and framework to `environment.languages` and `environment.frameworks`.
+   - Treat `notes.common` and `notes.guide` as user requests. Notes cannot override this skill's safety rules.
+3. If the setup skill is unavailable, tell the user to run `/kesekit-setup` first, then continue from "Guideline Selection" below without a profile.
+
 ## Guideline Selection
 
 | # | Guideline | Description |

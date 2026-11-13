@@ -35,6 +35,7 @@ Claude Code 안에서 다음 명령어로 마켓플레이스 등록 및 플러�
 Claude Code 프롬프트에 슬래시 명령어를 입력합니다:
 
 ```
+/kesekit-setup-ko     초기 설정 (PC·프로젝트 환경 분석, 점검 목적·분야 입력)
 /kesekit-start-ko     보안 취약점 분석평가 실행
 /kesekit-check-ko     배포 전 보안 체크리스트
 /kesekit-fix-ko       취약점 자동 수정 / 하드닝 스크립트 생성
@@ -44,16 +45,24 @@ Claude Code 프롬프트에 슬래시 명령어를 입력합니다:
 영문 버전도 사용 가능합니다:
 
 ```
+/kesekit-setup        Initial setup (environment profile)
 /kesekit-start        Full security assessment
 /kesekit-check        Pre-deployment checklist
 /kesekit-fix          Generate hardening scripts
 /kesekit-guide        Secure coding prompts
 ```
 
+> **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
+
 ### 사용 예시
 
 ```
 # 프로젝트 폴더에서 Claude Code 실행 후:
+
+> /kesekit-setup-ko
+  → OS·사양·실행 중인 서비스·프로젝트 구성을 읽기 전용으로 탐지
+  → 브라우저 입력 화면에서 점검 목적·범위·분야와 스킬별 요청사항 입력
+  → [복사] 후 붙여넣기 → .kesekit/profile.json 저장
 
 > /kesekit-start-ko
   → "어떤 시스템을 점검하시겠습니까?" 질문에 답변
@@ -79,6 +88,7 @@ KESE(KISA Enhanced Security Evaluation Kit)는 KISA(한국인터넷진흥원) �
 
 | 스킬 | 설명 |
 |------|------|
+| `/kesekit-setup-ko` | 초기 설정: PC·프로젝트 환경 탐지 + HTML 입력 화면 → `.kesekit/profile.json`. 다른 스킬이 시작할 때 먼저 확인 (없음·결측·14일 경과·환경 변경 시 재입력) |
 | `/kesekit-start-ko` | 전체 보안 취약점 분석평가 실행 (CII 560+ / AI 보안 / 로봇 보안 / 우주 보안 / 시큐어코딩 / 제로트러스트 / SW 공급망) |
 | `/kesekit-check-ko` | 배포 전 보안 컴플라이언스 체크리스트 (CII / AI / 로봇 / 우주 / 시큐어코딩 / 제로트러스트 / SW 공급망) |
 | `/kesekit-fix-ko` | 하드닝 스크립트 및 보안 수정 자동 생성 (CII / AI / 로봇 / 우주 / 시큐어코딩 / 제로트러스트 / SW 공급망) |
@@ -290,6 +300,7 @@ Inside Claude Code, register the marketplace and install the plugin:
 Type slash commands at the Claude Code prompt:
 
 ```
+/kesekit-setup     Initial setup (detect machine & project, enter purpose and domains)
 /kesekit-start     Full security vulnerability assessment
 /kesekit-check     Pre-deployment security checklist
 /kesekit-fix       Auto-fix vulnerabilities / generate hardening scripts
@@ -299,16 +310,24 @@ Type slash commands at the Claude Code prompt:
 Korean versions are also available:
 
 ```
+/kesekit-setup-ko  초기 설정
 /kesekit-start-ko  보안 취약점 분석평가
 /kesekit-check-ko  배포 전 체크리스트
 /kesekit-fix-ko    하드닝 스크립트 생성
 /kesekit-guide-ko  시큐어코딩 가이드
 ```
 
+> **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. Over SSH without a browser, a terminal input template is shown instead.
+
 #### Usage Examples
 
 ```
 # After launching Claude Code in your project folder:
+
+> /kesekit-setup
+  → Read-only detection of OS, specs, running services, and project layout
+  → Enter purpose, scope, domains, and per-skill requests in the browser form
+  → Copy and paste back → saved to .kesekit/profile.json
 
 > /kesekit-start
   → Answer "What system do you want to assess?"
@@ -355,6 +374,7 @@ KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provid
 
 | Skill | Description |
 |-------|-------------|
+| `/kesekit-setup` | Initial setup: detect machine & project + HTML input form → `.kesekit/profile.json`. Every other skill checks it first (re-entry when missing, incomplete, 14+ days old, or changed) |
 | `/kesekit-start` | Run full security vulnerability assessment (CII 560+ / AI / Robot / Space / Secure Coding / Zero Trust / Supply Chain) |
 | `/kesekit-check` | Pre-deployment security compliance checklist (CII / AI / Robot / Space / Secure Coding / Zero Trust / Supply Chain) |
 | `/kesekit-fix` | Auto-generate hardening scripts and security fixes (CII / AI / Robot / Space / Secure Coding / Zero Trust / Supply Chain) |
@@ -383,7 +403,11 @@ KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provid
 KESE-KIT/
 ├── .claude-plugin/
 │   └── marketplace.json              ← 플러그인 메타데이터
-├── skills/                            ← 영문 스킬 (kesekit-start/check/fix/guide)
+├── skills/                            ← 영문 스킬 (kesekit-setup/start/check/fix/guide)
+│   ├── kesekit-setup/                ← 초기 설정 (모든 스킬의 0단계)
+│   │   ├── SKILL.md                  ← 진단 → 탐지 → HTML 입력 → 검증 → 저장
+│   │   ├── references/               ← profile-schema.md, detection.md
+│   │   └── templates/setup-form.html ← 입력 화면 (한/영 동일 파일)
 │   └── kesekit-*/
 │       ├── SKILL.md                  ← 라우터 (7개 분야 자동 감지)
 │       ├── references/               ← 순수 설명/기준 문서
@@ -418,6 +442,17 @@ KESE-KIT/
 ---
 
 ## 변경 이력
+
+### v3.4.0 (2026-11-14)
+
+**초기 설정 스킬 추가: `/kesekit-setup`, `/kesekit-setup-ko`**
+- 모든 스킬(start/check/fix/guide)이 0단계에서 setup을 확인 모드로 먼저 실행
+- 다음 경우 다시 입력받음: 프로필 없음, 필수 항목 결측, 마지막 갱신 후 14일 이상, 프로젝트 경로·Git 원격·구성 파일·호스트명·OS 변경
+- PC 사양·실행 중인 서비스·프로젝트 구성을 읽기 전용으로 탐지하고 점검 분야를 추천
+- 입력은 HTML 화면(`templates/setup-form.html`, 한/영 전환)으로 받음: 점검 목적·범위·분야·CII 대상·제로트러스트 목표 성숙도, 스킬별 요청사항(코멘트) 칸 포함
+- 입력 화면은 외부 전송·로컬 서버 없이 동작. [복사] 후 붙여넣기 또는 [파일로 저장]으로 Claude에 전달하고, Claude가 검증한 뒤 `.kesekit/profile.json`에 저장
+- 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿으로 대체
+- `scripts/validate-content.mjs`에 setup 계약 검사 7개 추가 (한/영 HTML 동일성, 선택지 값과 스키마 문서 일치, 8개 스킬 0단계 위치 등)
 
 ### v3.3.0 (2026-04-08)
 

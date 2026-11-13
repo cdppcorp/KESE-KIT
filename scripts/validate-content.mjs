@@ -542,6 +542,137 @@ check("cross-language-script-parity", () => {
   }
 });
 
+// --- Setup skill checks ---
+// Every kesekit skill runs the setup skill first (Step 0). The setup skill opens an
+// HTML form, and the user hands the result back by pasting a marker-delimited block.
+
+const setupSkillDirs = { skills: "kesekit-setup", "skills-ko": "kesekit-setup-ko" };
+const setupRequiredFiles = [
+  "SKILL.md",
+  "references/profile-schema.md",
+  "references/detection.md",
+  "templates/setup-form.html",
+];
+const setupFormMarkers = [
+  "KESEKIT_PROFILE_INPUT v1",
+  "END_KESEKIT_PROFILE_INPUT",
+  '<script src="setup-data.js"></script>',
+  'id="kesekit-enums"',
+];
+const expectedEnumKeys = [
+  "ciiTargets",
+  "domains",
+  "organizationType",
+  "purpose",
+  "role",
+  "scope",
+  "ztTargetMaturity",
+];
+const enumFields = {
+  purpose: "assessment.purpose",
+  scope: "assessment.scope",
+  domains: "assessment.domains",
+  ciiTargets: "assessment.ciiTargets",
+  ztTargetMaturity: "assessment.ztTargetMaturity",
+  organizationType: "assessment.organizationType",
+  role: "system.role",
+};
+const gateHeadings = { skills: "## Step 0: Setup Check", "skills-ko": "## 0단계: 초기 설정 확인" };
+const STALE_DAYS = 14;
+
+function setupPath(skillRoot, ...rest) {
+  return path.join(rootDir, skillRoot, setupSkillDirs[skillRoot], ...rest);
+}
+
+function readSetupEnums() {
+  const html = read(setupPath("skills", "templates", "setup-form.html"));
+  const match = html.match(/<script type="application\/json" id="kesekit-enums">([\s\S]*?)<\/script>/);
+  if (!match) {
+    throw new Error("setup-form.html has no kesekit-enums JSON block");
+  }
+  return JSON.parse(match[1]);
+}
+
+check("setup-skill-files-exist", () => {
+  for (const skillRoot of skillRoots) {
+    for (const relFile of setupRequiredFiles) {
+      const filePath = setupPath(skillRoot, relFile);
+      assert(fs.existsSync(filePath), `${rel(filePath)} does not exist`);
+    }
+  }
+});
+
+check("setup-skill-frontmatter", () => {
+  for (const skillRoot of skillRoots) {
+    const namePattern = new RegExp(`^name: ${setupSkillDirs[skillRoot]}\\r?$`, "m");
+    assertIncludes(setupPath(skillRoot, "SKILL.md"), namePattern, "a matching name in frontmatter");
+  }
+});
+
+check("setup-form-cross-language-parity", () => {
+  const en = read(setupPath("skills", "templates", "setup-form.html"));
+  const ko = read(setupPath("skills-ko", "templates", "setup-form.html"));
+  assert(en === ko, "skills-ko/kesekit-setup-ko/templates/setup-form.html diverged from the English copy");
+});
+
+check("setup-form-contract", () => {
+  const formPath = setupPath("skills", "templates", "setup-form.html");
+  for (const marker of setupFormMarkers) {
+    assertIncludes(formPath, marker, `the contract marker ${marker}`);
+  }
+
+  const enums = readSetupEnums();
+  assertObjectEqual(Object.keys(enums).sort(), expectedEnumKeys, "setup-form.html enum keys");
+  for (const [key, values] of Object.entries(enums)) {
+    assert(Array.isArray(values) && values.length > 0, `setup-form.html enum ${key} must be a non-empty array`);
+  }
+});
+
+check("setup-schema-documents-enums", () => {
+  const enums = readSetupEnums();
+
+  for (const skillRoot of skillRoots) {
+    const schemaPath = setupPath(skillRoot, "references", "profile-schema.md");
+    for (const [key, values] of Object.entries(enums)) {
+      const expectedList = values.map((value) => `\`${value}\``).join(", ");
+      const expectedRow = `| \`${enumFields[key]}\` | ${expectedList} |`;
+      assertIncludes(schemaPath, expectedRow, `the exact allowed-values row ${expectedRow}`);
+    }
+    assertIncludes(schemaPath, "KESEKIT_PROFILE_INPUT v1", "the paste block marker");
+    assertIncludes(schemaPath, `≥ ${STALE_DAYS}`, `the ${STALE_DAYS}-day staleness rule (≥ ${STALE_DAYS})`);
+  }
+});
+
+check("skills-run-setup-gate", () => {
+  for (const skillRoot of skillRoots) {
+    for (const skillName of skillNames) {
+      const filePath = skillPath(skillRoot, skillName, "SKILL.md");
+      const content = read(filePath);
+      const gateIndex = content.indexOf(gateHeadings[skillRoot]);
+      const firstSectionIndex = content.indexOf("\n## ");
+
+      assert(gateIndex !== -1, `${rel(filePath)} is missing the "${gateHeadings[skillRoot]}" section`);
+      assert(gateIndex === firstSectionIndex + 1, `${rel(filePath)} must place "${gateHeadings[skillRoot]}" before every other section`);
+      assertIncludes(filePath, `\`kesekit:${setupSkillDirs[skillRoot]}\``, "the setup skill invocation for its own language");
+      assertIncludes(filePath, `notes.${skillName}`, `the notes.${skillName} profile field`);
+      assertIncludes(filePath, "`assessment.scope`", "the assessment.scope rule in Step 0");
+    }
+  }
+});
+
+check("setup-skill-registered", () => {
+  const marketplace = JSON.parse(read(path.join(rootDir, ".claude-plugin", "marketplace.json")));
+  const skills = marketplace.plugins.flatMap((plugin) => plugin.skills ?? []);
+
+  for (const skillRoot of skillRoots) {
+    const skillRef = `./${skillRoot}/${setupSkillDirs[skillRoot]}`;
+    assert(skills.includes(skillRef), `marketplace.json does not list ${skillRef}`);
+  }
+
+  assertIncludes(path.join(rootDir, "README.md"), "/kesekit-setup-ko", "the Korean setup command");
+  assertIncludes(path.join(rootDir, "README.md"), /\/kesekit-setup\s/, "the English setup command");
+});
+
 if (errors.length > 0) {
   console.error(`Validation failed with ${errors.length} issue(s):`);
   for (const error of errors) {
