@@ -929,6 +929,22 @@ check("marketplace-skills-exist", () => {
   }
 });
 
+// --- Plugin hooks ---
+
+check("plugin-hooks", () => {
+  const hooksPath = path.join(rootDir, "hooks", "hooks.json");
+  const scriptPath = path.join(rootDir, "hooks", "security-check-trigger.sh");
+  const config = JSON.parse(read(hooksPath));
+  const commands = (config.hooks?.UserPromptSubmit ?? []).flatMap((entry) => entry.hooks ?? []).map((hook) => hook.command);
+  assert(commands.some((command) => command?.includes("${CLAUDE_PLUGIN_ROOT}/hooks/security-check-trigger.sh")),
+    "hooks/hooks.json must run hooks/security-check-trigger.sh on UserPromptSubmit");
+  assert(fs.existsSync(scriptPath), "hooks/security-check-trigger.sh is missing");
+  if (fs.existsSync(scriptPath)) {
+    assert(!fs.readFileSync(scriptPath).includes(0x0d), "hooks/security-check-trigger.sh must use LF line endings");
+  }
+  assertIncludes(path.join(rootDir, ".gitattributes"), /^\*\.sh\s+text\s+eol=lf$/m, "the *.sh eol=lf rule");
+});
+
 if (errors.length > 0) {
   console.error(`Validation failed with ${errors.length} issue(s):`);
   for (const error of errors) {

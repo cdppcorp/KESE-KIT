@@ -56,6 +56,8 @@ Claude Code 프롬프트에 슬래시 명령어를 입력합니다:
 
 > **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 점검할 프로젝트는 [프로젝트 변경] → [폴더 선택]으로 Windows 폴더 선택 창에서 고를 수 있고, Git 원격 주소도 바꿀 수 있습니다. 언어·프레임워크 같은 환경 목록은 기본이 '자동 분석'이며 드롭다운에서 여러 개를 직접 고를 수도 있습니다. 점검 설정은 고르기 어려우면 비워 두면 추천값으로 진행하고, 선택지에 없는 내용은 '직접 입력'에 적으면 Claude가 해석해 반영합니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
 
+> **"보안점검해줘"라고만 입력해도 됩니다.** 입력에 "보안점검"(또는 "보안 점검")이 들어가면 플러그인 훅이 `/kesekit-start-ko`부터 실행하도록 Claude에게 알려 줍니다(배포 전 점검·수정·KISA 공지처럼 구체적인 요청이면 해당 스킬로 연결). 훅은 POSIX `sh`로 동작하며 Windows에서는 Claude Code가 쓰는 Git Bash에서 실행됩니다. 끄려면 `/hooks`에서 kesekit 훅을 비활성화하세요.
+
 ### 사용 예시
 
 ```
@@ -346,6 +348,8 @@ Korean versions are also available:
 
 > **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. [Change project] → [Choose folder] opens the native folder picker, and you can also change the Git remote. Environment lists such as languages and frameworks default to auto-detection; open a dropdown to pick several yourself. Leave hard assessment choices blank to use the suggestions, or describe them in "Your own words" and Claude maps them to the options. Over SSH without a browser, a terminal input template is shown instead.
 
+> **Korean shortcut:** typing "보안점검해줘" ("run a security check") — or any prompt containing "보안점검" / "보안 점검" — makes a plugin hook tell Claude to start with `/kesekit-start-ko` (or the matching check/fix/advisory skill for a more specific request). The hook is POSIX `sh` (Git Bash on Windows). Disable it in `/hooks`.
+
 #### Usage Examples
 
 ```
@@ -486,6 +490,7 @@ KESE-KIT/
 │   ├── AI_기본법_교안/               ← AI 기본법 실무 교안 (60개 절)
 │   └── KISA_보안공지_2025-2026/      ← 보호나라 보안공지 원본 (목록.csv + 공지별 본문·첨부)
 ├── authorkit/                         ← 변환 산출물 및 작업 파일
+├── hooks/                             ← hooks.json, security-check-trigger.sh ("보안점검" → kesekit 자동 연결)
 ├── scripts/                           ← validate-content.mjs, build_kisa_advisories.py, fetch_cve_enrichment.py (+ 테스트, data/cve-enrichment.json)
 ├── docs/                              ← 18개 국어 README
 ├── CONTRIBUTING.md                    ← 가이드라인 추가 방법
@@ -495,6 +500,14 @@ KESE-KIT/
 ---
 
 ## 변경 이력
+
+### v3.6.0 (2026-11-14)
+
+**"보안점검해줘" 키워드로 바로 실행 (플러그인 훅)**
+- `hooks/hooks.json` + `hooks/security-check-trigger.sh`: 입력에 "보안점검"/"보안 점검"이 있으면 `UserPromptSubmit` 훅이 `kesekit-start-ko`부터 쓰라는 안내를 Claude에게 추가 (배포 전 점검·수정·KISA 공지 요청이면 check/fix/advisory로 연결)
+- `/`로 시작하는 명령, 진행 중인 점검에 대한 질문, 폴더 이름의 "보안점검"에는 반응하지 않음. 오류가 나도 입력을 막지 않음(항상 종료 코드 0)
+- POSIX `sh`·`sed`·`grep`만 사용(Python·Node 불필요), `.gitattributes`로 `*.sh` LF 고정(Windows 체크아웃에서 CRLF로 깨지는 문제 방지)
+- `kesekit-start-ko` 설명에 "보안점검" 키워드 추가, 테스트 9개(`scripts/test_plugin_hooks.py`)와 검증기 검사 추가
 
 ### v3.5.0 (2026-11-14)
 

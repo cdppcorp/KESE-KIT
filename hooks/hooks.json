@@ -1,0 +1,16 @@
+{
+  "description": "kesekit: route '보안점검' (security check) prompts to the kesekit skills",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/security-check-trigger.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
