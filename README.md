@@ -478,6 +478,7 @@ KESE-KIT/
 - 위협 대응 점검: 비패치성 공지 91건 → TR-01~TR-43 (서버 침해·웹·개발 공급망·네트워크 장비·EoL 제품·단말/표적형) + 피싱·스미싱 동향 35건, 점검 명령은 원문 그대로 수록
 - `scripts/build_kisa_advisories.py`: 공지 HTML 표(rowspan/colspan) 파싱 → `advisories.json`(버전 행 12,256행, 고유 CVE 8,833개), 벤더 인덱스(163개 벤더), 통계 자동 갱신
 - `advisory_lookup.py`: 제품(영문 단어 경계·한영 별칭)/CVE/벤더/기간/유형 조회, Markdown·JSON 출력
+- 공지별 참고사이트(`[n] URL`, 벤더 권고·NVD 등) 2,005개와 첨부 파일명 수록, 저장소에 원본이 있으면 첨부 열람용 로컬 경로 표시
 - start/check/fix 스킬(EN/KO)에 KISA 보안공지 분기 연결, CII 패치 관리 항목의 근거로 활용
 - CI: advisory 데이터 스키마·EN/KO 동일성·통계 일치 검증, Python 단위 테스트 추가
 - `marketplace.json` 버전을 3.4.0으로 갱신 (기존 3.2.0에 머물러 있던 불일치 해소)

@@ -50,6 +50,9 @@ TOP_VENDOR_COUNT = 25
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}")
 URL_RE = re.compile(r"https?://\S+")
 NTT_RE = re.compile(r"[?&]nttId=(\d+)")
+REF_URL_RE = re.compile(r"https?://[!-~]+")  # printable ASCII only: stops before adjoining Korean text
+REF_RE = re.compile(r"[\[［](\d{1,2})[\]］]\s*(https?://[!-~]+)")
+URL_TRAILING_CHARS = ").,;]>'\""
 SOURCE_URL_PREFIX = "https://www.boho.or.kr/"
 WS_RE = re.compile(r"\s+")
 
@@ -386,9 +389,41 @@ def read_optional(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
 
 
+def body_of(text: str) -> str:
+    """본문.txt without its title/date/source header block."""
+    return text.split("\n\n", 1)[1] if "\n\n" in text else text
+
+
 def searchable_text(text: str) -> str:
-    body = text.split("\n\n", 1)[1] if "\n\n" in text else text
-    return clip(URL_RE.sub(" ", body), TEXT_MAX_CHARS)
+    return clip(URL_RE.sub(" ", body_of(text)), TEXT_MAX_CHARS)
+
+
+def clean_url(url: str) -> str:
+    return url.rstrip(URL_TRAILING_CHARS)
+
+
+def extract_refs(text: str) -> list[dict]:
+    """Reference links from the visible body (never from href attributes, which hold editor residue).
+
+    Numbered '□ 참고사이트 [n] url' entries come first, then any other URLs (vendor download
+    pages, MSRC guides, ...) without a number.
+    """
+    body = body_of(text)
+    refs: list[dict] = []
+    seen: set[str] = set()
+    for number, url in REF_RE.findall(body):
+        url = clean_url(url)
+        key = f"{number} {url}"
+        if url and key not in seen:
+            seen.add(key)
+            refs.append({"n": number, "url": url})
+    numbered = {r["url"] for r in refs}
+    for url in REF_URL_RE.findall(body):
+        url = clean_url(url)
+        if url and url not in numbered and url not in seen:
+            seen.add(url)
+            refs.append({"url": url})
+    return refs
 
 
 def build_record(row: dict, source: Path) -> tuple[dict, list[str]]:
@@ -429,6 +464,7 @@ def build_record(row: dict, source: Path) -> tuple[dict, list[str]]:
         "folder": row["폴더경로"],
         "attachments": attachments,
         "summary": make_summary(text),
+        "refs": extract_refs(text),
         # Visible text only: KISA's editor leaves hidden <a href> residue with unrelated CVE ids.
         "cves": sorted(set(CVE_RE.findall(text)) | {c for r in affected for c in CVE_RE.findall(r.get("cve", ""))}),
         "affected": dedupe_rows(affected),

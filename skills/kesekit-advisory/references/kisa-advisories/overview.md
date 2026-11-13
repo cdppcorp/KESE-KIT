@@ -55,6 +55,8 @@ Structured data collected from the KISA Boho-nara (KrCERT/CC) security notice bo
       "folder": "2026/11/...",
       "attachments": [],
       "summary": "Description section, max 500 chars",
+      "refs": [{"n": "1", "url": "https://www.php.net/..."},   ← □ 참고사이트 [n] references (visible body)
+               {"url": "https://..."}],                      ← other body URLs without a number (vendor downloads, …)
       "cves": ["CVE-..."],
       "affected": [           ← notice tables flattened per row (rowspan/colspan expanded)
         {"cve": "...", "vendor": "...", "product": "...", "ecosystem": "npm",

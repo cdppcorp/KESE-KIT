@@ -12,7 +12,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 영향도
 | 파일 | 내용 |
 |------|------|
 | `references/kisa-advisories/overview.md` | 수집 기간·통계·공지 유형·스키마·갱신 방법 (먼저 읽기) |
-| `references/kisa-advisories/advisories.json` | 공지별 영향/해결 버전 표, CVE, 요약, 검색용 본문 (약 3MB — **직접 Read 금지**, 스크립트로 조회) |
+| `references/kisa-advisories/advisories.json` | 공지별 영향/해결 버전 표, CVE, 요약, 참고사이트 링크, 첨부 파일명, 검색용 본문 (약 3MB — **직접 Read 금지**, 스크립트로 조회) |
 | `references/kisa-advisories/vendor-index.md` | 벤더별 공지 목록 (Grep 용) |
 | `references/kisa-advisories/threat-response.md` | 보안 조치·강화 권고 등에서 도출한 TR 점검항목 |
 | `scripts/advisory_lookup.py` | 조회 CLI (Python 3.8+, 표준 라이브러리만 사용) |
@@ -61,6 +61,7 @@ python scripts/advisory_lookup.py -q "next" -q "react" --format json      # 의�
 - 다른 벤더 공지에 포함된 제품도 잡힙니다 (예: NGINX → F5 공지).
 - 행이 생략되면 `--id <번호> --max-rows 0`으로 전체 행을 확인합니다. 번호가 `공지`인 상단 고정 게시물은 출력에 표시된 nttId로 조회합니다.
 - JSON 출력에서 `truncated` 또는 `rows_truncated`가 true면 `--limit 0 --max-rows 0`으로 다시 조회합니다.
+- 출력에는 공지의 **참고사이트**(벤더 권고, NVD 등 `[n] URL`)와 첨부 파일명이 포함됩니다. 저장소에 원본 아카이브가 있으면 **원본 폴더** 경로가 함께 표시되므로 첨부 PDF를 Read로 열어 확인합니다.
 
 ### 3단계: 판정
 
@@ -164,5 +165,5 @@ python scripts/advisory_lookup.py --cve CVE-2025-0282 --cve CVE-2025-0283
 - 점검은 **읽기 전용**입니다. 패키지 업데이트, 서비스 재시작, 설정 변경은 사용자 승인 후 별도로 수행합니다.
 - `advisories.json`을 통째로 Read 하지 말고 스크립트나 Grep으로 필요한 부분만 조회합니다.
 - 모든 보고서에 **데이터 기준일**을 명시하고, 기준일 이후 공지는 보호나라에서 확인하도록 안내합니다.
-- 해결 버전은 공지 시점 기준입니다. 최종 조치 전 벤더 최신 권고를 확인하도록 안내합니다.
-- 판정 근거로 공지 번호와 해당 행(제품·영향받는 버전·해결 버전)을 그대로 인용합니다.
+- 해결 버전은 공지 시점 기준입니다. 최종 조치 전 참고사이트의 벤더 권고 링크로 최신 내용을 확인하도록 안내합니다.
+- 판정 근거로 공지 번호, 해당 행(제품·영향받는 버전·해결 버전), 참고사이트 링크를 그대로 인용합니다.

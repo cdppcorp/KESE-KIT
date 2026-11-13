@@ -559,7 +559,7 @@ const advisoryRequiredFiles = [
 ];
 
 const advisoryStringKeys = ["no", "ntt", "date", "type", "title", "vendor", "url", "summary", "text"];
-const advisoryArrayKeys = ["cves", "affected", "attachments"];
+const advisoryArrayKeys = ["cves", "affected", "attachments", "refs"];
 const statsBegin = "<!-- BEGIN:STATS";
 const statsEnd = "<!-- END:STATS -->";
 
@@ -604,6 +604,8 @@ check("advisory-data-schema", () => {
     assert(badArrays.length === 0, `${label} needs array field(s): ${badArrays.join(", ")}`);
     assert(/^\d{4}-\d{2}-\d{2}$/.test(advisory?.date ?? ""), `${label} has invalid date ${advisory?.date}`);
     assert(/^\d+$/.test(advisory?.ntt ?? ""), `${label} has no numeric nttId`);
+    const badRefs = (Array.isArray(advisory?.refs) ? advisory.refs : []).filter((ref) => !/^https?:\/\/\S+$/.test(ref?.url ?? ""));
+    assert(badRefs.length === 0, `${label} has malformed reference URL(s): ${badRefs.map((ref) => ref?.url).join(", ")}`);
     assert(!seenNtt.has(advisory?.ntt), `duplicate advisory nttId ${advisory?.ntt}`);
     seenNtt.add(advisory?.ntt);
   }

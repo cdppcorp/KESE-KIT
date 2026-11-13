@@ -28,6 +28,9 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_DATA = SCRIPT_DIR.parent / "references" / "kisa-advisories" / "advisories.json"
+# Raw notice archive (본문 + attachments) when the skill runs inside the KESE-KIT repository.
+REPO_SOURCE = SCRIPT_DIR.parents[2] / "문서" / "KISA_보안공지_2025-2026" / "KISA_보안공지_2025-2026"
+REFS_SHOWN = 15
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.I)
 ROW_FIELDS = ("cve", "vendor", "product", "ecosystem", "affected", "fixed", "severity")
 REQUIRED_STR = ("no", "date", "type", "title", "vendor", "url", "summary")
@@ -82,6 +85,8 @@ LABELS = {
         "summary": "요약",
         "cves": "CVE",
         "attachments": "첨부",
+        "refs": "참고사이트",
+        "local": "원본 폴더 (본문·첨부 열람)",
         "more_rows": "… {n}행 생략 (전체: --id {id} --max-rows 0)",
         "hidden_rows": "… 질의와 무관한 행 {n}개 숨김 (전체: --id {id})",
         "more_items": "… {n}건 더 있음 (--limit 0 으로 전체 보기)",
@@ -104,6 +109,8 @@ LABELS = {
         "summary": "Summary",
         "cves": "CVEs",
         "attachments": "Attachments",
+        "refs": "References",
+        "local": "Source folder (notice body and attachments)",
         "more_rows": "… {n} more row(s) (all rows: --id {id} --max-rows 0)",
         "hidden_rows": "… {n} row(s) unrelated to the query hidden (all rows: --id {id})",
         "more_items": "… {n} more notice(s) (use --limit 0 for all)",
@@ -150,6 +157,9 @@ def record_problem(advisory: object) -> str | None:
             return f"field '{key}' must be a list"
     if not all(isinstance(row, dict) for row in advisory["affected"]):
         return "field 'affected' must contain objects"
+    refs = advisory.get("refs", [])
+    if not isinstance(refs, list) or not all(isinstance(r, dict) and isinstance(r.get("url"), str) for r in refs):
+        return "field 'refs' must be a list of {url, n?} objects"
     return None
 
 
@@ -294,6 +304,24 @@ def match_label(kind: str, rows: list[dict], advisory: dict, labels: dict) -> st
     return labels["match_" + kind]
 
 
+def render_refs(refs: list[dict], labels: dict) -> list[str]:
+    if not refs:
+        return []
+    out = [f"- {labels['refs']}:"]
+    out += [f"  - [{r['n']}] {r['url']}" if r.get("n") else f"  - {r['url']}" for r in refs[:REFS_SHOWN]]
+    if len(refs) > REFS_SHOWN:
+        out.append(f"  - … +{len(refs) - REFS_SHOWN}")
+    return out
+
+
+def local_folder(advisory: dict) -> str | None:
+    """Absolute path of the archived notice folder, if the raw archive is present next to the skill."""
+    if not advisory.get("folder"):
+        return None
+    path = REPO_SOURCE / advisory["folder"]
+    return str(path) if path.is_dir() else None
+
+
 def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.Namespace, labels: dict) -> list[str]:
     a = advisory
     ident = ref_id(a)
@@ -310,6 +338,10 @@ def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.
         out.append(f"- {labels['cves']}: {', '.join(cves)}")
     if a.get("attachments"):
         out.append(f"- {labels['attachments']}: {', '.join(a['attachments'])}")
+    out += render_refs(a.get("refs", []), labels)
+    folder = local_folder(a)
+    if folder:
+        out.append(f"- {labels['local']}: {folder}")
     table = render_rows(rows, args, labels, ident)
     if table:
         out += [""] + table
@@ -343,6 +375,9 @@ def slim(advisory: dict) -> dict:
     """Advisory without bulky fields, for JSON output."""
     out = {k: v for k, v in advisory.items() if k not in ("affected", "tables", "text")}
     out["rows_total"] = len(advisory["affected"])
+    folder = local_folder(advisory)
+    if folder:
+        out["local_folder"] = folder
     return out
 
 

@@ -165,6 +165,25 @@ class TextHelpersTest(unittest.TestCase):
         text = "제목\n게시일: x\n\n□ 개요  o 개요 내용  □ 설명  o 설명 내용 (CVE-2026-1)  □ 참고사이트 [1] url"
         self.assertEqual(build.make_summary(text), "o 설명 내용 (CVE-2026-1)")
 
+    def test_extract_refs(self):
+        text = (
+            "제목\n원문: https://www.boho.or.kr/x\n\n□ 개요 o 발표 [1] 다운로드: https://vendor.example/dl.exe) "
+            "□ 참고사이트 [1] https://www.php.net/archive/2026.php#2026-10-23-1 ［2］ https://nvd.nist.gov/vuln/detail/CVE-2026-1, "
+            "[1] https://www.php.net/archive/2026.php#2026-10-23-1 https://example.org/a에서"
+        )
+        self.assertEqual(
+            build.extract_refs(text),
+            [
+                {"n": "1", "url": "https://www.php.net/archive/2026.php#2026-10-23-1"},
+                {"n": "2", "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-1"},
+                {"url": "https://vendor.example/dl.exe"},
+                {"url": "https://example.org/a"},
+            ],
+        )
+
+    def test_extract_refs_ignores_header_source_url(self):
+        self.assertEqual(build.extract_refs("제목\n원문: https://www.boho.or.kr/x\n\n본문만"), [])
+
     def test_clip_adds_ellipsis(self):
         self.assertEqual(build.clip("abcdef", 4), "abc…")
 
@@ -196,6 +215,7 @@ class RecordAndOutputTest(unittest.TestCase):
         self.assertEqual(record["vendor"], "Ivanti")
         self.assertEqual(record["ntt"], "71627")
         self.assertIn("버퍼 오버플로우", record["text"])
+        self.assertEqual(record["refs"], [])
         self.assertIn("CVE-2025-0283", record["cves"])  # from the table
         self.assertNotIn("CVE-2024-11639", record["cves"])  # hidden <a href> residue
         self.assertEqual(len(record["affected"]), 3)
@@ -223,10 +243,10 @@ class RecordAndOutputTest(unittest.TestCase):
         self.assertNotIn("old", overview)
 
 
-def advisory(no, date, title, vendor, affected=(), cves=(), summary="", text="", ntt=""):
+def advisory(no, date, title, vendor, affected=(), cves=(), summary="", text="", ntt="", refs=()):
     return {"no": no, "ntt": ntt or no, "date": date, "type": "보안 업데이트 권고", "title": title, "vendor": vendor,
-            "url": f"u{no}", "folder": "", "attachments": [], "summary": summary, "cves": list(cves),
-            "affected": list(affected), "text": text}
+            "url": f"u{no}", "folder": f"f{no}/", "attachments": [], "summary": summary, "cves": list(cves),
+            "affected": list(affected), "text": text, "refs": list(refs)}
 
 
 SAMPLE_DATA = {
@@ -234,6 +254,7 @@ SAMPLE_DATA = {
     "coverage": {"first": "2026-01-01", "last": "2026-03-01", "count": 6},
     "advisories": [
         advisory("3", "2026-03-01", "PHP 보안 업데이트 권고", "PHP", cves=["CVE-2026-3"], summary="PHP 취약점",
+                 refs=[{"n": "1", "url": "https://www.php.net/x"}, {"url": "https://nvd.nist.gov/y"}],
                  affected=[{"cve": "CVE-2026-3", "product": "PHP", "affected": "8.3.0 이상 8.3.9 미만", "fixed": "8.3.9"}]),
         advisory("2", "2026-02-01", "F5 제품 보안 업데이트 권고", "F5", cves=["CVE-2026-2", "CVE-2026-9"],
                  affected=[{"cve": "CVE-2026-2", "product": "NGINX Open Source", "affected": "1.30.5 이하", "fixed": "1.30.6"},
@@ -335,6 +356,23 @@ class LookupTest(unittest.TestCase):
         self.assertIn("table rows 1/2", out)
         self.assertIn("1 row(s) unrelated to the query hidden", out)
 
+    def test_references_are_rendered(self):
+        out = self.run_main("--id", "3")
+        self.assertIn("- 참고사이트:\n  - [1] https://www.php.net/x\n  - https://nvd.nist.gov/y", out)
+        match = json.loads(self.run_main("--id", "3", "--format", "json"))["results"][0]["matches"][0]
+        self.assertEqual(match["refs"][0]["url"], "https://www.php.net/x")
+
+    def test_local_folder_shown_only_when_archive_exists(self):
+        original = lookup.REPO_SOURCE
+        with tempfile.TemporaryDirectory() as tmp:
+            lookup.REPO_SOURCE = Path(tmp)
+            try:
+                self.assertIsNone(lookup.local_folder(self.by_no("3")))
+                (Path(tmp) / "f3").mkdir()
+                self.assertEqual(lookup.local_folder(self.by_no("3")), str(Path(tmp) / "f3/"))
+            finally:
+                lookup.REPO_SOURCE = original
+
     def test_id_accepts_ntt_for_pinned_notices(self):
         out = self.run_main("--id", "72207", "--lang", "en")
         self.assertIn("#공지 (nttId 72207)", out)
@@ -373,6 +411,8 @@ class LoadTest(unittest.TestCase):
         self.check_rejected('{"schema": 1, "advisories": [{"no": "1"}]}', "must be a string")
         bad_rows = {"schema": 1, "advisories": [{**SAMPLE_DATA["advisories"][0], "affected": "x"}]}
         self.check_rejected(json.dumps(bad_rows), "must be a list")
+        bad_refs = {"schema": 1, "advisories": [{**SAMPLE_DATA["advisories"][0], "refs": [{"n": "1"}]}]}
+        self.check_rejected(json.dumps(bad_refs), "field 'refs'")
 
     def test_load_missing_file(self):
         with self.assertRaises(SystemExit):

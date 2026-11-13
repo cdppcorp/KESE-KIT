@@ -54,6 +54,8 @@ KISA 보호나라(KrCERT/CC) 보안공지를 수집·구조화한 데이터입�
       "folder": "2026/11/...",
       "attachments": [],
       "summary": "□ 설명 섹션 요약 (최대 500자)",
+      "refs": [{"n": "1", "url": "https://www.php.net/..."},   ← □ 참고사이트 [n] (본문 기준)
+               {"url": "https://..."}],                      ← 번호 없는 본문 URL (벤더 다운로드 등)
       "cves": ["CVE-..."],
       "affected": [           ← 공지 표를 행 단위로 펼친 결과 (rowspan/colspan 전개)
         {"cve": "...", "vendor": "...", "product": "...", "ecosystem": "npm",

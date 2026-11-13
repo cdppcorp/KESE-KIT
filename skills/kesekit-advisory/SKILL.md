@@ -12,7 +12,7 @@ Runs exposure checks, notice briefings, CVE lookups, and threat-response checks 
 | File | Content |
 |------|---------|
 | `references/kisa-advisories/overview.md` | Coverage, stats, notice types, schema, Korean version phrases, refresh steps (read first) |
-| `references/kisa-advisories/advisories.json` | Affected/fixed version rows, CVEs, summaries, searchable body text per notice (~3 MB — **do not Read it whole**; query with the script) |
+| `references/kisa-advisories/advisories.json` | Affected/fixed version rows, CVEs, summaries, reference links, attachment names, searchable body text per notice (~3 MB — **do not Read it whole**; query with the script) |
 | `references/kisa-advisories/vendor-index.md` | Notices grouped by vendor (for Grep) |
 | `references/kisa-advisories/threat-response.md` | TR check items derived from hardening/caution advisories |
 | `scripts/advisory_lookup.py` | Query CLI (Python 3.8+, standard library only) |
@@ -63,6 +63,7 @@ python scripts/advisory_lookup.py -q "next" -q "react" --format json      # many
 - Products listed inside another vendor's notice are found too (e.g. NGINX inside an F5 notice).
 - When rows are truncated, use `--id <number> --max-rows 0` for every row. Pinned notices numbered `공지` are addressed by the nttId shown in the output.
 - In JSON output, if `truncated` or `rows_truncated` is true, query again with `--limit 0 --max-rows 0`.
+- Output includes each notice's **References** (vendor advisory, NVD, … as `[n] URL`) and attachment names. When the raw archive is present in the repository, a **Source folder** path is shown too — Read the attached PDFs from there.
 
 ### Step 3: Verdict
 
@@ -166,5 +167,5 @@ Add new notices under `문서/KISA_보안공지_2025-2026/`, then run `python sc
 - Checks are **read-only**. Package updates, service restarts, and config changes happen separately after user approval.
 - Never Read `advisories.json` whole; query with the script or Grep.
 - State the **data cut-off** in every report and tell the user to check Boho-nara for later notices.
-- Fixed versions are as of the notice date; advise confirming the vendor's latest advisory before remediation.
-- Quote the notice number and the exact row (product, affected, fixed) as evidence for each verdict.
+- Fixed versions are as of the notice date; before remediation, confirm the latest vendor advisory via the notice's reference links.
+- Quote the notice number, the exact row (product, affected, fixed), and the reference links as evidence for each verdict.
