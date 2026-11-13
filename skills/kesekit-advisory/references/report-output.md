@@ -50,7 +50,7 @@ For every partial, vulnerable, or to-verify item, fill in **all** of the fields 
 | Format | Output file | How | Tools needed |
 |--------|-------------|-----|--------------|
 | `html` (default) | `report.html` | Copy the `templates/report/report.html` template and fill it in | None |
-| `pdf` | `report.pdf` | Write `report.html`, then print it to PDF with a browser | Edge, Chrome, or Chromium; otherwise LibreOffice |
+| `pdf` | `report.pdf` | Write `report.html`, then print it to PDF with a browser | Edge, Chrome, or Chromium |
 | `hwpx` | `report.hwpx` | Write `report-hwpx.md` with the same structure, then convert it with kordoc | kordoc (Node.js 20 or later) |
 | `pptx` | `report.pptx` | Write a condensed `report-slides.md`, then convert it with pandoc | pandoc; otherwise python-pptx |
 | `md` | The per-item result Markdown | The files from rule 1 are the report. Organize `summary.md` as sections 1, 2, 4, and 5 of "Report Structure" | None |
@@ -67,11 +67,16 @@ For every partial, vulnerable, or to-verify item, fill in **all** of the fields 
 Write `report.html` first, then convert it.
 
 ```powershell
-# Windows: Edge (built into Windows) or Chrome
+# Windows: Edge (built into Windows) or Chrome. The browser returns at once, so wait for the PDF to appear.
 $browser = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
   "$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe") |
   Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
-& $browser --headless --disable-gpu --no-pdf-header-footer --print-to-pdf='<report folder>\report.pdf' '<absolute path of report.html>'
+$pdf = '<report folder>\report.pdf'
+Remove-Item -LiteralPath $pdf -ErrorAction SilentlyContinue
+& $browser --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="$pdf" '<absolute path of report.html>'
+$deadline = (Get-Date).AddSeconds(60)
+while (-not ((Test-Path -LiteralPath $pdf) -and (Get-Item -LiteralPath $pdf).Length -gt 0) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 500 }
+Start-Sleep -Seconds 1
 ```
 
 ```bash
@@ -80,7 +85,7 @@ chromium --headless --disable-gpu --no-pdf-header-footer --print-to-pdf='<report
 # macOS: same arguments with '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' or the Microsoft Edge app
 ```
 
-With no browser but LibreOffice available, use `soffice --headless --convert-to pdf --outdir '<report folder>' '<report.html>'`. Afterwards, check that `report.pdf` exists and is not empty.
+If `report.pdf` does not appear within 60 seconds or is empty, treat the conversion as failed and fall back to HTML; do the same when no browser is available. LibreOffice is not used for PDF because it cannot reproduce this template's layout (grid and print styles).
 
 ## HWPX (kordoc)
 

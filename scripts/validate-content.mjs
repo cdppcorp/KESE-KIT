@@ -712,7 +712,15 @@ check("setup-i18n-covers-form", () => {
     values.forEach((value) => keys.add(`enum.${key}.${value}`));
     if (key !== "role") keys.add(`legend.${key}`);
     if (!enumsWithoutFreeText.includes(key)) keys.add(`customPlaceholder.${key}`);
-    if (key === "reportFormat") values.forEach((value) => keys.add(`reportDesc.${value}`));
+    if (key === "reportFormat") {
+      const builtinMatch = script.match(/const BUILTIN_FORMATS = (\[[^\]]*\]);/);
+      const builtin = builtinMatch ? JSON.parse(builtinMatch[1]) : [];
+      assert(builtinMatch !== null, "setup-form.js must declare BUILTIN_FORMATS");
+      values.forEach((value) => {
+        keys.add(`reportDesc.${value}`);
+        if (!builtin.includes(value)) keys.add(`reportTool.${value}None`);
+      });
+    }
   }
   reportToolKeys.forEach((key) => keys.add(`reportTool.${key}`));
   keys.add("reportDefault");
@@ -833,8 +841,12 @@ check("report-output-rules", () => {
     }
     for (const dir of reportOutputSkills[skillRoot]) {
       const skillFile = path.join(rootDir, skillRoot, dir, "SKILL.md");
-      assertIncludes(skillFile, "`output.reportFormat`", "the report format rule in Step 0");
-      assertIncludes(skillFile, "`references/report-output.md`", "a pointer to references/report-output.md");
+      const content = read(skillFile).replaceAll("\r\n", "\n");
+      const gateStart = content.indexOf(gateHeadings[skillRoot]);
+      const gateEnd = gateStart === -1 ? -1 : content.indexOf("\n## ", gateStart + 1);
+      const stepZero = gateStart === -1 ? "" : content.slice(gateStart, gateEnd === -1 ? undefined : gateEnd);
+      assert(stepZero.includes("`output.reportFormat`"), `${rel(skillFile)} Step 0 must apply \`output.reportFormat\``);
+      assert(stepZero.includes("`references/report-output.md`"), `${rel(skillFile)} Step 0 must point to \`references/report-output.md\``);
     }
     assertIncludes(setupPath(skillRoot, "references", "detection.md"), "`reportTools`", "the report tool detection (`reportTools`)");
     for (const marker of reportTemplateMarkers[skillRoot]) {
@@ -860,8 +872,11 @@ check("report-template", () => {
     for (const marker of [...reportTemplateCommon, ...reportTemplateFields[skillRoot]]) {
       assertIncludes(baselinePath, marker, `the report template marker ${marker}`);
     }
-    assert(!/<script\b/i.test(markup), `${rel(baselinePath)} must not contain <script>`);
-    assert(!/(?:href|src)=["']https?:|@import|url\(\s*["']?https?:/i.test(markup), `${rel(baselinePath)} must not load external resources`);
+    assert(!/<script\b|\son[a-z]+\s*=|javascript:/i.test(markup), `${rel(baselinePath)} must not contain scripts, event handlers, or javascript: URLs`);
+    assert(
+      !/(?:href|src|action|srcset)\s*=\s*["']?(?:[a-z][a-z0-9+.-]*:)?\/\/|@import|url\(\s*["']?(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(markup),
+      `${rel(baselinePath)} must not load external resources`,
+    );
     styles[skillRoot] = (markup.match(/<style>[\s\S]*?<\/style>/) || [""])[0];
 
     for (const dir of others) {

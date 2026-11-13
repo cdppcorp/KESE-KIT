@@ -262,6 +262,6 @@ CPU: Intel(R) Xeon(R) Silver 4310
 받은 내용은 다음처럼 처리합니다.
 
 1. **경로가 바뀌었으면**: 경로 안전 규칙을 확인하고 폴더가 있는지 본 뒤, 그 경로에서 프로젝트를 다시 탐지하고 추천값을 다시 계산합니다. 사용자가 적은 답을 유지한 채 새 탐지값으로 템플릿을 다시 출력하고, 다시 붙여넣어 달라고 합니다.
-2. 각 항목은 선택지 값이면 `selected`, 자유 서술이면 `custom`(원문은 `assessment.custom`에 보관), 비어 있으면 그 자리에 추천값을 넣고 `recommended`로 둡니다. 장비 역할을 비워 두면 탐지값을 쓰고 `roleEdited`는 `false`입니다. Git 주소가 탐지값과 다르면 `gitRemoteEdited`는 `true`입니다. 보고서 형식을 비워 두면 `html`입니다.
+2. 각 항목은 선택지 값이면 `selected`, 자유 서술이면 `custom`(원문은 `assessment.custom`에 보관), 비어 있으면 그 자리에 추천값을 넣고 `recommended`로 둡니다. 장비 역할을 비워 두면 탐지값을 쓰고 `roleEdited`는 `false`입니다. Git 주소가 탐지값과 다르면 `gitRemoteEdited`는 `true`입니다. 보고서 형식은 선택지 값만 저장합니다. 비워 두면 `html`이고, "PDF"·"한글"·"PPT"·"마크다운" 같은 표현은 해당 값(`pdf`·`hwpx`·`pptx`·`md`)으로 바꿉니다. 바꿀 수 없으면 `html`로 두고 요약에서 알립니다.
 3. `environmentSource`는 모두 `auto`로 둡니다.
 4. "붙여넣기 블록 검증" 4~8번과 "입력값 확정" 2~5번을 적용합니다.

@@ -57,7 +57,7 @@ description: KESE 초기 설정. 점검할 PC·서버 사양과 프로젝트 환
    - `reportTools`는 입력 화면의 "보고서 형식"에 도구 사용 가능 여부를 보여 주는 데만 씁니다(`references/detection.md`의 "보고서 변환 도구").
    - `reasons[].detail`에는 바뀐 내용을 구체적으로 적습니다(예: "프로젝트 경로 C:/a → C:/b", "구성 파일 추가: Dockerfile", "필수 항목 없음: assessment.scope").
    - `generatedAt`은 `setup-data.js`를 쓸 때마다(다시 쓸 때 포함) 새 시각으로 바꿉니다. `recommended`의 다섯 항목은 비워 두지 않습니다(`references/detection.md`의 "추천 분야").
-   - `previous`에는 기존 프로필을 읽을 수 있고 그 `project.workspace`가 현재 작업 폴더와 같은 경로일 때만 그 내용을 넣습니다. 화면은 사용자가 직접 정한 것만 다시 채웁니다: `source`가 `selected`인 점검 설정, 직접 입력, 노트, `environmentSource`가 `manual`인 환경 목록, `gitRemoteEdited`·`roleEdited`가 `true`인 Git 주소와 장비 역할. 나머지는 이번 탐지값과 추천값을 따릅니다. 경로가 다르면(다른 프로젝트이거나 저장소와 함께 복사된 프로필) `null`로 두어 남이 쓴 노트가 섞이지 않게 합니다.
+   - `previous`에는 기존 프로필을 읽을 수 있고 그 `project.workspace`가 현재 작업 폴더와 같은 경로일 때만 그 내용을 넣습니다. 화면은 사용자가 직접 정한 것만 다시 채웁니다: `source`가 `selected`인 점검 설정, 직접 입력, 노트, `environmentSource`가 `manual`인 환경 목록, `gitRemoteEdited`·`roleEdited`가 `true`인 Git 주소와 장비 역할, 보고서 형식(`output.reportFormat`). 나머지는 이번 탐지값과 추천값을 따릅니다. 경로가 다르면(다른 프로젝트이거나 저장소와 함께 복사된 프로필) `null`로 두어 남이 쓴 노트가 섞이지 않게 합니다.
    - 값은 JSON 규칙대로 직렬화합니다. 경로·호스트명 같은 문자열의 따옴표와 역슬래시는 반드시 이스케이프합니다.
 3. 브라우저를 쓸 수 있는지 판단합니다(`references/detection.md`의 "브라우저 사용 가능 여부").
    - 쓸 수 있으면 기본 브라우저로 엽니다. Windows는 `Start-Process .kesekit\setup.html`, macOS는 `open .kesekit/setup.html`, Linux는 `xdg-open .kesekit/setup.html`입니다.

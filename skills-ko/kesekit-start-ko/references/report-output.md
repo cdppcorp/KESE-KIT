@@ -50,7 +50,7 @@
 | 형식 | 결과 파일 | 만드는 방법 | 필요한 도구 |
 |------|-----------|-------------|-------------|
 | `html` (기본) | `report.html` | `templates/report/report.html` 견본을 복사해 채움 | 없음 |
-| `pdf` | `report.pdf` | `report.html`을 만든 뒤 브라우저로 PDF 인쇄 | Edge·Chrome·Chromium, 없으면 LibreOffice |
+| `pdf` | `report.pdf` | `report.html`을 만든 뒤 브라우저로 PDF 인쇄 | Edge·Chrome·Chromium |
 | `hwpx` | `report.hwpx` | 같은 구성으로 `report-hwpx.md`를 쓴 뒤 kordoc으로 변환 | kordoc (Node.js 20 이상) |
 | `pptx` | `report.pptx` | 같은 구성을 줄여 `report-slides.md`를 쓴 뒤 pandoc으로 변환 | pandoc, 없으면 python-pptx |
 | `md` | 항목별 결과 Markdown | 1번에서 쓴 파일이 곧 보고서. `summary.md`를 "보고서 구성"의 1·2·4·5장 순서로 정리 | 없음 |
@@ -67,11 +67,16 @@
 `report.html`을 먼저 만든 뒤 변환합니다.
 
 ```powershell
-# Windows: Edge(Windows 기본 탑재) 또는 Chrome
+# Windows: Edge(Windows 기본 탑재) 또는 Chrome. 브라우저는 바로 반환하므로 PDF가 생길 때까지 기다립니다.
 $browser = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
   "$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe") |
   Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
-& $browser --headless --disable-gpu --no-pdf-header-footer --print-to-pdf='<보고서 폴더>\report.pdf' '<report.html 절대 경로>'
+$pdf = '<보고서 폴더>\report.pdf'
+Remove-Item -LiteralPath $pdf -ErrorAction SilentlyContinue
+& $browser --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="$pdf" '<report.html 절대 경로>'
+$deadline = (Get-Date).AddSeconds(60)
+while (-not ((Test-Path -LiteralPath $pdf) -and (Get-Item -LiteralPath $pdf).Length -gt 0) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 500 }
+Start-Sleep -Seconds 1
 ```
 
 ```bash
@@ -80,7 +85,7 @@ chromium --headless --disable-gpu --no-pdf-header-footer --print-to-pdf='<보고
 # macOS: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' 또는 Microsoft Edge 앱으로 같은 인자를 씁니다
 ```
 
-브라우저가 없고 LibreOffice가 있으면 `soffice --headless --convert-to pdf --outdir '<보고서 폴더>' '<report.html>'`로 변환합니다. 명령이 끝나면 `report.pdf`가 생겼는지, 크기가 0이 아닌지 확인합니다.
+60초 안에 `report.pdf`가 생기지 않거나 크기가 0이면 변환 실패로 보고 HTML로 대체합니다. 브라우저가 없을 때도 HTML로 대체합니다. LibreOffice는 이 견본의 레이아웃(격자·인쇄 스타일)을 옮기지 못해 PDF 변환에 쓰지 않습니다.
 
 ## HWPX (kordoc)
 

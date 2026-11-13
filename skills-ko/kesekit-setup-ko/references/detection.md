@@ -256,7 +256,7 @@ Get-ChildItem -LiteralPath $root -Recurse -Depth 1 -File -Include $names -ErrorA
 
 | 키 | 값 | 판단 |
 |----|----|------|
-| `pdf` | `Edge`, `Chrome`, `Chromium`, `LibreOffice`, `null` | 처음 찾은 브라우저, 없으면 LibreOffice(`soffice`) |
+| `pdf` | `Edge`, `Chrome`, `Chromium`, `null` | 처음 찾은 브라우저(LibreOffice는 견본 레이아웃을 옮기지 못해 쓰지 않음) |
 | `hwpx` | `kordoc`, `kordoc-mcp`, `npx`, `null` | `kordoc` 명령이 있으면 `kordoc`, Claude 도구 목록에 kordoc MCP 도구가 있으면 `kordoc-mcp`, Node.js 20 이상만 있으면 `npx`(실행 전 동의 필요), 모두 없으면 `null` |
 | `pptx` | `pandoc`, `python-pptx`, `null` | `pandoc` 명령, 없으면 Python에서 `import pptx` |
 
@@ -265,14 +265,15 @@ Get-ChildItem -LiteralPath $root -Recurse -Depth 1 -File -Include $names -ErrorA
 @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
   "$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe") |
   Where-Object { Test-Path -LiteralPath $_ }
-foreach ($c in 'soffice','kordoc','node','pandoc') { if (Get-Command $c -ErrorAction SilentlyContinue) { $c } }
-node --version 2>$null
-python -c "import pptx" 2>$null; if ($LASTEXITCODE -eq 0) { 'python-pptx' }
+foreach ($c in 'kordoc','node','pandoc') { if (Get-Command $c -ErrorAction SilentlyContinue) { $c } }
+if (Get-Command node -ErrorAction SilentlyContinue) { node --version }
+# python이 있을 때만 확인합니다(없으면 이전 명령의 종료 코드를 잘못 읽게 됨)
+if (Get-Command python -ErrorAction SilentlyContinue) { python -c "import pptx" 2>$null; if ($LASTEXITCODE -eq 0) { 'python-pptx' } }
 ```
 
 ```bash
 # Linux·macOS
-for c in microsoft-edge google-chrome chromium chromium-browser soffice kordoc node pandoc; do command -v "$c" >/dev/null 2>&1 && echo "$c"; done
+for c in microsoft-edge google-chrome chromium chromium-browser kordoc node pandoc; do command -v "$c" >/dev/null 2>&1 && echo "$c"; done
 [ -d '/Applications/Microsoft Edge.app' ] && echo edge-app; [ -d '/Applications/Google Chrome.app' ] && echo chrome-app
 node --version 2>/dev/null
 python3 -c 'import pptx' 2>/dev/null && echo python-pptx

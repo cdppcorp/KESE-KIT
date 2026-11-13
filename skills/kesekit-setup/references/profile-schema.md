@@ -262,6 +262,6 @@ Memory (GB): 64
 Process the reply as follows:
 
 1. **If the path changed**: check the Path Safety Rules and that the folder exists, re-detect the project at that path, and recompute suggestions. Print the template again with the user's answers kept and the new detection filled in, and ask the user to paste it again.
-2. Each item is `selected` when it uses allowed values, `custom` when it is free text (keep the text in `assessment.custom`), and when blank, fill in the suggestion and mark it `recommended`. A blank machine role uses the detected role with `roleEdited` `false`. If the Git remote differs from the detected one, `gitRemoteEdited` is `true`. A blank report format means `html`.
+2. Each item is `selected` when it uses allowed values, `custom` when it is free text (keep the text in `assessment.custom`), and when blank, fill in the suggestion and mark it `recommended`. A blank machine role uses the detected role with `roleEdited` `false`. If the Git remote differs from the detected one, `gitRemoteEdited` is `true`. The report format is saved only as an allowed value: blank means `html`, and words such as "PDF", "Hangul", "PowerPoint", or "Markdown" map to `pdf`, `hwpx`, `pptx`, or `md`. If it cannot be mapped, use `html` and say so in the summary.
 3. Set every `environmentSource` to `auto`.
 4. Apply rules 4–8 of "Paste Block Validation" and steps 2–5 of "Resolving the Input".

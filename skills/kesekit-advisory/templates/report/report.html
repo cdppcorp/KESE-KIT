@@ -80,7 +80,7 @@
 
   .doc-foot { display: flex; justify-content: space-between; gap: 4mm; margin-top: 14mm; padding-top: 3mm; border-top: .75pt solid var(--line); font-size: 9pt; color: var(--muted); }
 
-  @media (max-width: 760px) {
+  @media screen and (max-width: 760px) {
     .paper { margin: 0; padding: 8mm 5mm; border: 0; }
     dl.fd, .compare { grid-template-columns: minmax(0, 1fr); }
     dl.fd dt { border-bottom: 0; }
@@ -95,6 +95,8 @@
     h2, h3, h4, .finding-head, dl.fd dt { break-after: avoid; }
     tr, figure, pre { break-inside: avoid; }
     pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    td code, thead th { white-space: normal; }
+    code { overflow-wrap: anywhere; }
     a { color: inherit; text-decoration: none; }
   }
 </style>

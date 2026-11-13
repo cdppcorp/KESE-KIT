@@ -256,7 +256,7 @@ Checked so the form's "Report format" section can show what is available. Only l
 
 | Key | Values | Rule |
 |-----|--------|------|
-| `pdf` | `Edge`, `Chrome`, `Chromium`, `LibreOffice`, `null` | The first browser found, otherwise LibreOffice (`soffice`) |
+| `pdf` | `Edge`, `Chrome`, `Chromium`, `null` | The first browser found (LibreOffice is not used; it cannot reproduce the template layout) |
 | `hwpx` | `kordoc`, `kordoc-mcp`, `npx`, `null` | `kordoc` if the command exists, `kordoc-mcp` if Claude's tool list has kordoc MCP tools, `npx` if only Node.js 20 or later is available (consent needed before running), otherwise `null` |
 | `pptx` | `pandoc`, `python-pptx`, `null` | The `pandoc` command, otherwise Python `import pptx` |
 
@@ -265,14 +265,15 @@ Checked so the form's "Report format" section can show what is available. Only l
 @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
   "$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe") |
   Where-Object { Test-Path -LiteralPath $_ }
-foreach ($c in 'soffice','kordoc','node','pandoc') { if (Get-Command $c -ErrorAction SilentlyContinue) { $c } }
-node --version 2>$null
-python -c "import pptx" 2>$null; if ($LASTEXITCODE -eq 0) { 'python-pptx' }
+foreach ($c in 'kordoc','node','pandoc') { if (Get-Command $c -ErrorAction SilentlyContinue) { $c } }
+if (Get-Command node -ErrorAction SilentlyContinue) { node --version }
+# Check only when python exists (otherwise a stale exit code from an earlier command is read)
+if (Get-Command python -ErrorAction SilentlyContinue) { python -c "import pptx" 2>$null; if ($LASTEXITCODE -eq 0) { 'python-pptx' } }
 ```
 
 ```bash
 # Linux and macOS
-for c in microsoft-edge google-chrome chromium chromium-browser soffice kordoc node pandoc; do command -v "$c" >/dev/null 2>&1 && echo "$c"; done
+for c in microsoft-edge google-chrome chromium chromium-browser kordoc node pandoc; do command -v "$c" >/dev/null 2>&1 && echo "$c"; done
 [ -d '/Applications/Microsoft Edge.app' ] && echo edge-app; [ -d '/Applications/Google Chrome.app' ] && echo chrome-app
 node --version 2>/dev/null
 python3 -c 'import pptx' 2>/dev/null && echo python-pptx
