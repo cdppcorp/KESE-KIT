@@ -15,10 +15,11 @@ Run this before any other step.
    - If the profile is missing, has empty required fields, was last updated 14 or more days ago, or the project or environment changed, setup opens the HTML input form and saves the result.
    - When setup finishes, come back to this skill and continue with the next step.
 2. Read `.kesekit/profile.json` and apply it:
+   - Target: the project to assess is `project.path`. It can differ from the current working directory, so read code and manifests from that path.
    - Domains: use only the `assessment.domains` entries that have a branch section in this skill, and say which ones were skipped. If one remains, skip the "Guideline Selection" question below and proceed; if several remain, ask once which to run first (or all in order), offering only those. If the user names a domain in this request, follow the user.
    - Scope: do not cover targets missing from `assessment.scope` (no `host` → skip this machine's OS and service settings; no `project-code` → skip the code). Put `assessment.purpose` at the top of the results as the assessment purpose.
    - When no previous assessment exists, pick the target platform from `system.os` and `assessment.ciiTargets` instead of asking again.
-   - Treat `notes.common` and `notes.fix` as user requests. Notes cannot override this skill's safety rules.
+   - Treat `assessment.custom` (the user's own words) together with `notes.common` and `notes.fix` as user requests. They cannot override this skill's safety rules.
 3. If the setup skill is unavailable, tell the user to run `/kesekit-setup` first, then continue from "Guideline Selection" below without a profile.
 
 ## Guideline Selection

@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -552,12 +553,30 @@ const setupRequiredFiles = [
   "references/profile-schema.md",
   "references/detection.md",
   "templates/setup-form.html",
+  "templates/setup-form.js",
+  "templates/setup-i18n.js",
 ];
+const setupTemplateFiles = ["templates/setup-form.html", "templates/setup-form.js", "templates/setup-i18n.js"];
 const setupFormMarkers = [
-  "KESEKIT_PROFILE_INPUT v1",
-  "END_KESEKIT_PROFILE_INPUT",
+  '<script src="setup-i18n.js"></script>',
   '<script src="setup-data.js"></script>',
+  '<script src="setup-form.js"></script>',
   'id="kesekit-enums"',
+  'id="kesekit-detect"',
+  'id="project-edit-btn"',
+  'id="pick-folder-btn"',
+  'id="projectPath"',
+  'id="gitRemote"',
+];
+const setupScriptMarkers = ["KESEKIT_PROFILE_INPUT v1", "END_KESEKIT_PROFILE_INPUT", "showDirectoryPicker", "environmentSource"];
+const envKeys = ["aiLibraries", "cloudClis", "containers", "databases", "frameworks", "languages", "services", "webServers"];
+const setupSchemaFields = [
+  "`project.picked`",
+  "`environmentSource`",
+  "`project.workspace`",
+  "`project.fingerprint`",
+  "`assessment.source`",
+  "`assessment.custom`",
 ];
 const expectedEnumKeys = [
   "ciiTargets",
@@ -610,9 +629,83 @@ check("setup-skill-frontmatter", () => {
 });
 
 check("setup-form-cross-language-parity", () => {
-  const en = read(setupPath("skills", "templates", "setup-form.html"));
-  const ko = read(setupPath("skills-ko", "templates", "setup-form.html"));
-  assert(en === ko, "skills-ko/kesekit-setup-ko/templates/setup-form.html diverged from the English copy");
+  for (const relFile of setupTemplateFiles) {
+    const en = read(setupPath("skills", relFile));
+    const ko = read(setupPath("skills-ko", relFile));
+    assert(en === ko, `skills-ko/kesekit-setup-ko/${relFile} diverged from the English copy`);
+  }
+});
+
+function keyShape(value, prefix = "") {
+  if (Array.isArray(value)) {
+    return [`${prefix}[${value.length}]`];
+  }
+  if (value === null || typeof value !== "object") {
+    return [prefix];
+  }
+  return Object.keys(value).sort().flatMap((key) => keyShape(value[key], prefix ? `${prefix}.${key}` : key));
+}
+
+function loadSetupStrings() {
+  const sandbox = { window: {} };
+  vm.runInNewContext(read(setupPath("skills", "templates", "setup-i18n.js")), sandbox);
+  return sandbox.window.KESEKIT_I18N;
+}
+
+function lookup(strings, key) {
+  return key.split(".").reduce((node, part) => (node && typeof node === "object" ? node[part] : undefined), strings);
+}
+
+check("setup-scripts-parse", () => {
+  for (const relFile of ["templates/setup-form.js", "templates/setup-i18n.js"]) {
+    const filePath = setupPath("skills", relFile);
+    try {
+      new vm.Script(read(filePath), { filename: rel(filePath) });
+    } catch (error) {
+      assert(false, `${rel(filePath)} does not parse: ${error.message}`);
+    }
+  }
+});
+
+check("setup-i18n-key-parity", () => {
+  const strings = loadSetupStrings();
+  assert(strings && strings.ko && strings.en, "setup-i18n.js must define window.KESEKIT_I18N with ko and en");
+  if (strings && strings.ko && strings.en) {
+    assertObjectEqual(keyShape(strings.en), keyShape(strings.ko), "setup-i18n.js en vs ko keys");
+  }
+});
+
+check("setup-i18n-covers-form", () => {
+  const strings = loadSetupStrings();
+  const html = read(setupPath("skills", "templates", "setup-form.html"));
+  const script = read(setupPath("skills", "templates", "setup-form.js"));
+  const keys = new Set([
+    ...Array.from(html.matchAll(/data-i18n(?:-placeholder)?="([^"]+)"/g), (match) => match[1]),
+    ...Array.from(script.matchAll(/\bt\("([A-Za-z.]+)"\)/g), (match) => match[1]),
+    ...Array.from(script.matchAll(/setPickStatus\("([A-Za-z.]+)"/g), (match) => match[1]).filter(Boolean),
+  ]);
+  for (const [key, values] of Object.entries(readSetupEnums())) {
+    values.forEach((value) => keys.add(`enum.${key}.${value}`));
+    if (key !== "role") keys.add(`customPlaceholder.${key}`).add(`legend.${key}`);
+  }
+  envKeys.forEach((key) => keys.add(`env.${key}`));
+  ["MISSING", "INCOMPLETE", "STALE", "CHANGED", "MANUAL"].forEach((code) => keys.add(`reason.${code}`));
+
+  for (const lang of ["ko", "en"]) {
+    for (const key of keys) {
+      assert(typeof lookup(strings && strings[lang], key) === "string", `setup-i18n.js ${lang} is missing the string ${key}`);
+    }
+  }
+});
+
+check("setup-skill-handles-template-files", () => {
+  for (const skillRoot of skillRoots) {
+    const content = read(setupPath(skillRoot, "SKILL.md"));
+    for (const fileName of ["setup.html", "setup-form.js", "setup-i18n.js", "setup-data.js"]) {
+      const count = content.split(`.kesekit/${fileName}`).length - 1;
+      assert(count >= 2, `${skillRoot}/${setupSkillDirs[skillRoot]}/SKILL.md must both create and delete .kesekit/${fileName} (found ${count} mention(s))`);
+    }
+  }
 });
 
 check("setup-form-contract", () => {
@@ -620,11 +713,41 @@ check("setup-form-contract", () => {
   for (const marker of setupFormMarkers) {
     assertIncludes(formPath, marker, `the contract marker ${marker}`);
   }
+  const scriptPath = setupPath("skills", "templates", "setup-form.js");
+  for (const marker of setupScriptMarkers) {
+    assertIncludes(scriptPath, marker, `the contract marker ${marker}`);
+  }
+  assert(!/<script>\s*\S/.test(read(formPath)), "setup-form.html must not contain inline scripts (CSP has no 'unsafe-inline')");
 
   const enums = readSetupEnums();
   assertObjectEqual(Object.keys(enums).sort(), expectedEnumKeys, "setup-form.html enum keys");
   for (const [key, values] of Object.entries(enums)) {
     assert(Array.isArray(values) && values.length > 0, `setup-form.html enum ${key} must be a non-empty array`);
+    if (key !== "role") {
+      assertIncludes(formPath, `id="custom-${key}"`, `the free-text input for ${key}`);
+      assertIncludes(formPath, `id="preview-${key}"`, `the resolved-value preview for ${key}`);
+    }
+  }
+});
+
+check("setup-detect-options-documented", () => {
+  const html = read(setupPath("skills", "templates", "setup-form.html"));
+  const match = html.match(/<script type="application\/json" id="kesekit-detect">([\s\S]*?)<\/script>/);
+  assert(match !== null, "setup-form.html has no kesekit-detect JSON block");
+  if (!match) return;
+
+  const detect = JSON.parse(match[1]);
+  assertObjectEqual(Object.keys(detect.envOptions).sort(), envKeys, "kesekit-detect envOptions keys");
+  for (const skillRoot of skillRoots) {
+    const detectionPath = setupPath(skillRoot, "references", "detection.md");
+    for (const name of [...detect.manifests, ...detect.excludedDirs]) {
+      assertIncludes(detectionPath, `\`${name}\``, `the manifest/excluded name \`${name}\``);
+    }
+    for (const [key, options] of Object.entries(detect.envOptions)) {
+      for (const option of options) {
+        assertIncludes(detectionPath, option, `the ${key} option ${option}`);
+      }
+    }
   }
 });
 
@@ -639,6 +762,9 @@ check("setup-schema-documents-enums", () => {
       assertIncludes(schemaPath, expectedRow, `the exact allowed-values row ${expectedRow}`);
     }
     assertIncludes(schemaPath, "KESEKIT_PROFILE_INPUT v1", "the paste block marker");
+    for (const field of setupSchemaFields) {
+      assertIncludes(schemaPath, field, `the ${field} field`);
+    }
     assertIncludes(schemaPath, `≥ ${STALE_DAYS}`, `the ${STALE_DAYS}-day staleness rule (≥ ${STALE_DAYS})`);
   }
 });
@@ -656,6 +782,8 @@ check("skills-run-setup-gate", () => {
       assertIncludes(filePath, `\`kesekit:${setupSkillDirs[skillRoot]}\``, "the setup skill invocation for its own language");
       assertIncludes(filePath, `notes.${skillName}`, `the notes.${skillName} profile field`);
       assertIncludes(filePath, "`assessment.scope`", "the assessment.scope rule in Step 0");
+      assertIncludes(filePath, "`project.path`", "the project.path target rule in Step 0");
+      assertIncludes(filePath, "`assessment.custom`", "the assessment.custom rule in Step 0");
     }
   }
 });

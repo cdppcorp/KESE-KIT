@@ -1,6 +1,15 @@
 # Read-Only Detection
 
-Every command is read-only. If a command fails, keep going: set the value to `null` and add a short note to `errors`. Never run commands that need administrator privileges.
+Every command is read-only. If a command fails, keep going: set the value to `null` and add a short note to `errors`. The one exception is `system.os`: never leave it `null`; use `other` when it cannot be determined. Never run commands that need administrator privileges.
+
+## Path Safety Rules
+
+Every path (`<path>`) and folder name (`<folder name>`) placed in a command must pass these rules first. Never run a command with a value that fails them.
+
+- Paths must be absolute paths on this machine: a drive path such as `C:\…` or `C:/…`, or a path starting with `/`. Never use network (UNC) paths such as `\\server\…` or `//server/…`; touching them can send Windows credentials to that server.
+- No single quotes (`'`), double quotes (`"`), backticks (`` ` ``), or control characters such as newlines. Always wrap the value in single quotes in commands.
+- Folder names also must not contain `*`, `?`, `[`, `]`, `/`, or `\`.
+- Use a path read from an existing profile only when that profile's `project.workspace` is the same path as the current working directory (path comparison in `profile-schema.md`). Never run commands on paths from a profile copied from elsewhere.
 
 ## System
 
@@ -93,14 +102,52 @@ Never store the full service list. Record only matches for the patterns below, u
 
 | Field | How |
 |-------|-----|
-| `project.path` | Absolute path of the current working directory, `/` separators |
-| `project.name` | Name of the working directory |
-| `project.gitRemote` | The "Git Remote" command below, which strips credentials before `@` (e.g. `user:token@` in `https://user:token@host/…`) in its own output; `null` on failure |
+| `project.path` | Absolute path chosen by "Choosing the Project Path" below, `/` separators |
+| `project.name` | Name of that project folder |
+| `project.gitRemote` | The "Git Remote" command below, which strips credentials before `@` (e.g. `user:token@` in `https://user:token@host/…`) and anything after `?` or `#` in its own output; `null` on failure |
 | `project.manifests` | Relative paths (`/` separators, sorted) of the manifest files below, found in the project root and its direct subfolders (depth 2) |
 
 Manifest files: `package.json`, `requirements.txt`, `pyproject.toml`, `Pipfile`, `setup.py`, `go.mod`, `Cargo.toml`, `pom.xml`, `build.gradle`, `build.gradle.kts`, `Gemfile`, `composer.json`, `*.csproj`, `*.sln`, `Dockerfile`, `docker-compose.yml`, `docker-compose.yaml`, `compose.yml`, `compose.yaml`, `Chart.yaml`, `main.tf`, `serverless.yml`, `package.xml`, `CMakeLists.txt`
 
 Excluded folders: `node_modules`, `.git`, `vendor`, `venv`, `.venv`, `dist`, `build`, `.kesekit`
+
+### Choosing the Project Path
+
+1. If the user changed the path in the form, use that path ("Project change" in Step 4 of SKILL.md).
+2. Otherwise, if the existing profile's `project.workspace` is the same path as the current working directory, and its `project.path` passes the Path Safety Rules and the folder still exists, use that path.
+3. Otherwise, use the current working directory.
+
+`<path>` in the commands below is the project path chosen this way.
+
+### Finding a Path by Folder Name
+
+When the user picks a folder with [Choose folder] in the form, the browser never reveals the full path for security; it sends only the folder name (`project.picked.name`) and manifest list (`project.picked.manifests`). If the folder name passes the Path Safety Rules, search these locations for folders with that name:
+
+```powershell
+# Windows: parent of the working directory, the user folder, and local fixed drive roots
+$name = '<folder name>'
+$skip = '\\(node_modules|\.git|AppData|\$Recycle\.Bin|Windows|Program Files[^\\]*|ProgramData)\\'
+$roots = @(@{ Path = (Split-Path -Parent (Get-Location).Path); Depth = 2 }, @{ Path = $env:USERPROFILE; Depth = 4 }) +
+  @(Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object { @{ Path = $_.DeviceID + '\'; Depth = 2 } })
+foreach ($r in $roots) {
+  Get-ChildItem -LiteralPath $r.Path -Directory -Recurse -Depth $r.Depth -Filter $name -ErrorAction SilentlyContinue |
+    Where-Object { "$($_.FullName)\" -notmatch $skip } | Select-Object -ExpandProperty FullName
+}
+```
+
+```bash
+# Linux and macOS
+name='<folder name>'
+for root in "$(dirname "$PWD")" "$HOME"; do
+  find "$root" -maxdepth 5 -type d -name "$name" -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/Library/*' 2>/dev/null
+done | LC_ALL=C sort -u
+```
+
+For each candidate, get its list with the "Manifests" commands and compare it as a set with `project.picked.manifests`:
+
+- Exactly one match: use that path and show it in the summary.
+- Several matches: show the candidate paths and let the user choose.
+- No match: ask the user to paste the full path (in Explorer, right-click the folder → 'Copy as path').
 
 ### Git Remote (Credentials Stripped)
 
@@ -108,23 +155,23 @@ Never run a command that prints the raw URL. Strip credentials in the command ou
 
 ```powershell
 # Windows
-(git remote get-url origin 2>$null) -replace '://[^/@]+@', '://'
+((git -C '<path>' remote get-url origin 2>$null) -replace '://[^/\s]*@', '://') -replace '[?#].*$', ''
 ```
 
 ```bash
 # Linux and macOS
-git remote get-url origin 2>/dev/null | sed -E 's#://[^/@]+@#://#'
+git -C '<path>' remote get-url origin 2>/dev/null | sed -E 's|://[^/[:space:]]*@|://|; s|[?#].*$||'
 ```
 
 ### Manifests — Windows
 
 ```powershell
-$root = (Get-Location).Path.TrimEnd('\')
+$root = (Resolve-Path -LiteralPath '<path>').Path.TrimEnd('\')
 $names = 'package.json','requirements.txt','pyproject.toml','Pipfile','setup.py','go.mod','Cargo.toml','pom.xml',
          'build.gradle','build.gradle.kts','Gemfile','composer.json','*.csproj','*.sln','Dockerfile',
          'docker-compose.yml','docker-compose.yaml','compose.yml','compose.yaml','Chart.yaml','main.tf',
          'serverless.yml','package.xml','CMakeLists.txt'
-Get-ChildItem -Path . -Recurse -Depth 1 -File -Include $names -ErrorAction SilentlyContinue |
+Get-ChildItem -LiteralPath $root -Recurse -Depth 1 -File -Include $names -ErrorAction SilentlyContinue |
   ForEach-Object { $_.FullName.Substring($root.Length + 1).Replace('\', '/') } |
   Where-Object { "/$_" -notmatch '/(node_modules|\.git|vendor|venv|\.venv|dist|build|\.kesekit)/' } |
   Sort-Object -Unique
@@ -133,7 +180,7 @@ Get-ChildItem -Path . -Recurse -Depth 1 -File -Include $names -ErrorAction Silen
 ### Manifests — Linux and macOS
 
 ```bash
-find . -maxdepth 2 -type f \( -name package.json -o -name requirements.txt -o -name pyproject.toml \
+(cd '<path>' && find . -maxdepth 2 -type f \( -name package.json -o -name requirements.txt -o -name pyproject.toml \
   -o -name Pipfile -o -name setup.py -o -name go.mod -o -name Cargo.toml -o -name pom.xml \
   -o -name build.gradle -o -name build.gradle.kts -o -name Gemfile -o -name composer.json \
   -o -name '*.csproj' -o -name '*.sln' -o -name Dockerfile -o -name docker-compose.yml \
@@ -141,7 +188,7 @@ find . -maxdepth 2 -type f \( -name package.json -o -name requirements.txt -o -n
   -o -name main.tf -o -name serverless.yml -o -name package.xml -o -name CMakeLists.txt \) \
   -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/vendor/*' -not -path '*/venv/*' \
   -not -path '*/.venv/*' -not -path '*/dist/*' -not -path '*/build/*' -not -path '*/.kesekit/*' \
-  | sed 's|^\./||' | LC_ALL=C sort -u
+  | sed 's|^\./||' | LC_ALL=C sort -u)
 ```
 
 ## Languages, Frameworks, AI Libraries
@@ -152,7 +199,7 @@ Decide by reading the manifest files only.
 |----------|-------------|
 | `package.json` | JavaScript (plus TypeScript if `tsconfig.json` exists) |
 | `requirements.txt`, `pyproject.toml`, `Pipfile`, `setup.py` | Python |
-| `go.mod` / `Cargo.toml` / `pom.xml`, `build.gradle*` / `Gemfile` / `composer.json` / `*.csproj`, `*.sln` / `CMakeLists.txt` | Go / Rust / Java / Ruby / PHP / C# / C·C++ |
+| `go.mod` / `Cargo.toml` / `pom.xml`, `build.gradle*` / `Gemfile` / `composer.json` / `*.csproj`, `*.sln` / `CMakeLists.txt` | Go / Rust / Java / Ruby / PHP / C# / C/C++ |
 
 | Evidence (dependency name) | Field | Recorded name |
 |----------------------------|-------|---------------|
@@ -188,6 +235,20 @@ Use the first rule that matches. This is only a guess; the user confirms it in t
 | `frameworks` includes ROS | `robot-security` | — |
 
 Never suggest `space-security` or `zero-trust`; those are organization-level decisions. Remove duplicates and sort in the Allowed Values order of `profile-schema.md`.
+
+If the rules above leave `domains` empty, add `cii`. Always fill `ciiTargets`, whether or not `cii` is suggested (the user may pick CII later). If the rules give no target, fall back to `pc` when `role` is `dev-pc`, otherwise `windows` or `unix` by OS.
+
+Suggestions for the remaining items. Items the user leaves blank in the form use these values.
+
+| Item | Suggestion |
+|------|------------|
+| `purpose` | `pre-deploy` if there is at least one manifest, otherwise `general` |
+| `scope` | `project-code` if there are manifests; `host` if `role` is not `dev-pc` or `webServers`, `databases`, or `services` is not empty; `cloud` if `cloudClis` is not empty. If none apply, `host` |
+| `ztTargetMaturity` | `initial` (used only when Zero Trust is chosen) |
+| `organizationType` | No suggestion (blank means not specified) |
+| `role` | Result of "Role Inference" above |
+
+Put `purpose`, `scope`, `domains`, `ciiTargets`, and `ztTargetMaturity` in `detected.recommended` of `setup-data.js`, and never leave any of them empty.
 
 ## Browser Availability
 

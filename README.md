@@ -52,7 +52,7 @@ Claude Code 프롬프트에 슬래시 명령어를 입력합니다:
 /kesekit-guide        Secure coding prompts
 ```
 
-> **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
+> **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 점검할 프로젝트는 [프로젝트 변경] → [폴더 선택]으로 Windows 폴더 선택 창에서 고를 수 있고, Git 원격 주소도 바꿀 수 있습니다. 언어·프레임워크 같은 환경 목록은 기본이 '자동 분석'이며 드롭다운에서 여러 개를 직접 고를 수도 있습니다. 점검 설정은 고르기 어려우면 비워 두면 추천값으로 진행하고, 선택지에 없는 내용은 '직접 입력'에 적으면 Claude가 해석해 반영합니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
 
 ### 사용 예시
 
@@ -317,7 +317,7 @@ Korean versions are also available:
 /kesekit-guide-ko  시큐어코딩 가이드
 ```
 
-> **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. Over SSH without a browser, a terminal input template is shown instead.
+> **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. [Change project] → [Choose folder] opens the native folder picker, and you can also change the Git remote. Environment lists such as languages and frameworks default to auto-detection; open a dropdown to pick several yourself. Leave hard assessment choices blank to use the suggestions, or describe them in "Your own words" and Claude maps them to the options. Over SSH without a browser, a terminal input template is shown instead.
 
 #### Usage Examples
 
@@ -407,7 +407,7 @@ KESE-KIT/
 │   ├── kesekit-setup/                ← 초기 설정 (모든 스킬의 0단계)
 │   │   ├── SKILL.md                  ← 진단 → 탐지 → HTML 입력 → 검증 → 저장
 │   │   ├── references/               ← profile-schema.md, detection.md
-│   │   └── templates/setup-form.html ← 입력 화면 (한/영 동일 파일)
+│   │   └── templates/                ← setup-form.html·setup-form.js·setup-i18n.js (입력 화면, 한/영 동일 파일)
 │   └── kesekit-*/
 │       ├── SKILL.md                  ← 라우터 (7개 분야 자동 감지)
 │       ├── references/               ← 순수 설명/기준 문서
@@ -450,6 +450,12 @@ KESE-KIT/
 - 다음 경우 다시 입력받음: 프로필 없음, 필수 항목 결측, 마지막 갱신 후 14일 이상, 프로젝트 경로·Git 원격·구성 파일·호스트명·OS 변경
 - PC 사양·실행 중인 서비스·프로젝트 구성을 읽기 전용으로 탐지하고 점검 분야를 추천
 - 입력은 HTML 화면(`templates/setup-form.html`, 한/영 전환)으로 받음: 점검 목적·범위·분야·CII 대상·제로트러스트 목표 성숙도, 스킬별 요청사항(코멘트) 칸 포함
+- [프로젝트 변경]: 점검 대상 경로와 Git 원격 주소를 바꿀 수 있음. 경로를 바꾸면 Claude가 새 경로를 다시 탐지하고 화면을 다시 엶. 프로필은 `project.path`(대상)·`project.workspace`(저장 위치)·`project.fingerprint`(변경 감지용 탐지값)를 분리해 사용자 수정값이 매번 "변경됨"으로 잡히지 않음
+- 점검 설정 항목마다 '직접 입력' 칸 추가. 적용 순서는 선택값 → 직접 입력(Claude가 선택지로 해석) → 추천값이며, 비워 둬도 오류 없이 추천값으로 진행. 값의 출처는 `assessment.source`, 원문은 `assessment.custom`에 저장
+- [폴더 선택]: Windows 폴더 선택 창으로 점검할 폴더를 고름. 브라우저는 보안상 전체 경로를 주지 않으므로 Claude가 폴더 이름과 구성 파일 목록으로 위치를 찾아 확정(후보가 여럿이면 사용자에게 확인)
+- 언어·프레임워크·서비스 등 환경 목록 8개를 다중 선택 드롭다운으로 변경. 기본은 '자동 분석'(저장할 때 Claude가 점검 폴더에서 다시 분석), 체크를 바꾸면 '직접 선택'. 출처는 `environmentSource`에 저장
+- 경로 안전 규칙: 따옴표·백틱·네트워크(UNC) 경로 거부, 다른 폴더에서 복사된 프로필의 경로로는 명령을 실행하지 않음. Git 주소는 비밀번호에 `@`가 있어도 자격 증명과 쿼리 토큰까지 제거
+- 화면을 `templates/setup-form.html`(구조)·`setup-form.js`(동작)·`setup-i18n.js`(한/영 문구)로 분리하고 CSP에서 `'unsafe-inline'` 제거
 - 입력 화면은 외부 전송·로컬 서버 없이 동작. [복사] 후 붙여넣기 또는 [파일로 저장]으로 Claude에 전달하고, Claude가 검증한 뒤 `.kesekit/profile.json`에 저장
 - 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿으로 대체
 - `scripts/validate-content.mjs`에 setup 계약 검사 7개 추가 (한/영 HTML 동일성, 선택지 값과 스키마 문서 일치, 8개 스킬 0단계 위치 등)
