@@ -54,7 +54,7 @@ Claude Code 프롬프트에 슬래시 명령어를 입력합니다:
 /kesekit-advisory     KISA security notice exposure check
 ```
 
-> **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 점검할 프로젝트는 [프로젝트 변경] → [폴더 선택]으로 Windows 폴더 선택 창에서 고를 수 있고, Git 원격 주소도 바꿀 수 있습니다. 언어·프레임워크 같은 환경 목록은 기본이 '자동 분석'이며 드롭다운에서 여러 개를 직접 고를 수도 있습니다. 점검 설정은 고르기 어려우면 비워 두면 추천값으로 진행하고, 선택지에 없는 내용은 '직접 입력'에 적으면 Claude가 해석해 반영합니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
+> **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 점검할 프로젝트는 [프로젝트 변경] → [폴더 선택]으로 Windows 폴더 선택 창에서 고를 수 있고, Git 원격 주소도 바꿀 수 있습니다. 언어·프레임워크 같은 환경 목록은 기본이 '자동 분석'이며 드롭다운에서 여러 개를 직접 고를 수도 있습니다. 보고서는 HTML(기본)·PDF·한글(HWPX, kordoc 필요)·PPT·Markdown 중에서 고를 수 있고, 어떤 형식이든 표지·목차·발견 사항별 현황/문제점/예시/조치를 갖춘 공식 보고서 구성으로 나옵니다. 점검 설정은 고르기 어려우면 비워 두면 추천값으로 진행하고, 선택지에 없는 내용은 '직접 입력'에 적으면 Claude가 해석해 반영합니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
 
 > **"보안점검해줘"라고만 입력해도 됩니다.** 입력에 "보안점검"(또는 "보안 점검")이 들어가면 플러그인 훅이 `/kesekit-start-ko`부터 실행하도록 Claude에게 알려 줍니다(배포 전 점검·수정·KISA 공지처럼 구체적인 요청이면 해당 스킬로 연결). 훅은 POSIX `sh`로 동작하며 Windows에서는 Claude Code가 쓰는 Git Bash에서 실행됩니다. 끄려면 `/hooks`에서 kesekit 훅을 비활성화하세요.
 
@@ -346,7 +346,7 @@ Korean versions are also available:
 /kesekit-advisory-ko  KISA 보안공지 대응
 ```
 
-> **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. [Change project] → [Choose folder] opens the native folder picker, and you can also change the Git remote. Environment lists such as languages and frameworks default to auto-detection; open a dropdown to pick several yourself. Leave hard assessment choices blank to use the suggestions, or describe them in "Your own words" and Claude maps them to the options. Over SSH without a browser, a terminal input template is shown instead.
+> **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. [Change project] → [Choose folder] opens the native folder picker, and you can also change the Git remote. Environment lists such as languages and frameworks default to auto-detection; open a dropdown to pick several yourself. Reports come as HTML (default), PDF, HWPX (needs kordoc), PPTX, or Markdown, and every format follows a formal report structure with a cover, contents, and current state / risk / example / remediation for each finding. Leave hard assessment choices blank to use the suggestions, or describe them in "Your own words" and Claude maps them to the options. Over SSH without a browser, a terminal input template is shown instead.
 
 > **Korean shortcut:** typing "보안점검해줘" ("run a security check") — or any prompt containing "보안점검" / "보안 점검" — makes a plugin hook tell Claude to start with `/kesekit-start-ko` (or the matching check/fix/advisory skill for a more specific request). The hook is POSIX `sh` (Git Bash on Windows). Disable it in `/hooks`.
 
@@ -500,6 +500,18 @@ KESE-KIT/
 ---
 
 ## 변경 이력
+
+### v3.7.0 (2026-11-14)
+
+**보고서 형식 선택 + 공식 보고서 견본**
+- 초기 설정 화면에 "보고서 형식" 추가: HTML(기본)·PDF·한글(HWPX)·PPT(PPTX)·Markdown. 선택은 `output.reportFormat`에 저장
+- 변환 도구를 탐지해(`reportTools`) 화면에 사용 가능 여부 표시. PDF는 Edge·Chrome 헤드리스 인쇄, HWPX는 kordoc(`kordoc generate --preset 보고서`), PPTX는 pandoc(없으면 python-pptx). 도구가 없으면 HTML로 대체하고 설치 방법 안내
+- kordoc 확인 순서: 설치된 `kordoc` → kordoc MCP → Node.js 20 이상이면 `npx -y kordoc`(실행 전 사용자 동의). 아무것도 자동 설치하지 않음
+- 보고서를 쓰는 5개 스킬(start·check·fix·guide·advisory, 한/영)에 `references/report-output.md`(공통 규칙)와 `templates/report/report.html`(A4 인쇄용 공식 보고서 견본, 스크립트·외부 리소스 없음) 추가
+- 보고서 구성 고정: 표지·목차 → 1. 점검 개요 → 2. 결과 요약(종합 판정·판정 현황·주요 발견 사항) → 3. 세부 결과 → 4. 조치 계획 → 5. 부록
+- 발견 사항마다 **현황(현재 코드·설정 근거) · 문제점(누가·어떤 조건에서·무엇을·피해) · 예시(시나리오와 현재/개선 코드) · 조치 방안 · 확인 필요**를 반드시 작성
+- 결과 Markdown은 형식과 상관없이 함께 남겨 `/kesekit-fix`가 이어서 사용
+- 검증기: 보고서 형식 선택지·문구, 견본의 한/영 동일 스타일·필수 칸·스크립트 없음, 규칙 문서 배치·0단계 연결 검사 추가
 
 ### v3.6.0 (2026-11-14)
 

@@ -250,6 +250,34 @@ Suggestions for the remaining items. Items the user leaves blank in the form use
 
 Put `purpose`, `scope`, `domains`, `ciiTargets`, and `ztTargetMaturity` in `detected.recommended` of `setup-data.js`, and never leave any of them empty.
 
+## Report Conversion Tools (`reportTools`)
+
+Checked so the form's "Report format" section can show what is available. Only look for installed tools; never install or download anything. Put the result in `detected.reportTools` of `setup-data.js` and do not save it in the profile (it is checked again when a report is written).
+
+| Key | Values | Rule |
+|-----|--------|------|
+| `pdf` | `Edge`, `Chrome`, `Chromium`, `LibreOffice`, `null` | The first browser found, otherwise LibreOffice (`soffice`) |
+| `hwpx` | `kordoc`, `kordoc-mcp`, `npx`, `null` | `kordoc` if the command exists, `kordoc-mcp` if Claude's tool list has kordoc MCP tools, `npx` if only Node.js 20 or later is available (consent needed before running), otherwise `null` |
+| `pptx` | `pandoc`, `python-pptx`, `null` | The `pandoc` command, otherwise Python `import pptx` |
+
+```powershell
+# Windows
+@("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
+  "$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe") |
+  Where-Object { Test-Path -LiteralPath $_ }
+foreach ($c in 'soffice','kordoc','node','pandoc') { if (Get-Command $c -ErrorAction SilentlyContinue) { $c } }
+node --version 2>$null
+python -c "import pptx" 2>$null; if ($LASTEXITCODE -eq 0) { 'python-pptx' }
+```
+
+```bash
+# Linux and macOS
+for c in microsoft-edge google-chrome chromium chromium-browser soffice kordoc node pandoc; do command -v "$c" >/dev/null 2>&1 && echo "$c"; done
+[ -d '/Applications/Microsoft Edge.app' ] && echo edge-app; [ -d '/Applications/Google Chrome.app' ] && echo chrome-app
+node --version 2>/dev/null
+python3 -c 'import pptx' 2>/dev/null && echo python-pptx
+```
+
 ## Browser Availability
 
 Treat the browser as unavailable, and use the terminal input template, if any of these holds:

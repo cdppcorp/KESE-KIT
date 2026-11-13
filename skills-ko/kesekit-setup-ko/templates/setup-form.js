@@ -13,6 +13,13 @@
   const MAX_ITEM = 80;
   const MAX_ITEMS = 50;
   const NOTE_KEYS = ["common", "start", "check", "fix", "guide", "advisory"];
+  const DEFAULT_REPORT_FORMAT = "html";
+  const BUILTIN_FORMATS = ["html", "md"];
+  const HWPX_TOOL_STATUS = {
+    "kordoc": ["reportTool.hwpxKordoc", "ok"],
+    "kordoc-mcp": ["reportTool.hwpxMcp", "ok"],
+    "npx": ["reportTool.hwpxNpx", "warn"]
+  };
   const ENV_KEYS = ["languages", "frameworks", "services", "webServers", "databases", "containers", "cloudClis", "aiLibraries"];
   const CHOICE_KEYS = ["purpose", "scope", "domains", "ciiTargets", "ztTargetMaturity", "organizationType"];
   const MULTI_KEYS = ["scope", "domains", "ciiTargets"];
@@ -169,6 +176,7 @@
       environment: environment,
       choices: choices,
       custom: custom,
+      output: { reportFormat: allowed(dig(previous, "output.reportFormat"), "reportFormat") || DEFAULT_REPORT_FORMAT },
       notes: notes
     };
   }
@@ -304,6 +312,38 @@
     });
   }
 
+  function renderReportFormats(selected) {
+    const container = document.querySelector("#fs-reportFormat .options");
+    container.replaceChildren(...ENUMS.reportFormat.map((value) => {
+      const title = [
+        make("input", { type: "radio", name: "reportFormat", value: value, checked: value === selected }),
+        make("span", { text: t("enum.reportFormat." + value) })
+      ];
+      if (value === DEFAULT_REPORT_FORMAT) title.push(make("span", { className: "badge", text: t("reportDefault") }));
+      return make("label", { className: "option" }, [make("span", {}, title), make("small", { text: t("reportDesc." + value) })]);
+    }));
+  }
+
+  // Availability comes from detected.reportTools; Claude checks again right before writing the report.
+  function reportToolStatus(format) {
+    if (BUILTIN_FORMATS.includes(format)) return { key: "reportTool.builtin", tone: "ok", tool: "" };
+    const tools = isPlainObject(detected.reportTools) ? detected.reportTools : null;
+    if (tools === null) return { key: "reportTool.unknown", tone: "", tool: "" };
+    const tool = text(tools[format]);
+    if (format === "hwpx") {
+      const [key, tone] = HWPX_TOOL_STATUS[tool] || ["reportTool.hwpxNone", "warn"];
+      return { key: key, tone: tone, tool: tool };
+    }
+    return tool ? { key: "reportTool.ready", tone: "ok", tool: tool } : { key: "reportTool." + format + "None", tone: "warn", tool: "" };
+  }
+
+  function renderReportStatus(format) {
+    const status = reportToolStatus(format);
+    const node = document.getElementById("report-status");
+    node.textContent = t(status.key).replace("{tool}", status.tool);
+    node.dataset.tone = status.tone;
+  }
+
   function setProjectPanel(open) {
     projectPanelOpen = open;
     document.getElementById("project-edit").hidden = !open;
@@ -329,6 +369,7 @@
       renderChoices(key, state.choices[key]);
       document.getElementById("custom-" + key).value = state.custom[key];
     });
+    renderReportFormats(state.output.reportFormat);
     renderNotes(state.notes);
     renderPickStatus();
     const changed = projectChanged(state);
@@ -375,6 +416,7 @@
       environment: environment,
       choices: choices,
       custom: custom,
+      output: { reportFormat: checkedValues("reportFormat")[0] || DEFAULT_REPORT_FORMAT },
       notes: notes
     };
   }
@@ -488,6 +530,7 @@
       environment: Object.fromEntries(ENV_KEYS.map((key) => [key, effectiveEnv(state.environment[key], key)])),
       environmentSource: Object.fromEntries(ENV_KEYS.map((key) => [key, state.environment[key].mode])),
       assessment: Object.assign({}, resolved.values, { source: resolved.source, custom: state.custom }),
+      output: { reportFormat: state.output.reportFormat },
       notes: state.notes
     };
   }
@@ -517,6 +560,7 @@
     renderProjectFacts(state);
     renderEnvSummaries(state);
     renderPreviews(state, resolve(state));
+    renderReportStatus(state.output.reportFormat);
     const errors = validate(state);
     markNeeds(errors);
     renderErrors(errors);

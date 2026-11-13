@@ -567,7 +567,28 @@ const setupFormMarkers = [
   'id="pick-folder-btn"',
   'id="projectPath"',
   'id="gitRemote"',
+  'id="fs-reportFormat"',
+  'id="report-status"',
 ];
+// Enums rendered without a free-text input or resolved-value preview.
+const enumsWithoutFreeText = ["role", "reportFormat"];
+const reportToolKeys = ["builtin", "unknown", "ready", "pdfNone", "pptxNone", "hwpxKordoc", "hwpxMcp", "hwpxNpx", "hwpxNone"];
+// Every skill that writes report files reads the shared report-output rules from its own references.
+const reportOutputSkills = {
+  skills: ["kesekit-start", "kesekit-check", "kesekit-fix", "kesekit-guide", "kesekit-advisory"],
+  "skills-ko": ["kesekit-start-ko", "kesekit-check-ko", "kesekit-fix-ko", "kesekit-guide-ko", "kesekit-advisory-ko"],
+};
+const reportOutputMarkers = ["`output.reportFormat`", "report.html", "`templates/report/report.html`", "--print-to-pdf", "kordoc generate", "--preset 보고서", "pandoc", "`npx -y kordoc`"];
+// The HTML report template: same layout in both languages, a fixed finding structure, print-ready, no scripts.
+const reportTemplateMarkers = {
+  skills: ["## Report Structure", "## Writing a Finding"],
+  "skills-ko": ["## 보고서 구성", "## 발견 사항 쓰는 법"],
+};
+const reportTemplateFields = {
+  skills: ["<dt>Current state</dt>", "<dt>Risk</dt>", "<dt>Example</dt>", "<dt>Remediation</dt>"],
+  "skills-ko": ["<dt>현황</dt>", "<dt>문제점</dt>", "<dt>예시</dt>", "<dt>조치 방안</dt>"],
+};
+const reportTemplateCommon = ['class="finding"', 'class="cover"', 'class="toc"', "@media print", "@page"];
 const setupScriptMarkers = ["KESEKIT_PROFILE_INPUT v1", "END_KESEKIT_PROFILE_INPUT", "showDirectoryPicker", "environmentSource"];
 const envKeys = ["aiLibraries", "cloudClis", "containers", "databases", "frameworks", "languages", "services", "webServers"];
 const setupSchemaFields = [
@@ -577,12 +598,14 @@ const setupSchemaFields = [
   "`project.fingerprint`",
   "`assessment.source`",
   "`assessment.custom`",
+  "`output.reportFormat`",
 ];
 const expectedEnumKeys = [
   "ciiTargets",
   "domains",
   "organizationType",
   "purpose",
+  "reportFormat",
   "role",
   "scope",
   "ztTargetMaturity",
@@ -595,6 +618,7 @@ const enumFields = {
   ztTargetMaturity: "assessment.ztTargetMaturity",
   organizationType: "assessment.organizationType",
   role: "system.role",
+  reportFormat: "output.reportFormat",
 };
 const gateHeadings = { skills: "## Step 0: Setup Check", "skills-ko": "## 0단계: 초기 설정 확인" };
 const STALE_DAYS = 14;
@@ -686,8 +710,12 @@ check("setup-i18n-covers-form", () => {
   ]);
   for (const [key, values] of Object.entries(readSetupEnums())) {
     values.forEach((value) => keys.add(`enum.${key}.${value}`));
-    if (key !== "role") keys.add(`customPlaceholder.${key}`).add(`legend.${key}`);
+    if (key !== "role") keys.add(`legend.${key}`);
+    if (!enumsWithoutFreeText.includes(key)) keys.add(`customPlaceholder.${key}`);
+    if (key === "reportFormat") values.forEach((value) => keys.add(`reportDesc.${value}`));
   }
+  reportToolKeys.forEach((key) => keys.add(`reportTool.${key}`));
+  keys.add("reportDefault");
   envKeys.forEach((key) => keys.add(`env.${key}`));
   ["MISSING", "INCOMPLETE", "STALE", "CHANGED", "MANUAL"].forEach((code) => keys.add(`reason.${code}`));
 
@@ -723,7 +751,7 @@ check("setup-form-contract", () => {
   assertObjectEqual(Object.keys(enums).sort(), expectedEnumKeys, "setup-form.html enum keys");
   for (const [key, values] of Object.entries(enums)) {
     assert(Array.isArray(values) && values.length > 0, `setup-form.html enum ${key} must be a non-empty array`);
-    if (key !== "role") {
+    if (!enumsWithoutFreeText.includes(key)) {
       assertIncludes(formPath, `id="custom-${key}"`, `the free-text input for ${key}`);
       assertIncludes(formPath, `id="preview-${key}"`, `the resolved-value preview for ${key}`);
     }
@@ -785,6 +813,64 @@ check("skills-run-setup-gate", () => {
       assertIncludes(filePath, "`project.path`", "the project.path target rule in Step 0");
       assertIncludes(filePath, "`assessment.custom`", "the assessment.custom rule in Step 0");
     }
+  }
+});
+
+check("report-output-rules", () => {
+  for (const skillRoot of skillRoots) {
+    const [baselineDir, ...others] = reportOutputSkills[skillRoot];
+    const baselinePath = path.join(rootDir, skillRoot, baselineDir, "references", "report-output.md");
+    assert(fs.existsSync(baselinePath), `${rel(baselinePath)} does not exist`);
+    if (!fs.existsSync(baselinePath)) continue;
+
+    const baseline = read(baselinePath);
+    for (const marker of reportOutputMarkers) {
+      assertIncludes(baselinePath, marker, `the report rule marker ${marker}`);
+    }
+    for (const dir of others) {
+      const candidatePath = path.join(rootDir, skillRoot, dir, "references", "report-output.md");
+      assert(fs.existsSync(candidatePath) && read(candidatePath) === baseline, `${rel(candidatePath)} must exist and match ${rel(baselinePath)}`);
+    }
+    for (const dir of reportOutputSkills[skillRoot]) {
+      const skillFile = path.join(rootDir, skillRoot, dir, "SKILL.md");
+      assertIncludes(skillFile, "`output.reportFormat`", "the report format rule in Step 0");
+      assertIncludes(skillFile, "`references/report-output.md`", "a pointer to references/report-output.md");
+    }
+    assertIncludes(setupPath(skillRoot, "references", "detection.md"), "`reportTools`", "the report tool detection (`reportTools`)");
+    for (const marker of reportTemplateMarkers[skillRoot]) {
+      assertIncludes(baselinePath, marker, `the report rule section ${marker}`);
+    }
+  }
+});
+
+function reportTemplatePath(skillRoot, dir) {
+  return path.join(rootDir, skillRoot, dir, "templates", "report", "report.html");
+}
+
+check("report-template", () => {
+  const styles = {};
+  for (const skillRoot of skillRoots) {
+    const [baselineDir, ...others] = reportOutputSkills[skillRoot];
+    const baselinePath = reportTemplatePath(skillRoot, baselineDir);
+    assert(fs.existsSync(baselinePath), `${rel(baselinePath)} does not exist`);
+    if (!fs.existsSync(baselinePath)) continue;
+
+    const baseline = read(baselinePath);
+    const markup = baseline.replace(/<!--[\s\S]*?-->/g, "");
+    for (const marker of [...reportTemplateCommon, ...reportTemplateFields[skillRoot]]) {
+      assertIncludes(baselinePath, marker, `the report template marker ${marker}`);
+    }
+    assert(!/<script\b/i.test(markup), `${rel(baselinePath)} must not contain <script>`);
+    assert(!/(?:href|src)=["']https?:|@import|url\(\s*["']?https?:/i.test(markup), `${rel(baselinePath)} must not load external resources`);
+    styles[skillRoot] = (markup.match(/<style>[\s\S]*?<\/style>/) || [""])[0];
+
+    for (const dir of others) {
+      const candidatePath = reportTemplatePath(skillRoot, dir);
+      assert(fs.existsSync(candidatePath) && read(candidatePath) === baseline, `${rel(candidatePath)} must exist and match ${rel(baselinePath)}`);
+    }
+  }
+  if (styles.skills && styles["skills-ko"]) {
+    assert(styles.skills === styles["skills-ko"], "the English and Korean report templates must share the same <style>");
   }
 });
 
