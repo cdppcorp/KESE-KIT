@@ -143,7 +143,7 @@ Cel: Organizacje wdrażające Zero Trust, Środowiska OT/ICS, Organizacje migruj
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## Użycie

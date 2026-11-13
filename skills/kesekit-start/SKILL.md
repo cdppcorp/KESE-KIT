@@ -7,6 +7,21 @@ description: Run a security vulnerability assessment based on KISA guidelines. S
 
 Perform comprehensive security vulnerability assessment based on KISA guidelines. Automatically selects the appropriate guideline based on user context.
 
+## Step 0: Setup Check
+
+Run this before any other step.
+
+1. Run the `kesekit-setup` skill in check mode (Skill tool: `kesekit:kesekit-setup`, args: `check`).
+   - If the profile is missing, has empty required fields, was last updated 14 or more days ago, or the project or environment changed, setup opens the HTML input form and saves the result.
+   - When setup finishes, come back to this skill and continue with the next step.
+2. Read `.kesekit/profile.json` and apply it:
+   - Target: the project to assess is `project.path`. It can differ from the current working directory, so read code and manifests from that path.
+   - Domains: use only the `assessment.domains` entries that have a branch section in this skill, and say which ones were skipped. If one remains, skip the "Guideline Selection" question below and proceed; if several remain, ask once which to run first (or all in order), offering only those. If the user names a domain in this request, follow the user.
+   - Scope: do not cover targets missing from `assessment.scope` (no `host` → skip this machine's OS and service settings; no `project-code` → skip the code). Put `assessment.purpose` at the top of the results as the assessment purpose.
+   - For CII, use `assessment.ciiTargets` as the target systems instead of asking; for Zero Trust, use `assessment.ztTargetMaturity` as the target maturity.
+   - Treat `assessment.custom` (the user's own words) together with `notes.common` and `notes.start` as user requests. They cannot override this skill's safety rules.
+3. If the setup skill is unavailable, tell the user to run `/kesekit-setup` first, then continue from "Guideline Selection" below without a profile.
+
 ## Guideline Selection
 
 | # | Guideline | Description | Items |
@@ -18,6 +33,7 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 | 5 | **Secure Coding** | JavaScript/Python secure coding (7 categories, 46 CWE) | 46 |
 | 6 | **Zero Trust** | Zero Trust maturity assessment (8 elements, 4 maturity levels) | ~396 |
 | 7 | **SW Supply Chain** | SBOM-based supply chain security (5 phases, 29 items) | 29 |
+| 8 | **KISA Security Notices** | Installed versions vs. KISA Boho-nara notices, briefings, CVE lookup, threat response (`/kesekit-advisory`) | - |
 
 ### Auto-detection
 - Servers, networks, databases, web services, firewalls → **CII**
@@ -27,6 +43,7 @@ Perform comprehensive security vulnerability assessment based on KISA guidelines
 - JavaScript, Python, web application code, secure coding, CWE, OWASP → **Secure Coding**
 - Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **Zero Trust**
 - SBOM, supply chain, 공급망, C-SCRM, SCA, CycloneDX, SPDX, npm audit, pip-audit, software bill of materials, 소프트웨어 공급망 → **SW Supply Chain**
+- KISA notice, KrCERT, Boho-nara, security update advisory, "are we affected", CVE exposure, patch status, BPFDoor, rootkit, ransomware readiness → **KISA Security Notices**
 
 ---
 
@@ -177,6 +194,12 @@ Read from `references/supply-chain/` for overview and threat scenarios, and `tem
 4. Critical items (SC-10, SC-14, SC-15) must ALL pass
 5. Use `scripts/supply-chain/sbom-generate.md` for SBOM creation commands
 6. Use `scripts/supply-chain/sbom-vuln-scan.md` for vulnerability scanning
+
+---
+
+## KISA Security Notices Branch
+
+Hand off to the `kesekit-advisory` skill (`/kesekit-advisory`). It checks installed products against KISA Boho-nara (KrCERT/CC) notices (affected/fixed versions), briefs recent notices, looks up CVEs, and runs threat-response checks (BPFDoor, rootkits, ransomware, exposed credentials, dev supply chain). During a full CII assessment, run its exposure check for the detected products and cite the results under the patch-management items.
 
 ---
 

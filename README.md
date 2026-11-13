@@ -1,6 +1,6 @@
 # KESE - KISA Enhanced Security Evaluation Kit
 
-주요정보통신기반시설(CII) 취약점 분석평가, AI 보안 평가, 로봇 보안 점검, 우주 보안 점검, 시큐어코딩 가이드, 제로트러스트 보안 평가, SW 공급망 보안(SBOM)을 위한 Claude Code 스킬 플러그인입니다.
+주요정보통신기반시설(CII) 취약점 분석평가, AI 보안 평가, 로봇 보안 점검, 우주 보안 점검, 시큐어코딩 가이드, 제로트러스트 보안 평가, SW 공급망 보안(SBOM), KISA 보안공지 대응을 위한 Claude Code 스킬 플러그인입니다.
 
 🌐 [한국어](#빠른-시작) | [English](#english) | [Français](docs/README.fr.md) | [日本語](docs/README.ja.md) | [中文](docs/README.zh.md) | [Русский](docs/README.ru.md) | [Español](docs/README.es.md) | [Deutsch](docs/README.de.md) | [Português](docs/README.pt.md) | [Italiano](docs/README.it.md) | [العربية](docs/README.ar.md) | [हिन्दी](docs/README.hi.md) | [Türkçe](docs/README.tr.md) | [Tiếng Việt](docs/README.vi.md) | [ภาษาไทย](docs/README.th.md) | [Bahasa Indonesia](docs/README.id.md) | [Polski](docs/README.pl.md) | [Nederlands](docs/README.nl.md) | [Svenska](docs/README.sv.md) | [Українська](docs/README.uk.md)
 
@@ -20,13 +20,13 @@ Claude Code 안에서 다음 명령어로 마켓플레이스 등록 및 플러�
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 > **업데이트 시:**
 > ```
-> /plugin marketplace update cdppcorp-KESE-KIT
-> /plugin update kesekit@cdppcorp-KESE-KIT
+> /plugin marketplace update kesekit
+> /plugin update kesekit@kesekit
 > /reload-plugins
 > ```
 
@@ -35,25 +35,36 @@ Claude Code 안에서 다음 명령어로 마켓플레이스 등록 및 플러�
 Claude Code 프롬프트에 슬래시 명령어를 입력합니다:
 
 ```
+/kesekit-setup-ko     초기 설정 (PC·프로젝트 환경 분석, 점검 목적·분야 입력)
 /kesekit-start-ko     보안 취약점 분석평가 실행
 /kesekit-check-ko     배포 전 보안 체크리스트
 /kesekit-fix-ko       취약점 자동 수정 / 하드닝 스크립트 생성
 /kesekit-guide-ko     시큐어코딩 가이드 프롬프트 생성
+/kesekit-advisory-ko  KISA 보안공지 영향도 점검 / 브리핑 / 위협 대응
 ```
 
 영문 버전도 사용 가능합니다:
 
 ```
+/kesekit-setup        Initial setup (environment profile)
 /kesekit-start        Full security assessment
 /kesekit-check        Pre-deployment checklist
 /kesekit-fix          Generate hardening scripts
 /kesekit-guide        Secure coding prompts
+/kesekit-advisory     KISA security notice exposure check
 ```
+
+> **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 점검할 프로젝트는 [프로젝트 변경] → [폴더 선택]으로 Windows 폴더 선택 창에서 고를 수 있고, Git 원격 주소도 바꿀 수 있습니다. 언어·프레임워크 같은 환경 목록은 기본이 '자동 분석'이며 드롭다운에서 여러 개를 직접 고를 수도 있습니다. 점검 설정은 고르기 어려우면 비워 두면 추천값으로 진행하고, 선택지에 없는 내용은 '직접 입력'에 적으면 Claude가 해석해 반영합니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
 
 ### 사용 예시
 
 ```
 # 프로젝트 폴더에서 Claude Code 실행 후:
+
+> /kesekit-setup-ko
+  → OS·사양·실행 중인 서비스·프로젝트 구성을 읽기 전용으로 탐지
+  → 브라우저 입력 화면에서 점검 목적·범위·분야와 스킬별 요청사항 입력
+  → [복사] 후 붙여넣기 → .kesekit/profile.json 저장
 
 > /kesekit-start-ko
   → "어떤 시스템을 점검하시겠습니까?" 질문에 답변
@@ -67,22 +78,28 @@ Claude Code 프롬프트에 슬래시 명령어를 입력합니다:
 
 > /kesekit-guide-ko
   → "Python Flask 인증 구현" 같은 요청에 시큐어코딩 프롬프트 제공
+
+> /kesekit-advisory-ko
+  → "nginx 1.30.2, OpenSSH 9.8, FortiOS 7.4.3 쓰는데 해당 공지 있어?"
+  → KISA 보안공지 기준 취약/양호 판정과 해결 버전 제시
 ```
 
 ---
 
 ## 개요
 
-KESE(KISA Enhanced Security Evaluation Kit)는 KISA(한국인터넷진흥원) 가이드라인에 기반한 보안 취약점 분석평가 기능을 제공하는 Claude Code 플러그인입니다. 주요정보통신기반시설(CII) 취약점 분석평가, AI 보안 평가, 로봇 보안 점검, 우주 보안 점검, 제로트러스트 보안 평가, SW 공급망 보안(SBOM)을 지원합니다.
+KESE(KISA Enhanced Security Evaluation Kit)는 KISA(한국인터넷진흥원) 가이드라인에 기반한 보안 취약점 분석평가 기능을 제공하는 Claude Code 플러그인입니다. 주요정보통신기반시설(CII) 취약점 분석평가, AI 보안 평가, 로봇 보안 점검, 우주 보안 점검, 제로트러스트 보안 평가, SW 공급망 보안(SBOM), KISA 보안공지 대응을 지원합니다.
 
 ### 기능
 
 | 스킬 | 설명 |
 |------|------|
+| `/kesekit-setup-ko` | 초기 설정: PC·프로젝트 환경 탐지 + HTML 입력 화면 → `.kesekit/profile.json`. 다른 스킬이 시작할 때 먼저 확인 (없음·결측·14일 경과·환경 변경 시 재입력) |
 | `/kesekit-start-ko` | 전체 보안 취약점 분석평가 실행 (CII 560+ / AI 보안 / 로봇 보안 / 우주 보안 / 시큐어코딩 / 제로트러스트 / SW 공급망) |
 | `/kesekit-check-ko` | 배포 전 보안 컴플라이언스 체크리스트 (CII / AI / 로봇 / 우주 / 시큐어코딩 / 제로트러스트 / SW 공급망) |
 | `/kesekit-fix-ko` | 하드닝 스크립트 및 보안 수정 자동 생성 (CII / AI / 로봇 / 우주 / 시큐어코딩 / 제로트러스트 / SW 공급망) |
 | `/kesekit-guide-ko` | AI 도구용 시큐어코딩 프롬프트 생성 (CII / AI / 로봇 / 우주 / JS·Python·범용 / 제로트러스트 / SW 공급망) |
+| `/kesekit-advisory-ko` | KISA 보안공지 대응 (영향도 점검 / 공지 브리핑 / CVE 조회 / 위협 대응 점검) |
 
 ### 지원 가이드라인
 
@@ -208,6 +225,23 @@ KESE(KISA Enhanced Security Evaluation Kit)는 KISA(한국인터넷진흥원) �
 
 대상: SW 개발기업, 공공조달 납품사, 정부과제 개발자, 바이브코딩 개발자
 
+#### 8. KISA 보안공지 대응 — 519건 (2025-01 ~ 2026-11)
+
+KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 시스템에 해당하는 공지가 있는지** 판정합니다.
+
+| 모드 | 내용 | 근거 데이터 |
+|------|------|------------|
+| 영향도 점검 | 설치 제품·버전·의존성 ↔ 공지의 영향받는 버전/해결 버전 대조, 긴급/높음/보통 우선순위 | 보안 업데이트 권고 428건, 버전 행 12,256행 |
+| 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 519건 |
+| CVE 조회 | 특정 CVE의 KISA 공지 포함 여부와 해결 버전 | 고유 CVE 8,833개 |
+| 위협 대응 점검 | BPFDoor, 리눅스 커널 루트킷, 랜섬웨어, 자격증명 노출, 개발 공급망 공격, 제품 사용 주의(EoL) — TR-01~TR-43 (43항목) + 피싱·스미싱 동향 35건 | 비패치성 공지 91건 (보안 조치·강화 18, 취약점 조치 7, 주의 63, 기타 3) |
+
+**조회 도구**: `scripts/advisory_lookup.py` (Python 표준 라이브러리, 제품/CVE/벤더/기간/유형 필터)
+**위험 지표**: CISA KEV(실제 악용)·FIRST EPSS(악용 확률)·NVD CVSS(선택) — `--kev`, `--sort risk`로 우선순위 정렬
+**최신화**: 새 공지를 `문서/KISA_보안공지_2025-2026/`에 추가 → `python scripts/fetch_cve_enrichment.py` → `python scripts/build_kisa_advisories.py` 실행 → EN/KO 스킬 데이터 일괄 재생성
+
+대상: 서버·네트워크 운영자, 패치 관리 담당자, 보안관제·CERT, 배포 전 점검 담당자
+
 ### 원본 문서
 
 본 플러그인은 다음 공식 보안 가이드라인을 기반으로 재구성되었습니다:
@@ -231,6 +265,7 @@ KESE(KISA Enhanced Security Evaluation Kit)는 KISA(한국인터넷진흥원) �
 | 15 | **SW 공급망 보안 가이드라인 (요약본)** | 국정원 / 과기정통부 / KISA | 2024 | 22 | [PDF](문서/240513-(요약본)_SW_공급망_보안_가이드라인.pdf) / [MD](문서/SW_공급망_보안_가이드라인_요약본.md) |
 | 16 | **SW 공급망 보안 가이드라인 (전체본)** | 국정원 / 과기정통부 / KISA | 2024 | 100 | [PDF](문서/240525-(전체본)_SW_공급망_보안_가이드라인_최종%20수정본.pdf) / [MD](문서/SW_공급망_보안_가이드라인_전체본.md) |
 | 17 | **인공지능기본법 교안** (11장 60개 절, 실무 해설) | 과기정통부·한국AI소프트웨어산업협회 발행 / KESE-KIT 편집 | 2026 | - | [MD](문서/AI_기본법_교안/) |
+| 18 | **KISA 보호나라 보안공지** (519건, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - | [목록·본문](문서/KISA_보안공지_2025-2026/) |
 
 ### v2.x에서 마이그레이션
 
@@ -239,7 +274,7 @@ v3.0에서 모든 스킬이 단일 `kesekit` 네임스페이스로 통합되었�
 ```
 /plugin uninstall kesekit
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 명령어 변경사항:
@@ -275,13 +310,13 @@ Inside Claude Code, register the marketplace and install the plugin:
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 > **To update:**
 > ```
-> /plugin marketplace update cdppcorp-KESE-KIT
-> /plugin update kesekit@cdppcorp-KESE-KIT
+> /plugin marketplace update kesekit
+> /plugin update kesekit@kesekit
 > /reload-plugins
 > ```
 
@@ -290,25 +325,36 @@ Inside Claude Code, register the marketplace and install the plugin:
 Type slash commands at the Claude Code prompt:
 
 ```
+/kesekit-setup     Initial setup (detect machine & project, enter purpose and domains)
 /kesekit-start     Full security vulnerability assessment
 /kesekit-check     Pre-deployment security checklist
 /kesekit-fix       Auto-fix vulnerabilities / generate hardening scripts
 /kesekit-guide     Generate secure coding prompts
+/kesekit-advisory  KISA security notice exposure check / briefing / threat response
 ```
 
 Korean versions are also available:
 
 ```
+/kesekit-setup-ko  초기 설정
 /kesekit-start-ko  보안 취약점 분석평가
 /kesekit-check-ko  배포 전 체크리스트
 /kesekit-fix-ko    하드닝 스크립트 생성
 /kesekit-guide-ko  시큐어코딩 가이드
+/kesekit-advisory-ko  KISA 보안공지 대응
 ```
+
+> **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. [Change project] → [Choose folder] opens the native folder picker, and you can also change the Git remote. Environment lists such as languages and frameworks default to auto-detection; open a dropdown to pick several yourself. Leave hard assessment choices blank to use the suggestions, or describe them in "Your own words" and Claude maps them to the options. Over SSH without a browser, a terminal input template is shown instead.
 
 #### Usage Examples
 
 ```
 # After launching Claude Code in your project folder:
+
+> /kesekit-setup
+  → Read-only detection of OS, specs, running services, and project layout
+  → Enter purpose, scope, domains, and per-skill requests in the browser form
+  → Copy and paste back → saved to .kesekit/profile.json
 
 > /kesekit-start
   → Answer "What system do you want to assess?"
@@ -322,6 +368,10 @@ Korean versions are also available:
 
 > /kesekit-guide
   → Request like "Python Flask authentication" → get secure coding prompt
+
+> /kesekit-advisory
+  → "We run nginx 1.30.2, OpenSSH 9.8, FortiOS 7.4.3 — any KISA notices?"
+  → Vulnerable/Pass verdicts with fixed versions from KISA notices
 ```
 
 ### Supported Guidelines
@@ -347,18 +397,35 @@ Korean versions are also available:
 **Administrative Assessment**: A-1~A-127 (127 items, 14 domains)
 **Physical Assessment**: P-1~P-18 (18 items)
 
+#### 8. KISA Security Notices — 519 notices (2025-01 ~ 2026-11)
+
+Structured KISA Boho-nara (KrCERT/CC) security notices for answering **"does any KISA notice affect our systems?"**
+
+| Mode | What it does | Data |
+|------|-------------|------|
+| Exposure check | Installed products/versions/dependencies vs. affected/fixed versions, Critical/High/Medium priority | 428 security update advisories, 12,256 version rows |
+| Notice briefing | Recent notices by period, vendor, or type with action priorities | All 519 notices |
+| CVE lookup | Whether a CVE is in a KISA notice and its fixed version | 8,833 unique CVEs |
+| Threat response | BPFDoor, Linux kernel rootkits, ransomware, exposed credentials, dev supply-chain attacks, product-use cautions (EoL) — TR-01~TR-43 (43 items) + 35 phishing/smishing trend rows | 91 non-patch notices (18 hardening, 7 mitigation, 63 caution, 3 other) |
+
+**Lookup tool**: `scripts/advisory_lookup.py` (Python standard library; product/CVE/vendor/period/type filters)
+**Risk signals**: CISA KEV (exploited), FIRST EPSS (exploit probability), NVD CVSS (optional) — rank with `--kev`, `--sort risk`
+**Refresh**: add new notices under `문서/KISA_보안공지_2025-2026/`, run `python scripts/fetch_cve_enrichment.py`, then `python scripts/build_kisa_advisories.py` to regenerate the EN/KO skill data
+
 ### Overview
 
-KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provides comprehensive vulnerability assessment capabilities based on KISA (Korea Internet & Security Agency) guidelines. Supports Critical Information Infrastructure (CII), AI Security, Robot Security, Space Security, Secure Coding, Zero Trust, and SW Supply Chain Security (SBOM) assessments.
+KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provides comprehensive vulnerability assessment capabilities based on KISA (Korea Internet & Security Agency) guidelines. Supports Critical Information Infrastructure (CII), AI Security, Robot Security, Space Security, Secure Coding, Zero Trust, SW Supply Chain Security (SBOM) assessments, and KISA security notice response.
 
 ### Features
 
 | Skill | Description |
 |-------|-------------|
+| `/kesekit-setup` | Initial setup: detect machine & project + HTML input form → `.kesekit/profile.json`. Every other skill checks it first (re-entry when missing, incomplete, 14+ days old, or changed) |
 | `/kesekit-start` | Run full security vulnerability assessment (CII 560+ / AI / Robot / Space / Secure Coding / Zero Trust / Supply Chain) |
 | `/kesekit-check` | Pre-deployment security compliance checklist (CII / AI / Robot / Space / Secure Coding / Zero Trust / Supply Chain) |
 | `/kesekit-fix` | Auto-generate hardening scripts and security fixes (CII / AI / Robot / Space / Secure Coding / Zero Trust / Supply Chain) |
 | `/kesekit-guide` | Generate secure coding prompts for AI, robot, space, zero trust, and supply chain security |
+| `/kesekit-advisory` | KISA security notice response (exposure check / briefing / CVE lookup / threat response) |
 
 ### Source Documents
 
@@ -374,6 +441,7 @@ KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provid
 | 8 | **Space Security Explanation Guide** | MSIT / KISA | 2025 | 218 |
 | 9 | **SW Supply Chain Security Guideline (Summary)** | NIS / MSIT / KISA | 2024 | 22 |
 | 10 | **SW Supply Chain Security Guideline (Full)** | NIS / MSIT / KISA | 2024 | 100 |
+| 11 | **KISA Boho-nara Security Notices** (519 notices, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - |
 
 ---
 
@@ -383,9 +451,16 @@ KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provid
 KESE-KIT/
 ├── .claude-plugin/
 │   └── marketplace.json              ← 플러그인 메타데이터
-├── skills/                            ← 영문 스킬 (kesekit-start/check/fix/guide)
-│   └── kesekit-*/
-│       ├── SKILL.md                  ← 라우터 (7개 분야 자동 감지)
+├── skills/                            ← 영문 스킬 (kesekit-setup/start/check/fix/guide/advisory)
+│   ├── kesekit-setup/                ← 초기 설정 (모든 스킬의 0단계)
+│   │   ├── SKILL.md                  ← 진단 → 탐지 → HTML 입력 → 검증 → 저장
+│   │   ├── references/               ← profile-schema.md, detection.md
+│   │   └── templates/                ← setup-form.html·setup-form.js·setup-i18n.js (입력 화면, 한/영 동일 파일)
+│   ├── kesekit-advisory/             ← KISA 보안공지 대응 스킬
+│   │   ├── references/kisa-advisories/ ← advisories.json, 벤더 인덱스, 위협 대응 TR 항목
+│   │   └── scripts/advisory_lookup.py  ← 공지 조회 CLI
+│   └── kesekit-*/                    ← start/check/fix/guide
+│       ├── SKILL.md                  ← 라우터 (분야 자동 감지)
 │       ├── references/               ← 순수 설명/기준 문서
 │       │   ├── ai-security/          ← 개요, 서비스제공자, 이용자 가이드
 │       │   ├── secure-coding/        ← CWE 매핑, 의사코드 패턴
@@ -408,8 +483,10 @@ KESE-KIT/
 ├── skills-ko/                         ← 한글 스킬 (동일 구조)
 ├── 문서/                              ← 원본 PDF + MD 참고자료
 │   ├── *.pdf / *.md                  ← 가이드라인 원본 (16건)
-│   └── AI_기본법_교안/               ← AI 기본법 실무 교안 (60개 절)
+│   ├── AI_기본법_교안/               ← AI 기본법 실무 교안 (60개 절)
+│   └── KISA_보안공지_2025-2026/      ← 보호나라 보안공지 원본 (목록.csv + 공지별 본문·첨부)
 ├── authorkit/                         ← 변환 산출물 및 작업 파일
+├── scripts/                           ← validate-content.mjs, build_kisa_advisories.py, fetch_cve_enrichment.py (+ 테스트, data/cve-enrichment.json)
 ├── docs/                              ← 18개 국어 README
 ├── CONTRIBUTING.md                    ← 가이드라인 추가 방법
 └── README.md
@@ -418,6 +495,40 @@ KESE-KIT/
 ---
 
 ## 변경 이력
+
+### v3.5.0 (2026-11-14)
+
+**새 스킬 추가: KISA 보안공지 대응 (`/kesekit-advisory`, `/kesekit-advisory-ko`)**
+- 출처: KISA 보호나라 보안공지 519건 (2025-01-06 ~ 2026-11-13) — 보안 업데이트 권고 428, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
+- 4개 모드: 영향도 점검(영향받는/해결 버전 대조), 공지 브리핑, CVE 조회, 위협 대응 점검
+- 위협 대응 점검: 비패치성 공지 91건 → TR-01~TR-43 (서버 침해·웹·개발 공급망·네트워크 장비·EoL 제품·단말/표적형) + 피싱·스미싱 동향 35건, 점검 명령은 원문 그대로 수록
+- `scripts/build_kisa_advisories.py`: 공지 HTML 표(rowspan/colspan) 파싱 → `advisories.json`(버전 행 12,256행, 고유 CVE 8,833개), 벤더 인덱스(163개 벤더), 통계 자동 갱신
+- `advisory_lookup.py`: 제품(영문 단어 경계·한영 별칭)/CVE/벤더/기간/유형 조회, Markdown·JSON 출력
+- 공지별 참고사이트(`[n] URL`, 벤더 권고·NVD 등) 2,005개와 첨부 파일명 수록, 저장소에 원본이 있으면 첨부 열람용 로컬 경로 표시
+- CVE 위험 지표: `scripts/fetch_cve_enrichment.py`로 CISA KEV(실제 악용, 248개 CVE)·FIRST EPSS(8,815개) 반영, NVD CVSS·CWE는 API 키로 선택 수집 → 조회 결과의 위험 지표·`--kev`·`--sort risk`, KEV/EPSS 기반 우선순위
+- 진단 시 벤더 권고 실시간 확인 단계: 취약·확인 필요·해결 버전 미배포 공지는 참고사이트의 벤더 권고를 열어 최신 해결 버전을 확인하고 확인 일시와 함께 기록
+- start/check/fix 스킬(EN/KO)에 KISA 보안공지 분기 연결, CII 패치 관리 항목의 근거로 활용
+- CI: advisory 데이터 스키마·EN/KO 동일성·통계 일치 검증, Python 단위 테스트 추가
+- 모든 스킬과 같은 0단계(`kesekit-setup` 확인)를 따르고, 프로필의 `environment`를 영향도 점검 자산 목록으로 사용. setup 입력 화면에 `/kesekit-advisory` 요청사항(`notes.advisory`) 칸 추가
+- 설치 명령의 마켓플레이스 이름 수정 (`kesekit@cdppcorp-KESE-KIT` → `kesekit@kesekit`, README·번역본 18개)
+- `marketplace.json` 3.5.0
+
+### v3.4.0 (2026-11-14)
+
+**초기 설정 스킬 추가: `/kesekit-setup`, `/kesekit-setup-ko`**
+- 모든 스킬(start/check/fix/guide)이 0단계에서 setup을 확인 모드로 먼저 실행
+- 다음 경우 다시 입력받음: 프로필 없음, 필수 항목 결측, 마지막 갱신 후 14일 이상, 프로젝트 경로·Git 원격·구성 파일·호스트명·OS 변경
+- PC 사양·실행 중인 서비스·프로젝트 구성을 읽기 전용으로 탐지하고 점검 분야를 추천
+- 입력은 HTML 화면(`templates/setup-form.html`, 한/영 전환)으로 받음: 점검 목적·범위·분야·CII 대상·제로트러스트 목표 성숙도, 스킬별 요청사항(코멘트) 칸 포함
+- [프로젝트 변경]: 점검 대상 경로와 Git 원격 주소를 바꿀 수 있음. 경로를 바꾸면 Claude가 새 경로를 다시 탐지하고 화면을 다시 엶. 프로필은 `project.path`(대상)·`project.workspace`(저장 위치)·`project.fingerprint`(변경 감지용 탐지값)를 분리해 사용자 수정값이 매번 "변경됨"으로 잡히지 않음
+- 점검 설정 항목마다 '직접 입력' 칸 추가. 적용 순서는 선택값 → 직접 입력(Claude가 선택지로 해석) → 추천값이며, 비워 둬도 오류 없이 추천값으로 진행. 값의 출처는 `assessment.source`, 원문은 `assessment.custom`에 저장
+- [폴더 선택]: Windows 폴더 선택 창으로 점검할 폴더를 고름. 브라우저는 보안상 전체 경로를 주지 않으므로 Claude가 폴더 이름과 구성 파일 목록으로 위치를 찾아 확정(후보가 여럿이면 사용자에게 확인)
+- 언어·프레임워크·서비스 등 환경 목록 8개를 다중 선택 드롭다운으로 변경. 기본은 '자동 분석'(저장할 때 Claude가 점검 폴더에서 다시 분석), 체크를 바꾸면 '직접 선택'. 출처는 `environmentSource`에 저장
+- 경로 안전 규칙: 따옴표·백틱·네트워크(UNC) 경로 거부, 다른 폴더에서 복사된 프로필의 경로로는 명령을 실행하지 않음. Git 주소는 비밀번호에 `@`가 있어도 자격 증명과 쿼리 토큰까지 제거
+- 화면을 `templates/setup-form.html`(구조)·`setup-form.js`(동작)·`setup-i18n.js`(한/영 문구)로 분리하고 CSP에서 `'unsafe-inline'` 제거
+- 입력 화면은 외부 전송·로컬 서버 없이 동작. [복사] 후 붙여넣기 또는 [파일로 저장]으로 Claude에 전달하고, Claude가 검증한 뒤 `.kesekit/profile.json`에 저장
+- 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿으로 대체
+- `scripts/validate-content.mjs`에 setup 계약 검사 7개 추가 (한/영 HTML 동일성, 선택지 값과 스키마 문서 일치, 8개 스킬 0단계 위치 등)
 
 ### v3.3.0 (2026-04-08)
 
@@ -472,7 +583,7 @@ KESE-KIT/
 **Breaking Change: 명령어 형식 변경**
 - 모든 스킬이 단일 `kesekit` 네임스페이스로 통합
 - 명령어 형식: `/start` → `/kesekit-start` (네임스페이스 접두사 추가)
-- 기존 사용자는 재설치 필요: `/plugin uninstall kesekit` → `/plugin install kesekit@cdppcorp-KESE-KIT`
+- 기존 사용자는 재설치 필요: `/plugin uninstall kesekit` → `/plugin install kesekit@kesekit`
 
 **새 가이드라인 추가: 우주 보안**
 - 출처: 우주 보안모델 Part1 134p + Part2 223p + 해설서 218p (과기정통부/KISA)

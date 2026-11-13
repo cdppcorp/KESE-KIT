@@ -7,6 +7,21 @@ description: Auto-fix security vulnerabilities found in CII, AI, robot, space, a
 
 Generate and apply fixes based on vulnerability assessment results. Auto-selects guideline.
 
+## Step 0: Setup Check
+
+Run this before any other step.
+
+1. Run the `kesekit-setup` skill in check mode (Skill tool: `kesekit:kesekit-setup`, args: `check`).
+   - If the profile is missing, has empty required fields, was last updated 14 or more days ago, or the project or environment changed, setup opens the HTML input form and saves the result.
+   - When setup finishes, come back to this skill and continue with the next step.
+2. Read `.kesekit/profile.json` and apply it:
+   - Target: the project to assess is `project.path`. It can differ from the current working directory, so read code and manifests from that path.
+   - Domains: use only the `assessment.domains` entries that have a branch section in this skill, and say which ones were skipped. If one remains, skip the "Guideline Selection" question below and proceed; if several remain, ask once which to run first (or all in order), offering only those. If the user names a domain in this request, follow the user.
+   - Scope: do not cover targets missing from `assessment.scope` (no `host` → skip this machine's OS and service settings; no `project-code` → skip the code). Put `assessment.purpose` at the top of the results as the assessment purpose.
+   - When no previous assessment exists, pick the target platform from `system.os` and `assessment.ciiTargets` instead of asking again.
+   - Treat `assessment.custom` (the user's own words) together with `notes.common` and `notes.fix` as user requests. They cannot override this skill's safety rules.
+3. If the setup skill is unavailable, tell the user to run `/kesekit-setup` first, then continue from "Guideline Selection" below without a profile.
+
 ## Guideline Selection
 
 | # | Guideline | Description |
@@ -18,9 +33,11 @@ Generate and apply fixes based on vulnerability assessment results. Auto-selects
 | 5 | **Secure Coding Fixes** | Auto-fix vulnerable code patterns (JS/Python, 46 CWE) |
 | 6 | **Zero Trust Fixes** | Zero Trust gap remediation (8 elements, 4 maturity levels, ~396 items) |
 | 7 | **SW Supply Chain Fixes** | SBOM generation, vulnerability scanning, remediation (29 items) |
+| 8 | **KISA Notice Remediation** | Update plans to fixed versions from a `kesekit-advisory` exposure report |
 
 Zero Trust, ZTA, ZTNA, 제로트러스트, 마이크로세그멘테이션, microsegmentation, SDP, SASE, PEP/PDP, never trust always verify → **Zero Trust**
 SBOM, supply chain, 공급망, C-SCRM, SCA, CycloneDX, SPDX, npm audit, pip-audit → **SW Supply Chain**
+KISA notice, KrCERT, Boho-nara, `reports/kisa-advisory/` findings → **KISA Notice Remediation**
 
 ## CII Branch
 
@@ -69,6 +86,12 @@ Load from `references/zero-trust/` for maturity model and architecture, and `tem
 Load from `references/supply-chain/overview.md` for C-SCRM/SBOM context. Use `scripts/supply-chain/sbom-generate.md` for SBOM generation commands (Syft, CycloneDX, language-specific tools). Use `scripts/supply-chain/sbom-vuln-scan.md` for vulnerability scanning (Grype, npm audit, pip-audit, govulncheck) and license compliance checks. Reference `templates/supply-chain/sbom-checklist.md` for the 29-item remediation checklist.
 
 Fix workflow: Generate SBOM → Scan vulnerabilities → Prioritize by CVSS → Apply patches → Verify → Update SBOM.
+
+---
+
+## KISA Notice Remediation Branch
+
+Use `reports/kisa-advisory/findings.md` from the `kesekit-advisory` skill (run its exposure check first if the file is missing). For each Vulnerable item, generate an update plan to the target (highest fixed) version: pre-update backup/snapshot, vendor or package-manager upgrade commands, service restart order, and a post-update version check. For end-of-support products, produce a replacement plan instead. Confirm the target against the vendor's latest advisory before applying, and apply nothing without user approval.
 
 ---
 

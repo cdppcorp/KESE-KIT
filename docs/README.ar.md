@@ -143,7 +143,7 @@ KESE (KISA Enhanced Security Evaluation Kit) هي اضافة لـ Claude Code ت
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## الاستخدام

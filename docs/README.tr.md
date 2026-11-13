@@ -143,7 +143,7 @@ Hedef Kitle: Sifir Guven benimseyen kuruluslar, OT/ICS ortamlari, buluta gecis y
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## Kullanim

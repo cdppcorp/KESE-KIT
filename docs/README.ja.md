@@ -143,13 +143,13 @@ KESE（KISA Enhanced Security Evaluation Kit）は、KISA（韓国インター�
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 > **更新する場合：**
 > ```
-> /plugin marketplace update cdppcorp-KESE-KIT
-> /plugin update kesekit@cdppcorp-KESE-KIT
+> /plugin marketplace update kesekit
+> /plugin update kesekit@kesekit
 > /reload-plugins
 > ```
 

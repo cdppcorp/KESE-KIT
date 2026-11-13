@@ -143,7 +143,7 @@ Doi tuong: Doanh nghiep ap dung Zero Trust, moi truong OT/ICS, to chuc chuyen do
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## Cach su dung
