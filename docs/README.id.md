@@ -143,7 +143,7 @@ Target: Organisasi yang mengadopsi Zero Trust, Lingkungan OT/ICS, Organisasi yan
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## Penggunaan

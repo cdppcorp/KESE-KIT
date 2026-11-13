@@ -20,13 +20,13 @@ Claude Code 안에서 다음 명령어로 마켓플레이스 등록 및 플러�
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 > **업데이트 시:**
 > ```
-> /plugin marketplace update cdppcorp-KESE-KIT
-> /plugin update kesekit@cdppcorp-KESE-KIT
+> /plugin marketplace update kesekit
+> /plugin update kesekit@kesekit
 > /reload-plugins
 > ```
 
@@ -264,7 +264,7 @@ v3.0에서 모든 스킬이 단일 `kesekit` 네임스페이스로 통합되었�
 ```
 /plugin uninstall kesekit
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 명령어 변경사항:
@@ -300,13 +300,13 @@ Inside Claude Code, register the marketplace and install the plugin:
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 > **To update:**
 > ```
-> /plugin marketplace update cdppcorp-KESE-KIT
-> /plugin update kesekit@cdppcorp-KESE-KIT
+> /plugin marketplace update kesekit
+> /plugin update kesekit@kesekit
 > /reload-plugins
 > ```
 
@@ -540,7 +540,7 @@ KESE-KIT/
 **Breaking Change: 명령어 형식 변경**
 - 모든 스킬이 단일 `kesekit` 네임스페이스로 통합
 - 명령어 형식: `/start` → `/kesekit-start` (네임스페이스 접두사 추가)
-- 기존 사용자는 재설치 필요: `/plugin uninstall kesekit` → `/plugin install kesekit@cdppcorp-KESE-KIT`
+- 기존 사용자는 재설치 필요: `/plugin uninstall kesekit` → `/plugin install kesekit@kesekit`
 
 **새 가이드라인 추가: 우주 보안**
 - 출처: 우주 보안모델 Part1 134p + Part2 223p + 해설서 218p (과기정통부/KISA)

@@ -143,7 +143,7 @@ Malgrupp: Organisationer som infor Zero Trust, OT/ICS-miljoer, Organisationer so
 
 ```
 /plugin marketplace add cdppcorp/KESE-KIT
-/plugin install kesekit@cdppcorp-KESE-KIT
+/plugin install kesekit@kesekit
 ```
 
 ## Anvandning
