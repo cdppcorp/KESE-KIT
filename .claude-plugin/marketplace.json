@@ -6,16 +6,16 @@
   },
   "metadata": {
     "description": "KISA-based security vulnerability assessment skills. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), Space Security (satellite/GSaaS/supply chain, 53 items), Secure Coding Guide (JS/Python/Pseudo Code, 46 items, 49 CWE), Zero Trust, SW Supply Chain (SBOM), and KISA Boho-nara security notice response (exposure check, briefing, CVE lookup, threat response). Every skill starts with a setup check (environment profile). Available in English and Korean.",
-    "version": "3.5.0",
+    "version": "3.6.0",
     "license": "MIT"
   },
   "plugins": [
     {
       "name": "kesekit",
-      "description": "Security vulnerability assessment (EN/KO). CII infrastructure (560+), AI Security, Robot Security (IEC 62443), Space Security (satellite/GSaaS/supply chain, CMMC/NIS2), Secure Coding (JS/Python/Pseudo Code, 46 CWE), Zero Trust, SW Supply Chain (SBOM), KISA security notices (affected/fixed version exposure checks, CVE lookup, threat response). Every skill first runs /kesekit-setup (environment profile via an HTML form). Use /kesekit-setup, /kesekit-start, /kesekit-start-ko, /kesekit-check, /kesekit-fix, /kesekit-guide, /kesekit-advisory, /kesekit-advisory-ko etc.",
+      "description": "Security vulnerability assessment (EN/KO). CII infrastructure (560+), AI Security, Robot Security (IEC 62443), Space Security (satellite/GSaaS/supply chain, CMMC/NIS2), Secure Coding (JS/Python/Pseudo Code, 46 CWE), Zero Trust, SW Supply Chain (SBOM), KISA security notices (affected/fixed version exposure checks, CVE lookup, threat response). Every skill first runs /kesekit-setup (environment profile via an HTML form). Typing '보안점검해줘' starts /kesekit-start-ko via a plugin hook. Use /kesekit-setup, /kesekit-start, /kesekit-start-ko, /kesekit-check, /kesekit-fix, /kesekit-guide, /kesekit-advisory, /kesekit-advisory-ko etc.",
       "source": "./",
       "strict": false,
-      "keywords": ["security", "KISA", "CII", "vulnerability", "assessment", "infrastructure", "hardening", "AI security", "robot security", "IEC 62443", "space security", "satellite", "GSaaS", "CMMC", "NIS2", "secure coding", "CWE", "OWASP", "JavaScript", "Python", "zero trust", "SBOM", "KrCERT", "security advisory", "CVE", "patch management", "보안", "취약점", "분석평가", "우주보안", "로봇보안", "시큐어코딩", "보안공지", "보호나라", "보안 업데이트 권고"],
+      "keywords": ["security", "KISA", "CII", "vulnerability", "assessment", "infrastructure", "hardening", "AI security", "robot security", "IEC 62443", "space security", "satellite", "GSaaS", "CMMC", "NIS2", "secure coding", "CWE", "OWASP", "JavaScript", "Python", "zero trust", "SBOM", "KrCERT", "security advisory", "CVE", "patch management", "보안", "취약점", "분석평가", "우주보안", "로봇보안", "시큐어코딩", "보안공지", "보호나라", "보안 업데이트 권고", "보안점검"],
       "category": "security",
       "skills": [
         "./skills/kesekit-setup",
