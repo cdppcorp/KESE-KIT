@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{Report title}}</title>
+<!--
+  KESE security assessment report template (see references/report-output.md)
+  - Copy this file and fill in every {{ }}. Do not change the <style>, class names, or section numbering.
+  - Duplicate blocks marked "repeat" as needed. Never delete a section; write "Not applicable" and why.
+  - Every finding (.finding) must have Current state, Risk, Example, and Remediation.
+  - HTML-escape every value. Never add <script> or external resources (fonts, images, CSS URLs).
+-->
+<style>
+  :root {
+    --ink: #1b1d21; --muted: #5d6470; --line: #c8ccd2; --rule: #1b1d21; --head: #f1f2f4; --desk: #e6e8eb; --paper: #ffffff;
+    --code: #f5f6f8; --link: #1e4fa3;
+    --critical: #a4161a; --high: #c2410c; --medium: #a16207; --low: #1e4fa3;
+    --pass: #1b7340; --partial: #b45309; --fail: #b42318; --na: #6b7280; --check: #6d28d9;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--desk); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0; color: var(--ink); word-break: keep-all; overflow-wrap: break-word;
+    font: 10.5pt/1.75 "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  }
+  a { color: var(--link); }
+  .paper { max-width: 210mm; margin: 12mm auto; padding: 20mm 18mm 22mm; background: var(--paper); border: 1px solid #d3d6db; }
+
+  .cover { border-top: 2.5pt solid var(--rule); border-bottom: 1pt solid var(--rule); padding: 14mm 0 9mm; margin-bottom: 10mm; }
+  .doc-kind { margin: 0 0 5mm; font-size: 10pt; font-weight: 700; letter-spacing: .3em; color: var(--muted); }
+  .cover h1 { margin: 0 0 3mm; font-size: 21pt; line-height: 1.32; letter-spacing: -.01em; }
+  .doc-sub { margin: 0 0 9mm; font-size: 11pt; color: var(--muted); }
+  .classification { margin: 6mm 0 0; text-align: right; font-size: 9.5pt; font-weight: 700; color: var(--fail); }
+
+  table { width: 100%; border-collapse: collapse; margin: 3mm 0 5mm; font-size: 9.5pt; }
+  th, td { border: .75pt solid var(--line); padding: 1.8mm 2.5mm; text-align: left; vertical-align: top; }
+  thead th { background: var(--head); border-bottom: 1pt solid var(--rule); font-weight: 700; white-space: nowrap; }
+  table.meta { border-top: 1pt solid var(--rule); }
+  table.meta th, table.verdict th { width: 30mm; background: var(--head); font-weight: 700; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  caption { caption-side: top; text-align: left; font-size: 9pt; color: var(--muted); padding-bottom: 1mm; }
+
+  .toc { margin: 0 0 10mm; }
+  .toc h2 { border: 0; margin: 0 0 3mm; padding: 0; font-size: 13pt; }
+  .toc ol { list-style: none; counter-reset: item; margin: 0; padding: 0; }
+  .toc ol ol { padding-left: 7mm; }
+  .toc li { counter-increment: item; margin: 1mm 0; }
+  .toc li::before { content: counters(item, ".") ". "; margin-right: 1.5mm; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .toc a { color: inherit; text-decoration: none; border-bottom: .5pt dotted var(--line); }
+
+  h2 { font-size: 14pt; margin: 12mm 0 4mm; padding-bottom: 1.5mm; border-bottom: 1.5pt solid var(--rule); }
+  h3 { font-size: 12pt; margin: 8mm 0 3mm; }
+  h4 { font-size: 10.5pt; margin: 6mm 0 2mm; }
+  .no { margin-right: 2mm; font-variant-numeric: tabular-nums; }
+  p { margin: 2mm 0; }
+  ul, ol { margin: 2mm 0; padding-left: 6mm; }
+  li { margin: .8mm 0; }
+  code { font: 9pt/1.5 "D2Coding", "Cascadia Mono", Consolas, monospace; background: var(--code); padding: 0 1mm; border-radius: 1mm; }
+  td code { white-space: nowrap; }
+  pre { margin: 2mm 0; padding: 3mm; background: var(--code); border: .75pt solid var(--line); line-height: 1.55; white-space: pre; word-break: normal; overflow-wrap: normal; overflow-x: auto; }
+  pre code { background: none; padding: 0; white-space: inherit; }
+
+  .sev, .vd { font-weight: 700; white-space: nowrap; }
+  .sev::before { content: ""; display: inline-block; width: 2.2mm; height: 2.2mm; margin-right: 1.2mm; background: currentColor; vertical-align: .08em; }
+  .sev-critical { color: var(--critical); } .sev-high { color: var(--high); } .sev-medium { color: var(--medium); } .sev-low { color: var(--low); }
+  .vd-pass { color: var(--pass); } .vd-partial { color: var(--partial); } .vd-fail { color: var(--fail); } .vd-na { color: var(--na); } .vd-check { color: var(--check); }
+
+  .finding { margin: 5mm 0 7mm; border-top: 1pt solid var(--rule); }
+  .finding-head { display: flex; align-items: baseline; gap: 3mm; padding: 2mm 0; }
+  .finding-head h5 { flex: 1; margin: 0; font-size: 11pt; }
+  .fid { font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  dl.fd { display: grid; grid-template-columns: 24mm minmax(0, 1fr); margin: 0; border-top: .75pt solid var(--line); }
+  dl.fd dt, dl.fd dd { margin: 0; padding: 2mm 2.5mm; border-bottom: .75pt solid var(--line); }
+  dl.fd dt { background: var(--head); font-weight: 700; }
+  dl.fd dd, .compare figure { min-width: 0; }
+  .compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2mm; margin-top: 2mm; }
+  .compare figure { margin: 0; }
+  .compare figcaption { font-size: 9pt; font-weight: 700; color: var(--muted); }
+
+  .doc-foot { display: flex; justify-content: space-between; gap: 4mm; margin-top: 14mm; padding-top: 3mm; border-top: .75pt solid var(--line); font-size: 9pt; color: var(--muted); }
+
+  @media screen and (max-width: 760px) {
+    .paper { margin: 0; padding: 8mm 5mm; border: 0; }
+    dl.fd, .compare { grid-template-columns: minmax(0, 1fr); }
+    dl.fd dt { border-bottom: 0; }
+    table { display: block; overflow-x: auto; }
+  }
+  @media print {
+    html { background: #fff; }
+    .paper { max-width: none; margin: 0; padding: 0; border: 0; }
+    @page { size: A4; margin: 18mm 16mm; }
+    h2 { break-before: page; }
+    .toc h2 { break-before: auto; }
+    h2, h3, h4, .finding-head, dl.fd dt { break-after: avoid; }
+    tr, figure, pre { break-inside: avoid; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    td code, thead th { white-space: normal; }
+    code { overflow-wrap: anywhere; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+<div class="paper">
+
+<header class="cover">
+  <p class="doc-kind">SECURITY ASSESSMENT REPORT</p>
+  <h1>{{Report title, e.g. Pre-deployment security assessment of the ○○ service}}</h1>
+  <p class="doc-sub">{{One-line summary, e.g. Backend and frontend code and deployment settings reviewed against KISA secure coding and CII web application criteria}}</p>
+  <table class="meta">
+    <tr><th>Target</th><td>{{Service name and components, e.g. ○○ backend (FastAPI), frontend (Nuxt) · path <code>project.path</code>}}</td></tr>
+    <tr><th>Purpose</th><td>{{assessment.purpose and the purpose in the user's own words (assessment.custom.purpose)}}</td></tr>
+    <tr><th>Criteria</th><td>{{KISA guidelines applied and item counts}}</td></tr>
+    <tr><th>Scope</th><td>{{What was included and excluded (assessment.scope)}}</td></tr>
+    <tr><th>Date</th><td>{{YYYY-MM-DD}}</td></tr>
+    <tr><th>Baseline</th><td>{{Version of the code and settings reviewed, e.g. commit hash and date}}</td></tr>
+    <tr><th>Prepared by</th><td>kesekit {{skill name}} · {{organization or owner}}</td></tr>
+  </table>
+  <p class="classification">{{Classification, e.g. Confidential · internal use only}}</p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Overview</a></li>
+    <li><a href="#s2">Summary of Results</a></li>
+    <li><a href="#s3">Detailed Results</a>
+      <ol>
+        <!-- repeat: one per area -->
+        <li><a href="#s3-1">{{Area name}}</a></li>
+      </ol>
+    </li>
+    <li><a href="#s4">Remediation Plan</a></li>
+    <li><a href="#s5">Appendix</a></li>
+  </ol>
+</nav>
+
+<section id="s1">
+  <h2><span class="no">1.</span>Overview</h2>
+  <h3><span class="no">1.1</span>Purpose</h3>
+  <p>{{Why the assessment was done and what this report decides, e.g. confirm remaining risks before the next release and decide whether to deploy}}</p>
+
+  <h3><span class="no">1.2</span>Target and Scope</h3>
+  <table>
+    <thead><tr><th>Type</th><th>Target</th><th>Notes</th></tr></thead>
+    <tbody>
+      <!-- repeat: one row per target -->
+      <tr><td>{{e.g. Code}}</td><td>{{e.g. backend <code>app/</code>, 333 files}}</td><td>{{e.g. read only, not executed}}</td></tr>
+    </tbody>
+  </table>
+
+  <h3><span class="no">1.3</span>Criteria and Method</h3>
+  <p>{{Criteria and method, e.g. 46 items of the KISA Python secure coding guide and 21 CII web application items, by static code review and configuration file checks}}</p>
+  <table>
+    <caption>Verdicts</caption>
+    <thead><tr><th>Verdict</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><span class="vd vd-pass">Good</span></td><td>Settings and code meet the criterion</td></tr>
+      <tr><td><span class="vd vd-partial">Partial</span></td><td>Only partly applied; needs improvement</td></tr>
+      <tr><td><span class="vd vd-fail">Vulnerable</span></td><td>Does not meet the criterion; a risk exists</td></tr>
+      <tr><td><span class="vd vd-na">N/A</span></td><td>The feature or component does not exist in this environment</td></tr>
+      <tr><td><span class="vd vd-check">To verify</span></td><td>Cannot be decided from code and settings alone; the production environment must be checked</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <caption>Severity</caption>
+    <thead><tr><th>Severity</th><th>Meaning</th><th>When to fix</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sev sev-critical">Critical</span></td><td>Exploitable right away with serious impact</td><td>Immediately</td></tr>
+      <tr><td><span class="sev sev-high">High</span></td><td>Exploitable under certain conditions with serious impact</td><td>Before the next release</td></tr>
+      <tr><td><span class="sev sev-medium">Medium</span></td><td>Dangerous when combined with other weaknesses</td><td>Within a set schedule</td></tr>
+      <tr><td><span class="sev sev-low">Low</span></td><td>Hardening improvement</td><td>Recommended</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="s2">
+  <h2><span class="no">2.</span>Summary of Results</h2>
+  <h3><span class="no">2.1</span>Overall Opinion</h3>
+  <table class="verdict">
+    <tr><th>Overall verdict</th><td><strong>{{Pass / Conditional pass / Fail}}</strong> — {{One-line reason, e.g. no critical issues, but re-assess after fixing the 3 high findings}}</td></tr>
+  </table>
+  <ul>
+    <!-- repeat: 3–5 conclusions, covering both strengths and concerns -->
+    <li><strong>{{One-line conclusion.}}</strong> {{Evidence and what it means}}</li>
+  </ul>
+
+  <h3><span class="no">2.2</span>Verdict Counts</h3>
+  <table>
+    <thead><tr><th>Area</th><th class="num">Items</th><th class="num">Good</th><th class="num">Partial</th><th class="num">Vulnerable</th><th class="num">N/A</th><th class="num">To verify</th></tr></thead>
+    <tbody>
+      <!-- repeat: one row per area; the last row is the total -->
+      <tr><td><a href="#s3-1">{{Area name}}</a></td><td class="num">{{0}}</td><td class="num">{{0}}</td><td class="num">{{0}}</td><td class="num">{{0}}</td><td class="num">{{0}}</td><td class="num">{{0}}</td></tr>
+      <tr><th>Total</th><th class="num">{{0}}</th><th class="num">{{0}}</th><th class="num">{{0}}</th><th class="num">{{0}}</th><th class="num">{{0}}</th><th class="num">{{0}}</th></tr>
+    </tbody>
+  </table>
+
+  <h3><span class="no">2.3</span>Key Findings</h3>
+  <table>
+    <thead><tr><th>No.</th><th>Severity</th><th>Finding</th><th>Location</th><th>Order</th></tr></thead>
+    <tbody>
+      <!-- repeat: highest severity first -->
+      <tr><td><a href="#F1">F1</a></td><td><span class="sev sev-high">High</span></td><td>{{One-line finding}}</td><td><code>{{file:line}}</code></td><td>{{Step number in section 4}}</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="s3">
+  <h2><span class="no">3.</span>Detailed Results</h2>
+
+  <!-- repeat: one per area -->
+  <section id="s3-1">
+    <h3><span class="no">3.1</span>{{Area name}}</h3>
+    <p>{{What was reviewed in this area, against which criteria, and how}}</p>
+
+    <h4>Verdict per Item</h4>
+    <table>
+      <thead><tr><th>Item</th><th>Verdict</th><th>Current state (evidence)</th><th>Finding</th></tr></thead>
+      <tbody>
+        <!-- repeat: one row per item. Give one line of evidence for Good items too -->
+        <tr><td>{{Criterion code · item}}</td><td><span class="vd vd-partial">Partial</span></td><td>{{Evidence checked: file, line, setting value}}</td><td><a href="#F1">F1</a></td></tr>
+      </tbody>
+    </table>
+
+    <h4>Finding Details</h4>
+    <!-- repeat: one per finding. Number findings F1, F2 … across the whole report -->
+    <article class="finding" id="F1">
+      <header class="finding-head"><span class="fid">F1</span><h5>{{Finding title}}</h5><span class="sev sev-high">High</span></header>
+      <dl class="fd">
+        <dt>Criteria</dt><dd>{{KISA item code · CWE}} · verdict <span class="vd vd-partial">Partial</span></dd>
+        <dt>Location</dt><dd><code>{{file:line}}</code></dd>
+        <dt>Current state</dt><dd>{{How the code or settings actually are today, with the evidence checked (file, line, setting value)}}</dd>
+        <dt>Risk</dt><dd>{{What can go wrong if left as is: who can do what, under which conditions, and the impact}}</dd>
+        <dt>Example</dt>
+        <dd>
+          <p>{{An abuse or failure scenario, step by step, e.g. ① an attacker … ② … ③ as a result …}}</p>
+          <div class="compare">
+            <figure><figcaption>Current</figcaption><pre><code>{{Current code or setting (secrets masked)}}</code></pre></figure>
+            <figure><figcaption>Improved</figcaption><pre><code>{{Fixed code or setting}}</code></pre></figure>
+          </div>
+        </dd>
+        <dt>Remediation</dt><dd><ol><li>{{Remediation step}}</li></ol></dd>
+        <dt>To verify</dt><dd>{{What could not be confirmed from code alone and how to check it. Delete this row (dt and dd) if there is nothing}}</dd>
+      </dl>
+    </article>
+  </section>
+</section>
+
+<section id="s4">
+  <h2><span class="no">4.</span>Remediation Plan</h2>
+  <table>
+    <thead><tr><th>Step</th><th>Action</th><th>Related</th><th>Owner</th><th>Done when</th></tr></thead>
+    <tbody>
+      <!-- repeat: ordered by severity and dependencies -->
+      <tr><td class="num">1</td><td>{{Action}}</td><td><a href="#F1">F1</a></td><td>{{e.g. Service development}}</td><td>{{How to confirm it is done}}</td></tr>
+    </tbody>
+  </table>
+  <p>{{Re-assessment plan, e.g. re-run /kesekit-check after steps 1–3}}</p>
+</section>
+
+<section id="s5">
+  <h2><span class="no">5.</span>Appendix</h2>
+  <h3><span class="no">5.1</span>Environment and Limitations</h3>
+  <ul>
+    <li><strong>Done</strong>: {{What was read and how}}</li>
+    <li><strong>Not done</strong>: {{What was not executed, accessed, or changed, and why}}</li>
+    <li><strong>Limitations affecting results</strong>: {{e.g. production server settings are not in the repository, so those items are "To verify"}}</li>
+  </ul>
+  <h3><span class="no">5.2</span>References</h3>
+  <ul>
+    <!-- repeat: guidelines used and their dates -->
+    <li>{{Guideline name · publisher · year}}</li>
+  </ul>
+</section>
+
+<footer class="doc-foot"><span>{{Report title}}</span><span>{{YYYY-MM-DD}} · kesekit</span></footer>
+</div>
+</body>
+</html>

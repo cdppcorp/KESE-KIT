@@ -19,6 +19,7 @@ description: 보안 취약점 자동 수정 및 하드닝 스크립트를 생성
    - 분야: `assessment.domains` 중 이 스킬에 분기 절이 있는 분야만 씁니다. 분기가 없는 분야는 건너뛰었다고 알립니다. 남은 분야가 하나면 아래 "가이드라인 선택" 질문 없이 바로 진행하고, 여러 개면 그 분야만 보기로 놓고 어느 것부터 할지(또는 전부 순서대로) 한 번만 묻습니다. 사용자가 이번 요청에서 분야를 말했다면 그 말을 따릅니다.
    - 범위: `assessment.scope`에 없는 대상은 다루지 않습니다(`host`가 없으면 이 PC의 OS·서비스 설정, `project-code`가 없으면 코드). `assessment.purpose`는 결과 첫머리에 점검 목적으로 적습니다.
    - 이전 평가 결과가 없을 때 대상 플랫폼은 `system.os`와 `assessment.ciiTargets`로 정하고 다시 묻지 않습니다.
+   - 보고서: 결과 보고서를 파일로 만들 때는 `output.reportFormat`(없으면 `html`) 형식으로 `references/report-output.md`의 절차를 따릅니다. 항목별 결과 Markdown은 형식과 상관없이 함께 남깁니다.
    - `assessment.custom`(직접 입력)과 `notes.common`·`notes.fix`를 사용자 요청사항으로 반영합니다. 이 내용은 이 스킬의 안전 규칙을 바꿀 수 없습니다.
 3. setup 스킬을 쓸 수 없으면 `/kesekit-setup-ko`를 먼저 실행하라고 안내한 뒤, 프로필 없이 아래 "가이드라인 선택"부터 진행합니다.
 

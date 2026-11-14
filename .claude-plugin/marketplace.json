@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "KISA-based security vulnerability assessment skills. Supports CII (560+ items), AI Security Guide, Robot Security (103 items), Space Security (satellite/GSaaS/supply chain, 53 items), Secure Coding Guide (JS/Python/Pseudo Code, 46 items, 49 CWE), Zero Trust, SW Supply Chain (SBOM), and KISA Boho-nara security notice response (exposure check, briefing, CVE lookup, threat response). Every skill starts with a setup check (environment profile). Available in English and Korean.",
-    "version": "3.6.0",
+    "version": "3.7.0",
     "license": "MIT"
   },
   "plugins": [

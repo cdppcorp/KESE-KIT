@@ -39,7 +39,7 @@ description: KESE 초기 설정. 점검할 PC·서버 사양과 프로젝트 환
 
 > 이 PC에서 읽기 전용 명령으로 OS·하드웨어·실행 중인 서비스·프로젝트 구성을 확인합니다. 아무것도 설치하거나 바꾸지 않으며, 결과는 이 프로젝트의 `.kesekit/` 폴더에만 저장합니다.
 
-`references/detection.md`의 명령으로 `system`, `project`, `environment`, `recommended`를 채웁니다. 점검 대상 경로는 같은 문서의 "점검 대상 경로 정하기"를 따릅니다.
+`references/detection.md`의 명령으로 `system`, `project`, `environment`, `recommended`, `reportTools`(보고서 변환 도구)를 채웁니다. 점검 대상 경로는 같은 문서의 "점검 대상 경로 정하기"를 따릅니다.
 - 실패하거나 권한이 없는 명령은 건너뜁니다. 값은 `null`로 두고, 무엇을 못 찾았는지 `errors`에 짧게 적습니다. 이 때문에 관리자 권한을 요청하지 않습니다.
 - Git 원격 주소는 `references/detection.md`의 명령처럼 출력 단계에서 자격 증명을 지운 값만 다룹니다. 원본 주소를 그대로 출력하는 명령은 쓰지 않습니다.
 - 비밀값(환경변수 값, 토큰, 설정 파일 내용)은 수집하지 않습니다. 서비스와 도구는 이름만 기록합니다.
@@ -51,12 +51,13 @@ description: KESE 초기 설정. 점검할 PC·서버 사양과 프로젝트 환
 1. `.kesekit/` 폴더를 만들고 `templates/setup-form.html`은 `.kesekit/setup.html`로, `templates/setup-form.js`는 `.kesekit/setup-form.js`로, `templates/setup-i18n.js`는 `.kesekit/setup-i18n.js`로 **내용 그대로** 복사합니다.
 2. `.kesekit/setup-data.js`를 씁니다. 대입문 한 줄이며 값은 JSON입니다.
    ```js
-   window.KESEKIT_SETUP = {"lang":"ko","generatedAt":"<시스템 시각 ISO 8601>","reasons":[{"code":"STALE","detail":"마지막 갱신 2026-10-29 (16일 전)"}],"detected":{"system":{},"project":{},"environment":{},"recommended":{"purpose":"general","scope":["host"],"domains":["cii"],"ciiTargets":["pc"],"ztTargetMaturity":"initial"},"errors":[]},"previous":null};
+   window.KESEKIT_SETUP = {"lang":"ko","generatedAt":"<시스템 시각 ISO 8601>","reasons":[{"code":"STALE","detail":"마지막 갱신 2026-10-29 (16일 전)"}],"detected":{"system":{},"project":{},"environment":{},"recommended":{"purpose":"general","scope":["host"],"domains":["cii"],"ciiTargets":["pc"],"ztTargetMaturity":"initial"},"reportTools":{"pdf":"Edge","hwpx":null,"pptx":null},"errors":[]},"previous":null};
    ```
    - `lang`은 한국어판이므로 `"ko"`입니다.
+   - `reportTools`는 입력 화면의 "보고서 형식"에 도구 사용 가능 여부를 보여 주는 데만 씁니다(`references/detection.md`의 "보고서 변환 도구").
    - `reasons[].detail`에는 바뀐 내용을 구체적으로 적습니다(예: "프로젝트 경로 C:/a → C:/b", "구성 파일 추가: Dockerfile", "필수 항목 없음: assessment.scope").
    - `generatedAt`은 `setup-data.js`를 쓸 때마다(다시 쓸 때 포함) 새 시각으로 바꿉니다. `recommended`의 다섯 항목은 비워 두지 않습니다(`references/detection.md`의 "추천 분야").
-   - `previous`에는 기존 프로필을 읽을 수 있고 그 `project.workspace`가 현재 작업 폴더와 같은 경로일 때만 그 내용을 넣습니다. 화면은 사용자가 직접 정한 것만 다시 채웁니다: `source`가 `selected`인 점검 설정, 직접 입력, 노트, `environmentSource`가 `manual`인 환경 목록, `gitRemoteEdited`·`roleEdited`가 `true`인 Git 주소와 장비 역할. 나머지는 이번 탐지값과 추천값을 따릅니다. 경로가 다르면(다른 프로젝트이거나 저장소와 함께 복사된 프로필) `null`로 두어 남이 쓴 노트가 섞이지 않게 합니다.
+   - `previous`에는 기존 프로필을 읽을 수 있고 그 `project.workspace`가 현재 작업 폴더와 같은 경로일 때만 그 내용을 넣습니다. 화면은 사용자가 직접 정한 것만 다시 채웁니다: `source`가 `selected`인 점검 설정, 직접 입력, 노트, `environmentSource`가 `manual`인 환경 목록, `gitRemoteEdited`·`roleEdited`가 `true`인 Git 주소와 장비 역할, 보고서 형식(`output.reportFormat`). 나머지는 이번 탐지값과 추천값을 따릅니다. 경로가 다르면(다른 프로젝트이거나 저장소와 함께 복사된 프로필) `null`로 두어 남이 쓴 노트가 섞이지 않게 합니다.
    - 값은 JSON 규칙대로 직렬화합니다. 경로·호스트명 같은 문자열의 따옴표와 역슬래시는 반드시 이스케이프합니다.
 3. 브라우저를 쓸 수 있는지 판단합니다(`references/detection.md`의 "브라우저 사용 가능 여부").
    - 쓸 수 있으면 기본 브라우저로 엽니다. Windows는 `Start-Process .kesekit\setup.html`, macOS는 `open .kesekit/setup.html`, Linux는 `xdg-open .kesekit/setup.html`입니다.
@@ -92,6 +93,7 @@ description: KESE 초기 설정. 점검할 PC·서버 사양과 프로젝트 환
    | 시스템 | Ubuntu 22.04 · 서버 · 64GB |
    | 점검 목적 | 기타 — "ISMS-P 인증 심사 전에 자체 점검" (직접 입력 해석) |
    | 점검 분야 | CII(unix, web-service) (추천), 시큐어코딩 (선택) |
+   | 보고서 형식 | HWPX — kordoc이 없어 지금은 HTML로 대체 (설치: `npm install -g kordoc`) |
    | 다음 재확인 | 2026-11-28 (14일 후) |
 
 5. 다른 스킬에서 호출됐다면 그 스킬의 다음 단계로 돌아갑니다. 직접 실행했다면 프로필에 맞는 다음 명령(예: `/kesekit-start-ko`)을 추천합니다.

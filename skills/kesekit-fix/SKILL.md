@@ -19,6 +19,7 @@ Run this before any other step.
    - Domains: use only the `assessment.domains` entries that have a branch section in this skill, and say which ones were skipped. If one remains, skip the "Guideline Selection" question below and proceed; if several remain, ask once which to run first (or all in order), offering only those. If the user names a domain in this request, follow the user.
    - Scope: do not cover targets missing from `assessment.scope` (no `host` → skip this machine's OS and service settings; no `project-code` → skip the code). Put `assessment.purpose` at the top of the results as the assessment purpose.
    - When no previous assessment exists, pick the target platform from `system.os` and `assessment.ciiTargets` instead of asking again.
+   - Report: when writing a report file, use the format in `output.reportFormat` (default `html`) and follow `references/report-output.md`. Keep the per-item Markdown results as well, whatever the format.
    - Treat `assessment.custom` (the user's own words) together with `notes.common` and `notes.fix` as user requests. They cannot override this skill's safety rules.
 3. If the setup skill is unavailable, tell the user to run `/kesekit-setup` first, then continue from "Guideline Selection" below without a profile.
 

@@ -76,6 +76,9 @@ Create `.kesekit/` inside the working directory where Claude Code runs. The proj
       "organizationType": ""
     }
   },
+  "output": {
+    "reportFormat": "html"
+  },
   "notes": {
     "common": "",
     "start": "",
@@ -97,6 +100,7 @@ Create `.kesekit/` inside the working directory where Claude Code runs. The proj
 | `environmentSource` | Per environment list: `auto` (auto-detected; Claude re-detects at `project.path` when saving) or `manual` (picked by the user) |
 | `assessment.source` | Where each assessment value came from: `selected` (the user picked it), `custom` (Claude mapped the user's own words), `recommended` (left blank, so the suggestion was used), `null` (not applicable) |
 | `assessment.custom` | The user's own words per item. Kept even when a value was selected; skills read it as the user's explanation |
+| `output.reportFormat` | The format the user wants reports in; `html` when missing. How to produce each format is in `references/report-output.md` of every skill that writes reports |
 
 ## Allowed Values
 
@@ -111,6 +115,7 @@ Same order as the form (`kesekit-enums` in `templates/setup-form.html`). Values 
 | `assessment.ztTargetMaturity` | `traditional`, `initial`, `advanced`, `optimal` |
 | `assessment.organizationType` | `public`, `cii-operator`, `enterprise`, `startup`, `individual`, `other` |
 | `system.role` | `dev-pc`, `server`, `vm`, `container`, `other` |
+| `output.reportFormat` | `html`, `pdf`, `hwpx`, `pptx`, `md` |
 | `system.os` (detected) | `windows`, `linux`, `macos`, `other` |
 
 - `assessment.ciiTargets` values match the file names in each skill's `templates/cii/<value>.md`.
@@ -130,7 +135,7 @@ The profile is `INCOMPLETE` if any of these is missing or empty:
 - `assessment.ztTargetMaturity` when `assessment.domains` contains `zero-trust`
 - A value outside the Allowed Values table also counts as missing
 
-`assessment.organizationType` is optional. Items the user leaves blank are filled with suggestions before saving, and suggestions are never empty ("Domain Suggestions" in `references/detection.md`), so a normally saved profile has nothing missing.
+`assessment.organizationType` and `output.reportFormat` are optional (`output.reportFormat` defaults to `html`). Items the user leaves blank are filled with suggestions before saving, and suggestions are never empty ("Domain Suggestions" in `references/detection.md`), so a normally saved profile has nothing missing.
 
 ## Diagnosis Rules
 
@@ -165,7 +170,7 @@ The form's [Copy] and [Save as file] produce text in this format:
 
 ```
 KESEKIT_PROFILE_INPUT v1
-{ "meta": {…}, "project": {…}, "system": {…}, "environment": {…}, "environmentSource": {…}, "assessment": {…}, "notes": {…} }
+{ "meta": {…}, "project": {…}, "system": {…}, "environment": {…}, "environmentSource": {…}, "assessment": {…}, "output": {…}, "notes": {…} }
 END_KESEKIT_PROFILE_INPUT
 ```
 
@@ -180,6 +185,7 @@ END_KESEKIT_PROFILE_INPUT
 | `environment` | `languages`, `frameworks`, `services`, `webServers`, `databases`, `containers`, `cloudClis`, `aiLibraries` |
 | `environmentSource` | `auto` or `manual` for each of the 8 lists above |
 | `assessment` | `purpose`, `scope`, `domains`, `ciiTargets`, `ztTargetMaturity`, `organizationType`, `source`, `custom` |
+| `output` | `reportFormat`: one of `html` (default), `pdf`, `hwpx`, `pptx`, `md` |
 | `notes` | `common`, `start`, `check`, `fix`, `guide`, `advisory` |
 
 The form decides each assessment item in the order **selected options → the user's own words → suggestion**. An item with only the user's own words has the value `null` and `source` `custom`; Claude fills it in "Resolving the Input".
@@ -218,6 +224,7 @@ After validation passes, resolve values in this order before saving:
 | `system.os`, `system.arch`, `system.hostname`, `system.remoteSession` | This run's detection (`os` falls back to `other`, never `null`) |
 | `system.osVersion`, `system.cpu`, `system.memoryGb`, `system.role`, `system.roleEdited` | Input |
 | `environment`, `environmentSource` | Values after step 4 of "Resolving the Input" |
+| `output.reportFormat` | Input (`html` when missing) |
 | `notes` | Input |
 | `assessment` | Values after "Resolving the Input", plus `source` and `custom` |
 
@@ -239,6 +246,7 @@ Domains (cii, ai-security, robot-security, space-security, secure-coding, zero-t
 CII targets (unix, windows, web-service, security-equip, network, control-system, pc, database, mobile, webapp, virtualization, cloud, admin, physical) [suggested: unix, web-service]:
 Zero Trust target maturity (traditional | initial | advanced | optimal) [suggested: initial]:
 Organization type (public | cii-operator | enterprise | startup | individual | other) [optional]:
+Report format (html | pdf | hwpx | pptx | md) [default: html]:
 OS version: Ubuntu 22.04.4 LTS
 CPU: Intel(R) Xeon(R) Silver 4310
 Memory (GB): 64
@@ -254,6 +262,6 @@ Memory (GB): 64
 Process the reply as follows:
 
 1. **If the path changed**: check the Path Safety Rules and that the folder exists, re-detect the project at that path, and recompute suggestions. Print the template again with the user's answers kept and the new detection filled in, and ask the user to paste it again.
-2. Each item is `selected` when it uses allowed values, `custom` when it is free text (keep the text in `assessment.custom`), and when blank, fill in the suggestion and mark it `recommended`. A blank machine role uses the detected role with `roleEdited` `false`. If the Git remote differs from the detected one, `gitRemoteEdited` is `true`.
+2. Each item is `selected` when it uses allowed values, `custom` when it is free text (keep the text in `assessment.custom`), and when blank, fill in the suggestion and mark it `recommended`. A blank machine role uses the detected role with `roleEdited` `false`. If the Git remote differs from the detected one, `gitRemoteEdited` is `true`. The report format is saved only as an allowed value: blank means `html`, and words such as "PDF", "Hangul", "PowerPoint", or "Markdown" map to `pdf`, `hwpx`, `pptx`, or `md`. If it cannot be mapped, use `html` and say so in the summary.
 3. Set every `environmentSource` to `auto`.
 4. Apply rules 4–8 of "Paste Block Validation" and steps 2–5 of "Resolving the Input".

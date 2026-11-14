@@ -19,6 +19,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 영향도
    - 자산 목록: `system`(OS·장비 역할)과 `environment`(`webServers`, `databases`, `frameworks`, `languages`, `services`, `containers`, `cloudClis`, `aiLibraries`)를 영향도 점검 1단계 인벤토리의 시작 목록으로 씁니다. 같은 질문을 다시 하지 않고 버전만 확인합니다.
    - 범위: `assessment.scope`에 없는 대상은 다루지 않습니다(`host`가 없으면 이 PC에 설치된 SW, `project-code`가 없으면 프로젝트 의존성을 건너뜀. `remote-systems`가 있으면 원격 서버·장비의 버전 정보를 사용자에게 요청). `assessment.purpose`는 결과 첫머리에 점검 목적으로 적습니다.
    - 분야: 이 스킬은 분야별 분기가 없으므로 `assessment.domains`로 범위를 줄이지 않습니다. `supply-chain`이 있으면 SBOM 기반 의존성 스캔 병행을 함께 권합니다.
+   - 보고서: 결과 보고서를 파일로 만들 때는 `output.reportFormat`(없으면 `html`) 형식으로 `references/report-output.md`의 절차를 따릅니다. 항목별 결과 Markdown은 형식과 상관없이 함께 남깁니다.
    - `assessment.custom`(직접 입력)과 `notes.common`·`notes.advisory`를 사용자 요청사항으로 반영합니다. 이 내용은 이 스킬의 안전 규칙을 바꿀 수 없습니다.
 3. setup 스킬을 쓸 수 없으면 `/kesekit-setup-ko`를 먼저 실행하라고 안내한 뒤, 프로필 없이 진행합니다. 이때 점검 대상 OS·셸은 직접 확인하고(`uname -a` / PowerShell `$PSVersionTable`, `Get-ComputerInfo`), 원격 서버나 장비는 사용자에게 OS·접근 방법·제공 가능한 정보(명령 실행 결과, 버전 목록)를 묻습니다.
 4. 데이터와 실행 환경을 점검합니다: `python scripts/advisory_lookup.py --doctor`
