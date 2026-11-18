@@ -1,5 +1,5 @@
 {
-  "description": "kesekit: route '보안점검' (security check) prompts to the kesekit skills",
+  "description": "kesekit: route '보안점검' / '취약점 점검' (security or vulnerability check) and vulnerability-nickname (Log4Shell, Java4Shell, ...) prompts to the kesekit skills",
   "hooks": {
     "UserPromptSubmit": [
       {

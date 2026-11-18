@@ -70,8 +70,20 @@ class TriggerScriptTest(unittest.TestCase):
             with self.subTest(prompt=prompt):
                 self.assert_fires(prompt)
 
+    def test_fires_on_vulnerability_checks_and_nicknames(self):
+        for prompt in ("최근 취약점점검 해줘", "취약점 점검 부탁해", "Java4Shell 점검해줘", "우리 서버 log4shell 영향 봐줘",
+                       "PHP2Shell 대응"):
+            with self.subTest(prompt=prompt):
+                self.assert_fires(prompt)
+
+    def test_hint_routes_vulnerability_checks_to_advisory(self):
+        context = json.loads(run_hook("최근 취약점점검 해줘").stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("kesekit:kesekit-advisory-ko", context)
+        self.assertIn("최근 취약점", context)
+
     def test_silent_otherwise(self):
-        for prompt in ("코드 리뷰해줘", "보안 업데이트 알려줘", "", "/kesekit-start-ko 보안점검"):
+        for prompt in ("코드 리뷰해줘", "보안 업데이트 알려줘", "", "/kesekit-start-ko 보안점검", "취약점 알려줘",
+                       "PowerShell 명령 알려줘", "bash shell 스크립트 짜줘"):
             with self.subTest(prompt=prompt):
                 self.assert_silent(prompt)
 

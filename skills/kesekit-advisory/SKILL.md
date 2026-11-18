@@ -1,6 +1,6 @@
 ---
 name: kesekit-advisory
-description: Uses KISA Boho-nara (KrCERT/CC) security notices (2025 onward — security update advisories, caution advisories, hardening advisories) to find notices that affect the products, versions, and dependencies in use, judge exposure against the fixed versions, brief recent notices, look up CVEs, and run threat-response checks (BPFDoor, Linux rootkits, ransomware, exposed credentials, dev supply-chain attacks). Use for "KISA advisory", "KrCERT notice", "Boho-nara", "are we affected", "vulnerable version check", "patch check", "is this CVE in a KISA notice", "recent security notices", "BPFDoor check", "ransomware readiness".
+description: Uses KISA Boho-nara (KrCERT/CC) security notices (2025 onward — security update advisories, caution advisories, hardening advisories) to find notices that affect the products, versions, and dependencies in use, judge exposure against the fixed versions, brief recent notices, look up CVEs, and run threat-response checks (BPFDoor, Linux rootkits, ransomware, exposed credentials, dev supply-chain attacks). Use for "KISA advisory", "KrCERT notice", "Boho-nara", "are we affected", "vulnerable version check", "patch check", "is this CVE in a KISA notice", "recent security notices", "BPFDoor check", "ransomware readiness", "recent vulnerability check", "Java vulnerability check", and vulnerability nicknames such as "Java4Shell" or "Log4Shell".
 ---
 
 # KESE KISA Security Notice Response
@@ -47,8 +47,8 @@ Notices are published in Korean; product names, versions, and CVE IDs are langua
 | # | Mode | When |
 |---|------|------|
 | 1 | **Exposure check** | "Does any KISA notice affect our systems?", checking a product/version/dependency list |
-| 2 | **Notice briefing** | "Summarise the last two weeks of notices", "Cisco notices", "this month's patch priorities" |
-| 3 | **CVE lookup** | Whether a CVE appears in a KISA notice and what the fixed version is |
+| 2 | **Notice briefing** | "Summarise the last two weeks of notices", "Cisco notices", "this month's patch priorities", "recent vulnerability check" (after the briefing, run mode 1 for products in use) |
+| 3 | **CVE lookup** | Whether a CVE or vulnerability nickname (Log4Shell, Java4Shell, …) appears in a KISA notice and what the fixed version is |
 | 4 | **Threat response** | BPFDoor, Linux rootkits, ransomware, exposed credentials, dev supply chain, product-use cautions (EoL) |
 
 If the request is ambiguous, ask whether to run 1 and 4 together.
@@ -90,6 +90,7 @@ python scripts/advisory_lookup.py -q "PHP" --sort risk                    # KEV 
 - Every word of a query must appear in the notice. A vendor + product query such as `Fortinet FortiOS` narrows the table to that product's rows. KISA spellings: `Connect Secure`, `FortiOS`, `PAN-OS`, `Apache HTTP Server`. Korean/English aliases (구글↔Google, 리눅스↔Linux, …) expand automatically.
 - Check each result's `Matched in` line: **title/vendor** (all rows shown) / **table rows n/m** (only related rows shown, hidden rows counted) / **body text only** (the version table has no row for the product → read the notice; without evidence, the verdict is **Needs review**).
 - Products listed inside another vendor's notice are found too (e.g. NGINX inside an F5 notice).
+- A vulnerability nickname is found only when a notice uses that name (`PHP2Shell`, used in a KISA title, is found; `Log4Shell` and `Java4Shell` return nothing). On zero results, find the product/CVE the nickname refers to in the vendor advisory or NVD — ask the user if that cannot be confirmed — and query again by product or CVE. Never guess the nickname-to-CVE mapping.
 - When rows are truncated, use `--id <number> --max-rows 0` for every row. Pinned notices numbered `공지` are addressed by the nttId shown in the output.
 - In JSON output, if `truncated` or `rows_truncated` is true, query again with `--limit 0 --max-rows 0`.
 - Output includes each notice's **References** (vendor advisory, NVD, … as `[n] URL`) and attachment names. When the raw archive is present in the repository, a **Source folder** path is shown too — Read the attached PDFs from there.
