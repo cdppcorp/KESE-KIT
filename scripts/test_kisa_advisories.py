@@ -342,6 +342,15 @@ class LookupTest(unittest.TestCase):
         self.assertEqual(kind, "rows")
         self.assertEqual([r["product"] for r in rows], ["Oracle Java SE"])
 
+    def test_vulnerability_nickname_matches_its_cve_rows(self):
+        oracle = advisory("9", "2026-11-18", "Oracle 제품 보안 업데이트 권고", "Oracle",
+                          cves=["CVE-2026-114938", "CVE-2026-114939"],
+                          affected=[{"cve": "CVE-2026-114938", "product": "Oracle Java SE", "affected": "17.0.21.0.3"},
+                                    {"cve": "CVE-2026-114939", "product": "Oracle Java SE", "affected": "11.0.33.0.3"}])
+        kind, rows = lookup.match_query(oracle, lookup.build_query("Java4Shell"))
+        self.assertEqual(kind, "rows")
+        self.assertEqual([r["cve"] for r in rows], ["CVE-2026-114938"])
+
     def test_vendor_plus_product_query_narrows_to_product_rows(self):
         kind, rows = self.query("4", "Fortinet FortiOS")
         self.assertEqual(kind, "rows")

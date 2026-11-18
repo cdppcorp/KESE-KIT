@@ -76,7 +76,13 @@ ALIAS_GROUPS = [
     ("kakao", "카카오"),
     ("hancom", "한컴"),
 ]
-ALIASES = {member: [o for o in group if o != member] for group in ALIAS_GROUPS for member in group}
+# Vulnerability nicknames that KISA notices do not spell out, mapped to their CVE ids.
+# Add only mappings confirmed by the vendor or the discoverer's advisory.
+NICKNAME_GROUPS = [
+    ("java4shell", "cve-2026-114938"),  # Calif.io disclosure, Oracle CSPU Nov 2026 (KISA #2640)
+]
+ALIASES = {member: [o for o in group if o != member]
+           for group in ALIAS_GROUPS + NICKNAME_GROUPS for member in group}
 
 LABELS = {
     "ko": {
