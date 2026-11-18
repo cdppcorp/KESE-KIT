@@ -331,6 +331,17 @@ class LookupTest(unittest.TestCase):
         self.assertEqual(self.query("5", "구글")[0], "title")
         self.assertIsNotNone(lookup.match_query(self.by_no("1"), lookup.build_query("리눅스")))
 
+    def test_korean_java_query_matches_java_se_rows_only(self):
+        oracle = advisory("9", "2026-11-18", "Oracle 제품 보안 업데이트 권고", "Oracle",
+                          cves=["CVE-2026-114938", "CVE-2026-86144"],
+                          affected=[{"cve": "CVE-2026-114938", "product": "Oracle Java SE",
+                                     "affected": "21.0.13.0.3", "fixed": "21.0.13.1"},
+                                    {"cve": "CVE-2026-86144", "product": "Oracle JavaFX",
+                                     "affected": "21.0.13", "fixed": "21.0.13.1"}])
+        kind, rows = lookup.match_query(oracle, lookup.build_query("자바"))
+        self.assertEqual(kind, "rows")
+        self.assertEqual([r["product"] for r in rows], ["Oracle Java SE"])
+
     def test_vendor_plus_product_query_narrows_to_product_rows(self):
         kind, rows = self.query("4", "Fortinet FortiOS")
         self.assertEqual(kind, "rows")

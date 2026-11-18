@@ -2,7 +2,7 @@
 
 > Source: KISA Boho-nara (보호나라, KrCERT/CC) security notices of the types 보안 조치·강화 권고 (security action/hardening advisory) / 취약점 조치 권고 (vulnerability remediation advisory) / 주의 권고 (caution advisory) / 기타 (other). Patch-type '보안 업데이트 권고' (security update advisory) notices are handled by an advisories.json lookup.
 >
-> Scope: 91 non-patch notices out of the 519 rows in 목록.csv (18 security action/hardening, 7 vulnerability remediation, 63 caution, 3 other). Five pinned notices carry no number and are shown as `공지` (pinned notice).
+> Scope: 91 non-patch notices out of the 526 rows in 목록.csv (18 security action/hardening, 7 vulnerability remediation, 63 caution, 3 other). Five pinned notices carry no number and are shown as `공지` (pinned notice).
 
 ## How to use
 - Pick only the sections that match the environment under review: A servers, B web, C development and CI/CD, D network devices and NAS, E products in inventory, F work endpoints and accounts, G staff awareness material.
