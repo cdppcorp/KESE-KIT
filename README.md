@@ -503,6 +503,17 @@ KESE-KIT/
 
 ## 변경 이력
 
+### v3.8.0 (2026-11-19)
+
+**KISA 공지 #2634~#2640 반영, Java4Shell·NGINX2Root 점검, KISA 공지 전 취약점 조회**
+- KISA 보호나라 보안공지 #2634~#2640 추가(총 526건, 2026-11-18까지). Oracle Java CSPU 2026년 11월(#2640)과, KISA 공지에 빠진 Oracle 제품·CVE 범위를 `overview.md`에 정리
+- "취약점 점검"·"최근 취약점 점검" 입력과 취약점 별칭(Log4Shell, Java4Shell, PHP2Shell, NGINX2Root 등)에도 훅이 반응해 kesekit으로 연결(별칭은 `kesekit-advisory`)
+- Java4Shell → CVE-2026-114938 별칭 매핑. CPU 조건(AVX-512 VBMI)·영향 버전·임시 조치를 `overview.md`에 정리
+- **KISA 공지 전 항목**(`references/kisa-advisories/pre-notice.json`): CVE·벤더 권고로 먼저 공개된 취약점을 KISA 공지와 함께 조회하고 "KISA 공지 전 항목"으로 표시. KISA 공지들에 CVE가 모두 실리면 자동으로 빠지고, 확인일이 30일을 넘으면 `--doctor`가 경고
+- NGINX2Root(nginx CVE 5건 + 연계 Linux SCTP 커널 취약점): 해결 버전 1.31.9(mainline)·1.30.7(stable)·NGINX Plus, nginx 빌드·설정 점검(`nginx -V`/`nginx -T`, 외부 ALPN h2 확인), 업데이트 후 재시작 필요·HTTP/2 끄기의 한계 안내
+- 별칭 매핑을 단방향으로 바꿔 CVE 하나로 검색할 때 같은 그룹의 다른 CVE가 잡히지 않음, `--id` 대소문자 무시
+- 검증기: `pre-notice.json` 존재·한/영 동일·스키마 검사 추가, 테스트 85개
+
 ### v3.7.0 (2026-11-14)
 
 **보고서 형식 선택 + 공식 보고서 견본**
