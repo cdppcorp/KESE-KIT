@@ -236,6 +236,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 
 | 영향도 점검 | 설치 제품·버전·의존성 ↔ 공지의 영향받는 버전/해결 버전 대조, 긴급/높음/보통 우선순위 | 보안 업데이트 권고 435건, 버전 행 12,660행 |
 | 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 526건 |
 | CVE 조회 | 특정 CVE의 KISA 공지 포함 여부와 해결 버전 | 고유 CVE 8,894개 |
+| KISA 공지 전 취약점 | CVE·벤더 권고로 먼저 공개된 취약점을 "공지 전 항목"으로 함께 조회(예: "NGINX2Root 점검해줘"), KISA 공지가 나오면 공지 기준으로 자동 전환 | 2건 — NGINX2Root nginx CVE 5건, 연계 리눅스 커널 취약점 (2026-11-19 확인) |
 | 위협 대응 점검 | BPFDoor, 리눅스 커널 루트킷, 랜섬웨어, 자격증명 노출, 개발 공급망 공격, 제품 사용 주의(EoL) — TR-01~TR-43 (43항목) + 피싱·스미싱 동향 35건 | 비패치성 공지 91건 (보안 조치·강화 18, 취약점 조치 7, 주의 63, 기타 3) |
 
 **조회 도구**: `scripts/advisory_lookup.py` (Python 표준 라이브러리, 제품/CVE/벤더/기간/유형 필터)
@@ -410,6 +411,7 @@ Structured KISA Boho-nara (KrCERT/CC) security notices for answering **"does any
 | Exposure check | Installed products/versions/dependencies vs. affected/fixed versions, Critical/High/Medium priority | 435 security update advisories, 12,660 version rows |
 | Notice briefing | Recent notices by period, vendor, or type with action priorities | All 526 notices |
 | CVE lookup | Whether a CVE is in a KISA notice and its fixed version | 8,894 unique CVEs |
+| Pre-notice vulnerabilities | Vulnerabilities public in CVE records / vendor advisories before KISA posts them are looked up as "pre-notice entries" (e.g. "check NGINX2Root"); they switch to the KISA notice automatically once it is posted | 2 entries — NGINX2Root's 5 nginx CVEs and the chained Linux kernel bug (checked 2026-11-19) |
 | Threat response | BPFDoor, Linux kernel rootkits, ransomware, exposed credentials, dev supply-chain attacks, product-use cautions (EoL) — TR-01~TR-43 (43 items) + 35 phishing/smishing trend rows | 91 non-patch notices (18 hardening, 7 mitigation, 63 caution, 3 other) |
 
 **Lookup tool**: `scripts/advisory_lookup.py` (Python standard library; product/CVE/vendor/period/type filters)
@@ -500,6 +502,17 @@ KESE-KIT/
 ---
 
 ## 변경 이력
+
+### v3.8.0 (2026-11-19)
+
+**KISA 공지 #2634~#2640 반영, Java4Shell·NGINX2Root 점검, KISA 공지 전 취약점 조회**
+- KISA 보호나라 보안공지 #2634~#2640 추가(총 526건, 2026-11-18까지). Oracle Java CSPU 2026년 11월(#2640)과, KISA 공지에 빠진 Oracle 제품·CVE 범위를 `overview.md`에 정리
+- "취약점 점검"·"최근 취약점 점검" 입력과 취약점 별칭(Log4Shell, Java4Shell, PHP2Shell, NGINX2Root 등)에도 훅이 반응해 kesekit으로 연결(별칭은 `kesekit-advisory`)
+- Java4Shell → CVE-2026-114938 별칭 매핑. CPU 조건(AVX-512 VBMI)·영향 버전·임시 조치를 `overview.md`에 정리
+- **KISA 공지 전 항목**(`references/kisa-advisories/pre-notice.json`): CVE·벤더 권고로 먼저 공개된 취약점을 KISA 공지와 함께 조회하고 "KISA 공지 전 항목"으로 표시. KISA 공지들에 CVE가 모두 실리면 자동으로 빠지고, 확인일이 30일을 넘으면 `--doctor`가 경고
+- NGINX2Root(nginx CVE 5건 + 연계 Linux SCTP 커널 취약점): 해결 버전 1.31.9(mainline)·1.30.7(stable)·NGINX Plus, nginx 빌드·설정 점검(`nginx -V`/`nginx -T`, 외부 ALPN h2 확인), 업데이트 후 재시작 필요·HTTP/2 끄기의 한계 안내
+- 별칭 매핑을 단방향으로 바꿔 CVE 하나로 검색할 때 같은 그룹의 다른 CVE가 잡히지 않음, `--id` 대소문자 무시
+- 검증기: `pre-notice.json` 존재·한/영 동일·스키마 검사 추가, 테스트 85개
 
 ### v3.7.0 (2026-11-14)
 

@@ -1,0 +1,244 @@
+{
+ "schema": 1,
+ "checked": "2026-11-19",
+ "note": "Vulnerabilities disclosed in CVE records or vendor advisories before KISA posts a notice. scripts/advisory_lookup.py merges these entries and drops one automatically once all of its CVEs appear in KISA notices (entries without a CVE stay). Edit by hand (not generated); keep the EN and KO copies identical. Details: overview.md, 'Pre-notice entries'.",
+ "cve_meta": {
+  "CVE-2026-123007": {
+   "cvss": 8.1,
+   "cvss_v": "3.1",
+   "sev": "HIGH",
+   "cwe": [
+    "CWE-191",
+    "CWE-787"
+   ],
+   "src": "F5 (CNA) CVE record; CVSS 4.0 9.2"
+  },
+  "CVE-2026-123634": {
+   "cvss": 8.1,
+   "cvss_v": "3.1",
+   "sev": "HIGH",
+   "cwe": [
+    "CWE-416"
+   ],
+   "src": "F5 (CNA) CVE record; CVSS 4.0 9.2"
+  },
+  "CVE-2026-123633": {
+   "cvss": 8.1,
+   "cvss_v": "3.1",
+   "sev": "HIGH",
+   "cwe": [
+    "CWE-416"
+   ],
+   "src": "F5 (CNA) CVE record; CVSS 4.0 9.2"
+  },
+  "CVE-2026-121810": {
+   "cvss": 8.1,
+   "cvss_v": "3.1",
+   "sev": "HIGH",
+   "cwe": [
+    "CWE-416"
+   ],
+   "src": "F5 (CNA) CVE record; CVSS 4.0 9.2"
+  },
+  "CVE-2026-113425": {
+   "cvss": 8.1,
+   "cvss_v": "3.1",
+   "sev": "HIGH",
+   "cwe": [
+    "CWE-416"
+   ],
+   "src": "F5 (CNA) CVE record; CVSS 4.0 9.2"
+  }
+ },
+ "advisories": [
+  {
+   "no": "공지 전",
+   "ntt": "nginx2root",
+   "date": "2026-11-18",
+   "type": "KISA 공지 전 (벤더·CVE 원문)",
+   "title": "NGINX 제품 보안 업데이트 — NGINX2Root (F5 CVE 5건)",
+   "vendor": "NGINX",
+   "url": "https://my.f5.com/manage/s/article/K000163926",
+   "folder": "",
+   "attachments": [],
+   "summary": "Theori Xint 팀이 'NGINX2Root'로 공개한 NGINX 취약점 5건(F5가 CNA로 2026-11-18 CVE 등록). HTTP/2 흐름 제어(CVE-2026-123007, 정수 언더플로·범위 밖 쓰기), resolver(CVE-2026-123634), HTTP/2 백엔드 프록시(CVE-2026-123633), HTTP/3(CVE-2026-121810), 메일 프록시(CVE-2026-113425)의 해제 후 사용(UAF)으로 인증 없이 worker 프로세스 중단·메모리 손상이 가능하고, ASLR이 꺼져 있거나 우회되면 원격 코드 실행까지 가능합니다. 발견자는 별도의 Linux SCTP 커널 권한 상승 취약점(--id nginx2root-sctp)과 연계해 호스트 root 획득을 시연했습니다.",
+   "refs": [
+    {
+     "n": "1",
+     "url": "https://my.f5.com/manage/s/article/K000163926"
+    },
+    {
+     "n": "2",
+     "url": "https://my.f5.com/manage/s/article/K000163925"
+    },
+    {
+     "n": "3",
+     "url": "https://my.f5.com/manage/s/article/K000163928"
+    },
+    {
+     "n": "4",
+     "url": "https://my.f5.com/manage/s/article/K000163927"
+    },
+    {
+     "n": "5",
+     "url": "https://my.f5.com/manage/s/article/K000163931"
+    },
+    {
+     "n": "6",
+     "url": "https://www.cve.org/CVERecord?id=CVE-2026-123007"
+    },
+    {
+     "n": "7",
+     "url": "https://nginx2root.com/"
+    },
+    {
+     "n": "8",
+     "url": "https://nginx.org/en/security_advisories.html"
+    }
+   ],
+   "cves": [
+    "CVE-2026-123007",
+    "CVE-2026-123634",
+    "CVE-2026-123633",
+    "CVE-2026-121810",
+    "CVE-2026-113425"
+   ],
+   "affected": [
+    {
+     "cve": "CVE-2026-123007, CVE-2026-123634, CVE-2026-123633, CVE-2026-121810, CVE-2026-113425",
+     "vendor": "F5",
+     "product": "NGINX Open Source (mainline 1.31)",
+     "affected": "1.31.0 이상 1.31.9 미만",
+     "fixed": "1.31.9 이상",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123007, CVE-2026-123634, CVE-2026-123633, CVE-2026-121810, CVE-2026-113425",
+     "vendor": "F5",
+     "product": "NGINX Open Source (stable 1.30)",
+     "affected": "1.30.0 이상 1.30.7 미만",
+     "fixed": "1.30.7 이상",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123007",
+     "vendor": "F5",
+     "product": "NGINX Open Source (1.30 이전, 지원 종료 브랜치)",
+     "affected": "1.9.5 이상 1.30.0 미만",
+     "fixed": "1.30.7 이상 또는 1.31.9 이상으로 업그레이드",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123634",
+     "vendor": "F5",
+     "product": "NGINX Open Source (1.30 이전, 지원 종료 브랜치)",
+     "affected": "0.6.18 이상 1.30.0 미만",
+     "fixed": "1.30.7 이상 또는 1.31.9 이상으로 업그레이드",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123633",
+     "vendor": "F5",
+     "product": "NGINX Open Source (1.30 이전, 지원 종료 브랜치)",
+     "affected": "1.19.7 이상 1.30.0 미만",
+     "fixed": "1.30.7 이상 또는 1.31.9 이상으로 업그레이드",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-121810",
+     "vendor": "F5",
+     "product": "NGINX Open Source (1.30 이전, 지원 종료 브랜치)",
+     "affected": "1.25.9 이상 1.30.0 미만",
+     "fixed": "1.30.7 이상 또는 1.31.9 이상으로 업그레이드",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-113425",
+     "vendor": "F5",
+     "product": "NGINX Open Source (1.30 이전, 지원 종료 브랜치)",
+     "affected": "0.5.33 이상 1.30.0 미만",
+     "fixed": "1.30.7 이상 또는 1.31.9 이상으로 업그레이드",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123007, CVE-2026-123634, CVE-2026-121810, CVE-2026-113425",
+     "vendor": "F5",
+     "product": "NGINX Plus",
+     "affected": "37.1.0 이상 37.3.0.1 미만",
+     "fixed": "37.3.0.1 이상",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123007, CVE-2026-123634, CVE-2026-121810, CVE-2026-113425",
+     "vendor": "F5",
+     "product": "NGINX Plus",
+     "affected": "37.0.0 이상 37.0.8.1 미만",
+     "fixed": "37.0.8.1 이상",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123633",
+     "vendor": "F5",
+     "product": "NGINX Plus",
+     "affected": "37.1.0 이상 37.2.0.1 미만",
+     "fixed": "37.2.0.1 이상",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123633",
+     "vendor": "F5",
+     "product": "NGINX Plus",
+     "affected": "37.0.0 이상 37.0.7.1 미만",
+     "fixed": "37.0.7.1 이상",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123007, CVE-2026-123634, CVE-2026-123633, CVE-2026-121810, CVE-2026-113425",
+     "vendor": "F5",
+     "product": "NGINX Plus (37.0 이전, 지원 종료)",
+     "affected": "R33 이상 37.0.0 미만",
+     "fixed": "37.0.8.1 이상 또는 37.3.0.1 이상으로 업그레이드",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    },
+    {
+     "cve": "CVE-2026-123007, CVE-2026-123634, CVE-2026-123633, CVE-2026-121810, CVE-2026-113425",
+     "vendor": "F5",
+     "product": "NGINX Plus (R33 미만, 지원 종료)",
+     "affected": "R33 미만 — F5 미평가 (지원 종료 버전은 평가하지 않음)",
+     "fixed": "37.0.8.1 이상 또는 37.3.0.1 이상으로 업그레이드",
+     "severity": "CVSS 3.1 8.1 / 4.0 9.2"
+    }
+   ],
+   "text": "취약점별 확인 설정: CVE-2026-123007 HTTP/2 사용(listen ... http2 또는 http2 on), CVE-2026-123634 proxy_pass 서버명에 변수 사용 + resolver + mirror 또는 SSI(ssi on) 서브요청, CVE-2026-123633 HTTP/2 클라이언트 연결 + proxy_pass·fastcgi_pass·grpc_pass 백엔드(worker_connections 부족 시), CVE-2026-121810 HTTP/3(QUIC) 사용, CVE-2026-113425 메일 프록시(mail 블록, auth_http). 해결: NGINX Open Source 1.31.9(mainline)·1.30.7(stable), NGINX Plus 37.3.0.1·37.0.8.1(CVE-2026-123633은 37.2.0.1·37.0.7.1). 업데이트 후 nginx -s reload는 새 바이너리를 올리지 않으므로 재시작해야 합니다. 임시 조치: HTTP/2 비활성화(1.25.1 이상 http2 off;, 그 이전은 listen의 http2 제거)는 CVE-2026-123007·CVE-2026-123633만 완화합니다. 배포판·컨테이너 이미지·어플라이언스는 보안 패치를 백포트하고 버전 문자열을 유지할 수 있으므로 배포판 보안 권고로 판정합니다. 호스트 root까지 가는 Linux SCTP 커널 취약점은 별도 항목(--id nginx2root-sctp)으로 관리합니다."
+  },
+  {
+   "no": "공지 전",
+   "ntt": "nginx2root-sctp",
+   "date": "2026-11-18",
+   "type": "KISA 공지 전 (벤더·CVE 원문)",
+   "title": "Linux kernel SCTP 권한 상승 취약점 — NGINX2Root 연계 (CVE 미공개)",
+   "vendor": "Linux",
+   "url": "https://nginx2root.com/",
+   "folder": "",
+   "attachments": [],
+   "summary": "NGINX2Root 발견자(Theori Xint)가 NGINX worker 권한에서 호스트 root로 올라가는 데 쓴 별도의 Linux 커널 SCTP 로컬 권한 상승 취약점입니다. Docker 컨테이너 안의 nginx에서도 호스트 root를 얻었다고 밝혔습니다. 2026-11-19 기준 CVE와 패치가 공개되지 않았습니다.",
+   "refs": [
+    {
+     "n": "1",
+     "url": "https://nginx2root.com/"
+    }
+   ],
+   "cves": [],
+   "affected": [
+    {
+     "vendor": "Linux",
+     "product": "Linux kernel (SCTP)",
+     "affected": "공개 전 — 영향 커널 버전 미공개",
+     "fixed": "패치 업데이트 예정 (CVE 미공개, 2026-11-19 기준)",
+     "severity": "로컬 권한 상승"
+    }
+   ],
+   "text": "Xint FAQ: nginx 패치는 진입 경로를 막지만 커널 취약점은 별도 로컬 권한 상승 취약점이라 따로 패치해야 하며, 패치는 앞으로 몇 주 안에 나올 예정입니다(업데이트 예정). CVE가 배정되면 이 항목의 cves에 추가하세요. CVE가 없는 항목은 KISA 공지가 나와도 자동으로 빠지지 않습니다. SCTP를 쓰지 않을 때 모듈 차단은 일반 하드닝이며 이 취약점의 완화책으로 확인된 것은 아닙니다."
+  }
+ ]
+}

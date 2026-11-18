@@ -1,6 +1,6 @@
 ---
 name: kesekit-advisory-ko
-description: KISA 보호나라 보안공지(2025년~, 보안 업데이트 권고·주의 권고·보안 조치·강화 권고)를 기반으로 사용 중인 제품·버전·의존성에 해당하는 공지를 찾아 영향 여부와 해결 버전을 판정하고, 기간별 공지 브리핑, CVE 조회, BPFDoor·루트킷·랜섬웨어·자격증명 노출·개발 공급망 공격 등 위협 대응 점검을 수행합니다. "KISA 보안공지", "보호나라", "보안 업데이트 권고", "우리 서버 취약한 버전", "패치 점검", "CVE 영향 확인", "최근 보안공지", "이번 달 보안 권고", "BPFDoor 점검", "랜섬웨어 대비 점검" 시 사용하세요.
+description: KISA 보호나라 보안공지(2025년~, 보안 업데이트 권고·주의 권고·보안 조치·강화 권고)를 기반으로 사용 중인 제품·버전·의존성에 해당하는 공지를 찾아 영향 여부와 해결 버전을 판정하고, 기간별 공지 브리핑, CVE 조회, BPFDoor·루트킷·랜섬웨어·자격증명 노출·개발 공급망 공격 등 위협 대응 점검을 수행합니다. "KISA 보안공지", "보호나라", "보안 업데이트 권고", "우리 서버 취약한 버전", "패치 점검", "CVE 영향 확인", "최근 보안공지", "이번 달 보안 권고", "BPFDoor 점검", "랜섬웨어 대비 점검", "최근 취약점 점검", "Java 취약점 점검", "nginx 취약점 점검", "Java4Shell·NGINX2Root·Log4Shell 같은 취약점 별칭" 시 사용하세요. KISA 공지가 아직 없지만 CVE·벤더 권고로 공개된 취약점(공지 전 항목)도 다룹니다.
 ---
 
 # KESE KISA 보안공지 대응
@@ -34,6 +34,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 영향도
 |------|------|
 | `references/kisa-advisories/overview.md` | 수집 기간·통계·공지 유형·스키마·갱신 방법 (먼저 읽기) |
 | `references/kisa-advisories/advisories.json` | 공지별 영향/해결 버전 표, CVE, 요약, 참고사이트 링크, 첨부 파일명, CVE 위험 지표(KEV·EPSS·CVSS), 검색용 본문 (약 4MB — **직접 Read 금지**, 스크립트로 조회) |
+| `references/kisa-advisories/pre-notice.json` | CVE·벤더 권고로 공개됐지만 KISA 공지가 아직 없는 취약점(예: NGINX2Root). 스크립트가 모든 조회에 함께 넣고(`--since`·`--type` 같은 필터도 똑같이 적용) "KISA 공지 전 항목"으로 표시하며, KISA 공지들에 그 CVE가 모두 실리면 자동으로 뺍니다(NGINX2Root 커널 건처럼 CVE가 없는 항목은 남음) |
 | `references/kisa-advisories/vendor-index.md` | 벤더별 공지 목록 (Grep 용) |
 | `references/kisa-advisories/threat-response.md` | 보안 조치·강화 권고 등에서 도출한 TR 점검항목 |
 | `scripts/advisory_lookup.py` | 조회 CLI (Python 3.8+, 표준 라이브러리만 사용, `--doctor`로 환경 점검) |
@@ -45,8 +46,8 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 영향도
 | # | 모드 | 사용 시점 |
 |---|------|----------|
 | 1 | **영향도 점검** | "우리 시스템에 해당하는 KISA 공지가 있나?", 제품·버전·의존성 목록 점검 |
-| 2 | **공지 브리핑** | "최근 2주 보안공지 요약", "Cisco 관련 공지", "이번 달 패치 우선순위" |
-| 3 | **CVE 조회** | 특정 CVE가 KISA 공지에 포함됐는지, 해결 버전은 무엇인지 |
+| 2 | **공지 브리핑** | "최근 2주 보안공지 요약", "Cisco 관련 공지", "이번 달 패치 우선순위", "최근 취약점 점검"(브리핑 후 사용 중인 제품은 1번 영향도 점검까지) |
+| 3 | **CVE 조회** | 특정 CVE·취약점 별칭(Log4Shell, Java4Shell, NGINX2Root 등)이 KISA 공지나 공지 전 항목에 있는지, 해결 버전은 무엇인지 |
 | 4 | **위협 대응 점검** | BPFDoor, 리눅스 루트킷, 랜섬웨어, 자격증명 노출, 개발 공급망, 제품 사용 주의(EoL) |
 
 요청이 모호하면 1 → 4 순서로 함께 수행할지 사용자에게 확인합니다.
@@ -63,6 +64,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 영향도
 |------|----------|
 | OS·커널 | `cat /etc/os-release`, `uname -r` / Windows: `Get-ComputerInfo -Property OsName,OsVersion` |
 | 서버 SW | `nginx -v`, `httpd -v` 또는 `apachectl -v`, Tomcat `version.sh`, `openssl version`, `ssh -V`, `sudo -V`, `psql --version`, `mysql --version`, `redis-server --version`, `mongod --version` |
+| nginx 빌드·설정 | nginx를 모두 찾습니다(`which -a nginx`, 컨테이너 이미지 `FROM nginx:…`, 인그레스 컨트롤러, nginx를 내장한 장비). `nginx -V 2>&1`로 버전과 컴파일된 모듈(`--with-http_v2_module`, `--with-http_v3_module`, `--with-mail`)을, `nginx -T`로 실제 적용된 설정(`http2`, `quic`·`http3`, `mail {}`·`auth_http`, `resolver`, `mirror`, `ssi on`, `proxy_pass`·`fastcgi_pass`·`grpc_pass`)을 확인합니다. 배포판 패키지(`dpkg -l 'nginx*'`, `rpm -q nginx`)는 버전 번호를 그대로 두고 패치를 백포트할 수 있습니다 |
 | Java 런타임 (JDK/JRE) | 설치 위치를 모두 찾습니다: `where.exe java`(Windows), `which -a java`·`update-alternatives --list java`(Linux), `/usr/libexec/java_home -V`(macOS), `JAVA_HOME`, WAS·미들웨어 번들 JRE, 컨테이너 베이스 이미지(`FROM eclipse-temurin:21` 등). 경로마다 `<경로>/java -version`을 실행하고, `java -XshowSettings:properties -version`의 `java.vendor`로 배포사(Oracle, GraalVM, Temurin, Corretto, Zulu, Microsoft, Red Hat)를 확인합니다. 배포사에 따라 해결 버전이 다릅니다 |
 | 패키지 | `dpkg -l` / `rpm -qa` (위 제품명으로 필터), Windows: `winget list` |
 | 컨테이너·클러스터 | `docker version`, `kubectl version`, Dockerfile `FROM` 태그, Helm values의 이미지 태그 |
@@ -88,7 +90,9 @@ python scripts/advisory_lookup.py -q "PHP" --sort risk                    # KEV(
 - 질의어의 모든 단어가 공지에 있어야 일치합니다. `Fortinet FortiOS`처럼 벤더+제품으로 검색하면 해당 제품 행만 추립니다. 공지 표기 예: `Connect Secure`, `FortiOS`, `PAN-OS`, `Apache HTTP Server`. 한·영 별칭(구글↔Google, 리눅스↔Linux 등)은 자동 확장됩니다.
 - 결과의 `일치` 항목을 확인합니다: **제목·벤더**(전체 행 표시) / **표 행 n/m행**(관련 행만 표시, 숨긴 행 수 안내) / **본문 언급**(버전 표에는 해당 제품 행이 없음 → 원문을 확인하고, 근거가 없으면 **확인 필요**로 판정).
 - 다른 벤더 공지에 포함된 제품도 잡힙니다 (예: NGINX → F5 공지).
-- 행이 생략되면 `--id <번호> --max-rows 0`으로 전체 행을 확인합니다. 번호가 `공지`인 상단 고정 게시물은 출력에 표시된 nttId로 조회합니다.
+- 취약점 별칭은 공지에 그 이름이 있거나(KISA 제목의 `PHP2Shell`) 스크립트 별칭 목록에 등록돼 있어야(`Java4Shell` → CVE-2026-114938, `NGINX2Root` → nginx CVE 5건) 검색됩니다. `Log4Shell`처럼 0건이면 별칭이 가리키는 제품·CVE를 벤더 권고나 NVD에서 확인하고, 확인되지 않으면 사용자에게 물은 뒤 제품명·CVE로 다시 조회합니다. 별칭과 CVE의 대응을 추정으로 정하지 않습니다.
+- **KISA 공지 전 항목**(유형 `KISA 공지 전 (벤더·CVE 원문)`, 브리핑 목록의 번호 `공지 전`)은 `pre-notice.json`에서 온 결과로, CVE 원문과 벤더 권고를 근거로 하며 확인일이 함께 표시됩니다. 공지와 같은 방식으로 판정하되 근거는 KISA 번호 대신 CVE·벤더 권고를 인용하고, 보고서에 "KISA 공지 없음(확인일 기준)"을 적고, 4단계 실시간 확인을 반드시 거칩니다. 기능별 점검·임시 조치(예: NGINX2Root)는 `overview.md`의 "KISA 공지 전 항목"에 있습니다.
+- 행이 생략되면 `--id <번호> --max-rows 0`으로 전체 행을 확인합니다. 번호가 `공지`인 상단 고정 게시물은 출력에 표시된 nttId로, 공지 전 항목은 식별자로(`--id nginx2root`, 연계된 리눅스 커널 건은 `--id nginx2root-sctp`) 조회합니다.
 - JSON 출력에서 `truncated` 또는 `rows_truncated`가 true면 `--limit 0 --max-rows 0`으로 다시 조회합니다.
 - 출력에는 공지의 **참고사이트**(벤더 권고, NVD 등 `[n] URL`)와 첨부 파일명이 포함됩니다. 저장소에 원본 아카이브가 있으면 **원본 폴더** 경로가 함께 표시되므로 첨부 PDF를 Read로 열어 확인합니다.
 
@@ -111,7 +115,7 @@ python scripts/advisory_lookup.py -q "PHP" --sort risk                    # KEV(
 
 KISA 공지는 게시 시점의 스냅샷입니다. 아래 항목은 참고사이트의 벤더 권고를 지금 열어 최신 내용을 확인합니다.
 
-- **대상**: 취약·확인 필요 판정 항목(긴급·높음 우선), 그리고 출력에 "해결 버전 미배포·후속 업데이트 예정" 경고가 붙은 공지
+- **대상**: 취약·확인 필요 판정 항목(긴급·높음 우선), 출력에 "해결 버전 미배포·후속 업데이트 예정" 경고가 붙은 공지, 그리고 일치한 공지 전 항목 전부
 - **링크 선택**: 참고사이트 중 벤더 권고(제조사 도메인, GitHub 보안 권고 등)를 우선하고 NVD는 보조로 씁니다.
 - **확인 내용**: 웹 조회 도구(WebFetch 등)로 열어 최신 해결 버전·패치, 임시 조치, 악용 여부, 권고 최종 수정일을 확인합니다.
 - **반영**: 벤더 최신 내용이 KISA 표와 다르면 벤더 내용을 따르고, 보고서에 차이와 **확인 URL·확인 일시**를 남깁니다.
@@ -175,7 +179,7 @@ python scripts/advisory_lookup.py --kev --since 2026-10-01 --sort risk   # 실�
 python scripts/advisory_lookup.py --cve CVE-2025-0282 --cve CVE-2025-0283
 ```
 
-결과가 없으면 "데이터 기준일 내 KISA 공지에 없음"으로 답하고, NVD·벤더 권고 확인을 안내합니다. 없다고 해서 안전하다는 뜻이 아님을 명시합니다.
+공지 전 항목이 나오면 CVE는 공개됐지만 KISA 공지는 아직 없다고 밝히고 벤더 해결 버전을 안내합니다. 결과가 없으면 "데이터 기준일 내 KISA 공지에 없음"으로 답하고, NVD·벤더 권고 확인을 안내합니다. 없다고 해서 안전하다는 뜻이 아님을 명시합니다.
 
 ---
 
@@ -207,7 +211,7 @@ python scripts/advisory_lookup.py --cve CVE-2025-0282 --cve CVE-2025-0283
 
 ## 데이터 갱신 (유지보수자)
 
-새 공지를 `문서/KISA_보안공지_2025-2026/`에 추가한 뒤 저장소 루트에서 `python scripts/build_kisa_advisories.py`를 실행합니다. CVE 위험 지표는 `python scripts/fetch_cve_enrichment.py`(KEV·EPSS)로 갱신하고, NVD API 키가 있으면 `NVD_API_KEY=<키> python scripts/fetch_cve_enrichment.py --nvd`로 CVSS·CWE까지 받은 뒤 다시 빌드합니다. 상세 절차는 `references/kisa-advisories/overview.md`를 참고합니다.
+새 공지를 `문서/KISA_보안공지_2025-2026/`에 추가한 뒤 저장소 루트에서 `python scripts/build_kisa_advisories.py`를 실행합니다. CVE 위험 지표는 `python scripts/fetch_cve_enrichment.py`(KEV·EPSS)로 갱신하고, NVD API 키가 있으면 `NVD_API_KEY=<키> python scripts/fetch_cve_enrichment.py --nvd`로 CVSS·CWE까지 받은 뒤 다시 빌드합니다. KISA 공지 전에 공개된 취약점은 CVE 원문과 벤더 권고를 근거로 `pre-notice.json`(두 스킬에 동일하게)에 직접 추가하고, 이후 KISA 공지에 반영되면 `--doctor`가 지워도 되는 항목으로 알려 줍니다. 상세 절차는 `references/kisa-advisories/overview.md`를 참고합니다.
 
 ## 중요 규칙
 

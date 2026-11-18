@@ -1,6 +1,6 @@
 ---
 name: kesekit-advisory
-description: Uses KISA Boho-nara (KrCERT/CC) security notices (2025 onward — security update advisories, caution advisories, hardening advisories) to find notices that affect the products, versions, and dependencies in use, judge exposure against the fixed versions, brief recent notices, look up CVEs, and run threat-response checks (BPFDoor, Linux rootkits, ransomware, exposed credentials, dev supply-chain attacks). Use for "KISA advisory", "KrCERT notice", "Boho-nara", "are we affected", "vulnerable version check", "patch check", "is this CVE in a KISA notice", "recent security notices", "BPFDoor check", "ransomware readiness".
+description: Uses KISA Boho-nara (KrCERT/CC) security notices (2025 onward — security update advisories, caution advisories, hardening advisories) to find notices that affect the products, versions, and dependencies in use, judge exposure against the fixed versions, brief recent notices, look up CVEs, and run threat-response checks (BPFDoor, Linux rootkits, ransomware, exposed credentials, dev supply-chain attacks). Use for "KISA advisory", "KrCERT notice", "Boho-nara", "are we affected", "vulnerable version check", "patch check", "is this CVE in a KISA notice", "recent security notices", "BPFDoor check", "ransomware readiness", "recent vulnerability check", "Java vulnerability check", "nginx vulnerability check", and vulnerability nicknames such as "Java4Shell", "NGINX2Root" or "Log4Shell". Also covers vulnerabilities already in CVE records or vendor advisories that KISA has not posted yet (pre-notice entries).
 ---
 
 # KESE KISA Security Notice Response
@@ -34,6 +34,7 @@ Run this before any other step.
 |------|---------|
 | `references/kisa-advisories/overview.md` | Coverage, stats, notice types, schema, Korean version phrases, refresh steps (read first) |
 | `references/kisa-advisories/advisories.json` | Affected/fixed version rows, CVEs, summaries, reference links, attachment names, CVE risk signals (KEV/EPSS/CVSS), searchable body text per notice (~4 MB — **do not Read it whole**; query with the script) |
+| `references/kisa-advisories/pre-notice.json` | Vulnerabilities already in CVE records / vendor advisories but not yet in a KISA notice (e.g. NGINX2Root). The script merges them into every lookup (filters such as `--since`/`--type` apply to them too), labels them "KISA pre-notice entry", and drops one once all of its CVEs appear in KISA notices (an entry without a CVE, such as the NGINX2Root kernel bug, stays) |
 | `references/kisa-advisories/vendor-index.md` | Notices grouped by vendor (for Grep) |
 | `references/kisa-advisories/threat-response.md` | TR check items derived from hardening/caution advisories |
 | `scripts/advisory_lookup.py` | Query CLI (Python 3.8+, standard library only; `--doctor` checks the runtime) |
@@ -47,8 +48,8 @@ Notices are published in Korean; product names, versions, and CVE IDs are langua
 | # | Mode | When |
 |---|------|------|
 | 1 | **Exposure check** | "Does any KISA notice affect our systems?", checking a product/version/dependency list |
-| 2 | **Notice briefing** | "Summarise the last two weeks of notices", "Cisco notices", "this month's patch priorities" |
-| 3 | **CVE lookup** | Whether a CVE appears in a KISA notice and what the fixed version is |
+| 2 | **Notice briefing** | "Summarise the last two weeks of notices", "Cisco notices", "this month's patch priorities", "recent vulnerability check" (after the briefing, run mode 1 for products in use) |
+| 3 | **CVE lookup** | Whether a CVE or vulnerability nickname (Log4Shell, Java4Shell, NGINX2Root, …) appears in a KISA notice or a pre-notice entry and what the fixed version is |
 | 4 | **Threat response** | BPFDoor, Linux rootkits, ransomware, exposed credentials, dev supply chain, product-use cautions (EoL) |
 
 If the request is ambiguous, ask whether to run 1 and 4 together.
@@ -65,6 +66,7 @@ If the Step 0 profile has `system` and `environment`, start from them and confir
 |--------|-------------|
 | OS / kernel | `cat /etc/os-release`, `uname -r` / Windows: `Get-ComputerInfo -Property OsName,OsVersion` |
 | Server software | `nginx -v`, `httpd -v` or `apachectl -v`, Tomcat `version.sh`, `openssl version`, `ssh -V`, `sudo -V`, `psql --version`, `mysql --version`, `redis-server --version`, `mongod --version` |
+| nginx build and config | Every nginx (`which -a nginx`, container images `FROM nginx:…`, ingress controllers, appliances that bundle nginx). `nginx -V 2>&1` gives the version and compiled modules (`--with-http_v2_module`, `--with-http_v3_module`, `--with-mail`); `nginx -T` gives the loaded config (`http2`, `quic`/`http3`, `mail {}`/`auth_http`, `resolver`, `mirror`, `ssi on`, `proxy_pass`/`fastcgi_pass`/`grpc_pass`). Distribution packages (`dpkg -l 'nginx*'`, `rpm -q nginx`) can carry backported fixes under the old version number |
 | Java runtimes (JDK/JRE) | Find every install: `where.exe java` (Windows), `which -a java` / `update-alternatives --list java` (Linux), `/usr/libexec/java_home -V` (macOS), `JAVA_HOME`, JREs bundled with WAS/middleware, container base images (`FROM eclipse-temurin:21`, …). Run `<path>/java -version` for each; `java -XshowSettings:properties -version` shows `java.vendor` (Oracle, GraalVM, Temurin, Corretto, Zulu, Microsoft, Red Hat) — the vendor decides which fixed version applies |
 | Packages | `dpkg -l` / `rpm -qa` (filter by the products above), Windows: `winget list` |
 | Containers / clusters | `docker version`, `kubectl version`, Dockerfile `FROM` tags, image tags in Helm values |
@@ -90,7 +92,9 @@ python scripts/advisory_lookup.py -q "PHP" --sort risk                    # KEV 
 - Every word of a query must appear in the notice. A vendor + product query such as `Fortinet FortiOS` narrows the table to that product's rows. KISA spellings: `Connect Secure`, `FortiOS`, `PAN-OS`, `Apache HTTP Server`. Korean/English aliases (구글↔Google, 리눅스↔Linux, …) expand automatically.
 - Check each result's `Matched in` line: **title/vendor** (all rows shown) / **table rows n/m** (only related rows shown, hidden rows counted) / **body text only** (the version table has no row for the product → read the notice; without evidence, the verdict is **Needs review**).
 - Products listed inside another vendor's notice are found too (e.g. NGINX inside an F5 notice).
-- When rows are truncated, use `--id <number> --max-rows 0` for every row. Pinned notices numbered `공지` are addressed by the nttId shown in the output.
+- A vulnerability nickname is found when a notice uses that name (`PHP2Shell` in a KISA title) or the script's nickname list maps it (`Java4Shell` → CVE-2026-114938, `NGINX2Root` → its five nginx CVEs). When a nickname such as `Log4Shell` returns nothing, find the product/CVE the nickname refers to in the vendor advisory or NVD — ask the user if that cannot be confirmed — and query again by product or CVE. Never guess the nickname-to-CVE mapping.
+- Results labelled **KISA pre-notice entry** (type `KISA 공지 전 (벤더·CVE 원문)`, shown as number `공지 전` in the briefing list) come from `pre-notice.json`: the CVE record and vendor advisory, with the check date shown. Judge them like a notice, cite the CVE/vendor advisory instead of a KISA number, write "no KISA notice yet (as of <check date>)" in the report, and always run Step 4 for them. Feature-specific checks and mitigations (e.g. NGINX2Root) are in `overview.md` → Pre-notice entries.
+- When rows are truncated, use `--id <number> --max-rows 0` for every row. Pinned notices numbered `공지` are addressed by the nttId shown in the output; pre-notice entries by their id (`--id nginx2root`; the chained Linux kernel bug is `--id nginx2root-sctp`).
 - In JSON output, if `truncated` or `rows_truncated` is true, query again with `--limit 0 --max-rows 0`.
 - Output includes each notice's **References** (vendor advisory, NVD, … as `[n] URL`) and attachment names. When the raw archive is present in the repository, a **Source folder** path is shown too — Read the attached PDFs from there.
 
@@ -113,7 +117,7 @@ python scripts/advisory_lookup.py -q "PHP" --sort risk                    # KEV 
 
 KISA notices are snapshots taken at posting time. For the items below, open the vendor advisory in References now and confirm the latest state.
 
-- **Scope**: Vulnerable and Needs-review items (Critical/High first), plus any notice flagged "fix not released / notice to be updated".
+- **Scope**: Vulnerable and Needs-review items (Critical/High first), plus any notice flagged "fix not released / notice to be updated", and every pre-notice entry that matched.
 - **Which link**: prefer the vendor advisory (vendor domain, GitHub security advisory, …); use NVD only as a fallback.
 - **What to confirm**: with a web fetch tool (e.g. WebFetch), the latest fixed versions/patches, workarounds, exploitation status, and the advisory's last-updated date.
 - **Apply**: if the vendor's current advisory differs from the KISA table, follow the vendor and record the difference with the **URL and check timestamp** in the report.
@@ -177,7 +181,7 @@ Briefing layout: (1) period, count, type mix; (2) 3–7 notable notices (KEV-lis
 python scripts/advisory_lookup.py --cve CVE-2025-0282 --cve CVE-2025-0283
 ```
 
-No match means "not in a KISA notice within the coverage period" — say so, point to NVD and the vendor advisory, and state that absence does not mean safe.
+A pre-notice entry match means the CVE is public but KISA has not posted a notice yet — say so and give the vendor's fixed versions. No match means "not in a KISA notice within the coverage period" — say so, point to NVD and the vendor advisory, and state that absence does not mean safe.
 
 ---
 
@@ -209,7 +213,7 @@ Record each TR item as Pass / Partial / Vulnerable / N/A with the TR code and so
 
 ## Refreshing the Data (maintainers)
 
-Add new notices under `문서/KISA_보안공지_2025-2026/`, then run `python scripts/build_kisa_advisories.py` from the repository root. Refresh CVE risk signals with `python scripts/fetch_cve_enrichment.py` (KEV, EPSS); with an NVD API key, `NVD_API_KEY=<key> python scripts/fetch_cve_enrichment.py --nvd` also fetches CVSS/CWE. Rebuild afterwards. See `references/kisa-advisories/overview.md` for details.
+Add new notices under `문서/KISA_보안공지_2025-2026/`, then run `python scripts/build_kisa_advisories.py` from the repository root. Refresh CVE risk signals with `python scripts/fetch_cve_enrichment.py` (KEV, EPSS); with an NVD API key, `NVD_API_KEY=<key> python scripts/fetch_cve_enrichment.py --nvd` also fetches CVSS/CWE. Rebuild afterwards. For a vulnerability that is public before KISA posts it, add an entry to `pre-notice.json` by hand (same in both skills) from the CVE record and vendor advisory; `--doctor` reports entries that a KISA notice has since covered so they can be removed. See `references/kisa-advisories/overview.md` for details.
 
 ## Important Rules
 

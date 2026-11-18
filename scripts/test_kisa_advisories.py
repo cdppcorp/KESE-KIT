@@ -342,6 +342,30 @@ class LookupTest(unittest.TestCase):
         self.assertEqual(kind, "rows")
         self.assertEqual([r["product"] for r in rows], ["Oracle Java SE"])
 
+    def test_vulnerability_nickname_matches_its_cve_rows(self):
+        oracle = advisory("9", "2026-11-18", "Oracle 제품 보안 업데이트 권고", "Oracle",
+                          cves=["CVE-2026-114938", "CVE-2026-114939"],
+                          affected=[{"cve": "CVE-2026-114938", "product": "Oracle Java SE", "affected": "17.0.21.0.3"},
+                                    {"cve": "CVE-2026-114939", "product": "Oracle Java SE", "affected": "11.0.33.0.3"}])
+        kind, rows = lookup.match_query(oracle, lookup.build_query("Java4Shell"))
+        self.assertEqual(kind, "rows")
+        self.assertEqual([r["cve"] for r in rows], ["CVE-2026-114938"])
+
+    def test_nginx2root_nickname_matches_any_of_its_cves(self):
+        f5 = advisory("10", "2026-11-20", "NGINX 제품 보안 업데이트 권고", "NGINX", cves=["CVE-2026-113425", "CVE-2026-1"],
+                      affected=[{"cve": "CVE-2026-113425", "product": "NGINX Open Source", "affected": "1.30.6"},
+                                {"cve": "CVE-2026-1", "product": "NGINX Open Source", "affected": "1.30.6"}])
+        kind, rows = lookup.match_query(f5, lookup.build_query("NGINX2Root"))
+        self.assertEqual(kind, "rows")
+        self.assertEqual([r["cve"] for r in rows], ["CVE-2026-113425"])
+
+    def test_nickname_cves_do_not_alias_each_other(self):
+        f5 = advisory("10", "2026-11-20", "F5 제품 보안 업데이트 권고", "F5", cves=["CVE-2026-123007"],
+                      affected=[{"cve": "CVE-2026-123007", "product": "NGINX Open Source", "affected": "1.30.6"}])
+        self.assertIsNone(lookup.match_query(f5, lookup.build_query("CVE-2026-113425")))
+        self.assertEqual(lookup.match_query(f5, lookup.build_query("CVE-2026-123007"))[0], "rows")
+        self.assertEqual(lookup.ALIASES["cve-2026-123007"], ["nginx2root"])
+
     def test_vendor_plus_product_query_narrows_to_product_rows(self):
         kind, rows = self.query("4", "Fortinet FortiOS")
         self.assertEqual(kind, "rows")
@@ -500,6 +524,126 @@ class LookupTest(unittest.TestCase):
             with self.subTest(argv=argv), contextlib.redirect_stderr(io.StringIO()):
                 with self.assertRaises(SystemExit):
                     lookup.parse_args(argv)
+
+
+PRE_NOTICE = {
+    "schema": 1,
+    "checked": "2026-11-19",
+    "cve_meta": {"cve-2026-123007": {"cvss": 8.1, "cvss_v": "3.1", "sev": "HIGH"},  # lowercase key is normalised
+                 "CVE-2026-3": {"cvss": 5.0, "epss": 0.5}},
+    "advisories": [
+        {**advisory("공지 전", "2026-11-18", "NGINX 보안 업데이트 — NGINX2Root", "NGINX", ntt="nginx2root",
+                    cves=["CVE-2026-123007"], summary="원격 코드 실행",
+                    affected=[{"cve": "CVE-2026-123007", "product": "NGINX Open Source",
+                               "affected": "1.31.0 이상 1.31.9 미만", "fixed": "1.31.9 이상"}]),
+         "type": "KISA 공지 전 (벤더·CVE 원문)", "folder": ""},
+    ],
+}
+
+
+class PreNoticeTest(unittest.TestCase):
+    """Vendor/CVE-sourced entries for vulnerabilities KISA has not posted yet (pre-notice.json)."""
+
+    def run_main(self, *argv: str, data: dict = SAMPLE_DATA, pre: dict | None = PRE_NOTICE) -> str:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "advisories.json"
+            path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+            if pre is not None:
+                (Path(tmp) / lookup.PRE_NOTICE_FILE).write_text(json.dumps(pre, ensure_ascii=False), encoding="utf-8")
+            buffer = io.StringIO()
+            with contextlib.redirect_stdout(buffer):
+                self.assertEqual(lookup.main([*argv, "--data", str(path)]), 0)
+            return buffer.getvalue()
+
+    def test_entry_is_merged_and_labelled(self):
+        out = self.run_main("-q", "nginx", "--lang", "ko")
+        self.assertIn("## 질의: nginx — 2건", out)
+        self.assertIn("### [2026-11-18] NGINX 보안 업데이트 — NGINX2Root (KISA 공지 전 (벤더·CVE 원문))", out)
+        self.assertIn("KISA 공지 전 항목 — 벤더·CVE 원문 기준 (확인일 2026-11-19)", out)
+        self.assertIn("> KISA 공지 전 항목 1건 (벤더·CVE 원문, 확인일 2026-11-19): NGINX 보안 업데이트 — NGINX2Root", out)
+        self.assertLess(out.index("NGINX2Root (KISA"), out.index("#2 F5"))  # newest first
+
+    def test_entry_is_found_by_nickname_cve_and_id(self):
+        self.assertIn("NGINX2Root — 1", self.run_main("-q", "NGINX2Root", "--lang", "en"))
+        cve = self.run_main("--cve", "CVE-2026-123007", "--lang", "en")
+        self.assertIn("| CVE-2026-123007 | NGINX Open Source | 1.31.0 이상 1.31.9 미만 | 1.31.9 이상 | CVSS 8.1 |", cve)
+        self.assertIn("pre-notice entry", self.run_main("--id", "nginx2root", "--lang", "en"))
+        self.assertIn("pre-notice entry", self.run_main("--id", "NGINX2Root", "--lang", "en"))  # case-insensitive id
+
+    def test_entries_are_placed_by_date(self):
+        newer = advisory("11", "2026-11-25", "NGINX 후속 공지", "NGINX", cves=["CVE-2026-777"])
+        data = {**SAMPLE_DATA, "advisories": [newer, *SAMPLE_DATA["advisories"]]}
+        merged = lookup.merge_pre_notice(data, PRE_NOTICE)
+        self.assertEqual([a["no"] for a in merged["advisories"]][:3], ["11", "공지 전", "3"])
+
+    def test_entry_without_cves_is_never_retired(self):
+        kernel = {**PRE_NOTICE["advisories"][0], "ntt": "kernel", "title": "커널", "cves": [], "affected": []}
+        merged = lookup.merge_pre_notice(SAMPLE_DATA, {**PRE_NOTICE, "advisories": [kernel]})
+        self.assertEqual(merged["pre_notice"]["active"], ["커널"])
+
+    def test_no_file_means_no_change(self):
+        out = self.run_main("-q", "nginx", "--lang", "en", pre=None)
+        self.assertIn("nginx — 1 notice(s)", out)
+        self.assertNotIn("pre-notice", out)
+
+    def test_entry_retires_once_a_kisa_notice_lists_all_its_cves(self):
+        kisa = advisory("9", "2026-11-20", "NGINX 제품 보안 업데이트 권고", "NGINX", cves=["CVE-2026-123007"])
+        data = {**SAMPLE_DATA, "advisories": [kisa, *SAMPLE_DATA["advisories"]]}
+        merged = lookup.merge_pre_notice(data, PRE_NOTICE)
+        self.assertEqual([a["no"] for a in merged["advisories"]], [a["no"] for a in data["advisories"]])
+        self.assertEqual(merged["pre_notice"]["retired"], ["NGINX 보안 업데이트 — NGINX2Root"])
+        self.assertIn("Retired pre-notice entries", "\n".join(
+            lookup.render_doctor(merged, lookup.LABELS["en"], lookup.dt.date(2026, 11, 20))))
+
+    def test_doctor_warns_when_check_date_is_stale(self):
+        merged = lookup.merge_pre_notice(SAMPLE_DATA, PRE_NOTICE)
+        fresh = "\n".join(lookup.render_doctor(merged, lookup.LABELS["en"], lookup.dt.date(2026, 11, 20)))
+        stale = "\n".join(lookup.render_doctor(merged, lookup.LABELS["en"], lookup.dt.date(2027, 1, 5)))
+        self.assertIn("[INFO] 1 KISA pre-notice entr(ies)", fresh)
+        self.assertIn("[WARN] 1 KISA pre-notice entr(ies)", stale)
+        self.assertIn("checked more than 30 days ago", stale)
+
+    def test_merge_keeps_inputs_and_lets_kisa_signals_win(self):
+        before = json.dumps(SAMPLE_DATA, sort_keys=True)
+        merged = lookup.merge_pre_notice(SAMPLE_DATA, PRE_NOTICE)
+        self.assertEqual(json.dumps(SAMPLE_DATA, sort_keys=True), before)
+        self.assertEqual(merged["cve_meta"]["CVE-2026-3"], {"cvss": 5.0, "epss": 0.01, "pct": 0.5})
+        self.assertEqual(merged["cve_meta"]["CVE-2026-123007"]["cvss"], 8.1)
+        self.assertEqual(merged["coverage"], SAMPLE_DATA["coverage"])  # KISA coverage is unchanged
+        entry = merged["advisories"][0]
+        self.assertEqual((entry["pre_notice"], entry["checked"]), (True, "2026-11-19"))
+
+    def test_json_output_marks_entries(self):
+        result = json.loads(self.run_main("-q", "nginx", "--format", "json"))
+        self.assertEqual(result["pre_notice"]["active"], ["NGINX 보안 업데이트 — NGINX2Root"])
+        self.assertTrue(result["results"][0]["matches"][0]["pre_notice"])
+
+    def test_malformed_file_is_rejected(self):
+        entry = PRE_NOTICE["advisories"][0]
+        bad_cves = {**entry, "cves": [123]}
+        bad_row = {**entry, "affected": [{"cve": None, "product": "NGINX"}]}
+        for bad in ({"schema": 2, "advisories": []}, {"schema": 1, "advisories": [{"no": "x"}]},
+                    {"schema": 1, "advisories": [], "cve_meta": []},
+                    {"schema": 1, "advisories": [bad_cves]}, {"schema": 1, "advisories": [bad_row]}):
+            with self.subTest(bad=bad), self.assertRaises(SystemExit):
+                self.run_main("-q", "nginx", pre=bad)
+
+    def test_bundled_file_is_valid_and_matches_the_nickname_list(self):
+        for skill in ("skills/kesekit-advisory", "skills-ko/kesekit-advisory-ko"):
+            path = ROOT / skill / "references" / "kisa-advisories" / lookup.PRE_NOTICE_FILE
+            with self.subTest(skill=skill):
+                pre = lookup.load_pre_notice(path)
+                by_id = {a["ntt"]: a for a in pre["advisories"]}
+                nginx, kernel = by_id["nginx2root"], by_id["nginx2root-sctp"]
+                group = next(g for g in lookup.NICKNAME_GROUPS if g[0] == "nginx2root")
+                self.assertEqual({c.lower() for c in nginx["cves"]}, set(group[1:]))
+                self.assertEqual(set(pre["cve_meta"]), set(nginx["cves"]))
+                for entry in (nginx, kernel):
+                    self.assertEqual(lookup.match_query(entry, lookup.build_query("NGINX2Root"))[0], "title")
+                self.assertFalse(lookup.is_pending(nginx))  # nginx fixes are out
+                self.assertTrue(lookup.is_pending(kernel))  # kernel fix is not
+                self.assertEqual(kernel["cves"], [])  # never auto-retired with the nginx CVEs
+                self.assertEqual(lookup.match_query(kernel, lookup.build_query("리눅스 커널"))[0], "title")
 
 
 KEV_SAMPLE = json.dumps({
