@@ -72,7 +72,7 @@ class TriggerScriptTest(unittest.TestCase):
 
     def test_fires_on_vulnerability_checks_and_nicknames(self):
         for prompt in ("최근 취약점점검 해줘", "취약점 점검 부탁해", "Java4Shell 점검해줘", "우리 서버 log4shell 영향 봐줘",
-                       "PHP2Shell 대응"):
+                       "PHP2Shell 대응", "NGINX2Root 점검해줘", "우리 웹서버 nginx2root 영향 있어?", "nginx 2root 대응"):
             with self.subTest(prompt=prompt):
                 self.assert_fires(prompt)
 
@@ -83,7 +83,8 @@ class TriggerScriptTest(unittest.TestCase):
 
     def test_silent_otherwise(self):
         for prompt in ("코드 리뷰해줘", "보안 업데이트 알려줘", "", "/kesekit-start-ko 보안점검", "취약점 알려줘",
-                       "PowerShell 명령 알려줘", "bash shell 스크립트 짜줘"):
+                       "PowerShell 명령 알려줘", "bash shell 스크립트 짜줘", "root 계정 비밀번호 바꿔줘",
+                       "nginx root 디렉터리 설정 알려줘", "path2root 함수 고쳐줘", "user2root 변수 이름 바꿔줘"):
             with self.subTest(prompt=prompt):
                 self.assert_silent(prompt)
 

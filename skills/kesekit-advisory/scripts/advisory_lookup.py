@@ -16,6 +16,8 @@ title/vendor (all rows shown), table rows (only matching rows shown, hidden rows
 or body text only (product mentioned in the notice text but not in its version table).
 
 Standard library only (Python 3.8+). Data: ../references/kisa-advisories/advisories.json
+plus pre-notice.json next to it (vulnerabilities disclosed by the vendor / in CVE records before
+KISA posts a notice; an entry drops out once all of its CVEs appear in KISA notices).
 """
 
 from __future__ import annotations
@@ -36,6 +38,7 @@ REPO_SOURCE = SCRIPT_DIR.parents[2] / "문서" / "KISA_보안공지_2025-2026" /
 REFS_SHOWN = 15
 STALE_DAYS = 30  # notice data / EPSS older than this triggers a warning
 THREAT_RESPONSE = SCRIPT_DIR.parent / "references" / "kisa-advisories" / "threat-response.md"
+PRE_NOTICE_FILE = "pre-notice.json"  # read from the same folder as the KISA data file
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.I)
 ROW_FIELDS = ("cve", "vendor", "product", "ecosystem", "affected", "fixed", "severity")
 REQUIRED_STR = ("no", "date", "type", "title", "vendor", "url", "summary")
@@ -77,12 +80,18 @@ ALIAS_GROUPS = [
     ("hancom", "한컴"),
 ]
 # Vulnerability nicknames that KISA notices do not spell out, mapped to their CVE ids.
-# Add only mappings confirmed by the vendor or the discoverer's advisory.
+# Add only mappings confirmed by the vendor or the discoverer's advisory. One-way: the nickname
+# expands to its CVEs, a CVE expands only to the nickname (sibling CVEs never match each other).
 NICKNAME_GROUPS = [
     ("java4shell", "cve-2026-114938"),  # Calif.io disclosure, Oracle CSPU Nov 2026 (KISA #2640)
+    # Theori Xint disclosure (nginx2root.com), F5 CVE records 2026-11-18; the Linux SCTP kernel bug has no CVE yet
+    ("nginx2root", "cve-2026-123007", "cve-2026-123634", "cve-2026-123633", "cve-2026-121810", "cve-2026-113425"),
 ]
-ALIASES = {member: [o for o in group if o != member]
-           for group in ALIAS_GROUPS + NICKNAME_GROUPS for member in group}
+ALIASES = {
+    **{member: [o for o in group if o != member] for group in ALIAS_GROUPS for member in group},
+    **{nickname: list(cves) for nickname, *cves in NICKNAME_GROUPS},
+    **{cve: [nickname] for nickname, *cves in NICKNAME_GROUPS for cve in cves},
+}
 
 LABELS = {
     "ko": {
@@ -131,6 +140,10 @@ LABELS = {
         "doctor_archive_missing": "원본 아카이브 없음 — 첨부는 공지 원문 링크로 확인",
         "doctor_threat": "위협 대응 점검 문서 (threat-response.md) {state}",
         "present": "있음", "missing": "없음",
+        "pre_notice": "KISA 공지 전 항목 — 벤더·CVE 원문 기준 (확인일 {checked}). KISA 공지가 나오면 그 공지로 다시 판정하세요",
+        "pre_notice_count": "KISA 공지 전 항목 {n}건 (벤더·CVE 원문, 확인일 {checked}): {titles}",
+        "doctor_pre_retired": "KISA 공지에 반영돼 빠진 공지 전 항목: {titles} — pre-notice.json에서 지워도 됩니다",
+        "doctor_pre_stale": " — 확인일이 {days}일 넘게 지남: 벤더 권고와 보호나라를 다시 확인하고 checked를 갱신하세요",
     },
     "en": {
         "coverage": "Data coverage: {first} ~ {last} ({count} KISA Boho-nara notices)",
@@ -178,6 +191,11 @@ LABELS = {
         "doctor_archive_missing": "Raw notice archive absent — open attachments via the notice URL",
         "doctor_threat": "Threat-response checklist (threat-response.md) {state}",
         "present": "present", "missing": "missing",
+        "pre_notice": "KISA pre-notice entry — based on the vendor/CVE record (checked {checked}). "
+                      "Re-judge with the KISA notice once it is posted",
+        "pre_notice_count": "{n} KISA pre-notice entr(ies) (vendor/CVE records, checked {checked}): {titles}",
+        "doctor_pre_retired": "Retired pre-notice entries (now in a KISA notice): {titles} — safe to delete from pre-notice.json",
+        "doctor_pre_stale": " — checked more than {days} days ago: re-check the vendor advisory and Boho-nara, then update 'checked'",
     },
 }
 
@@ -189,14 +207,17 @@ def default_lang() -> str:
 # --------------------------------------------------------------------------- data loading
 
 
-def load(path: Path) -> dict:
+def read_json(path: Path) -> object:
     try:
         with path.open(encoding="utf-8") as handle:
-            data = json.load(handle)
+            return json.load(handle)
     except FileNotFoundError:
         raise SystemExit(f"error: data file not found: {path}")
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise SystemExit(f"error: cannot read {path}: {exc}")
+
+
+def validate(data: object, path: Path) -> dict:
     if not isinstance(data, dict) or data.get("schema") != 1 or not isinstance(data.get("advisories"), list):
         raise SystemExit(f"error: unsupported data schema in {path}")
     for index, advisory in enumerate(data["advisories"]):
@@ -209,6 +230,49 @@ def load(path: Path) -> dict:
     return data
 
 
+def load(path: Path) -> dict:
+    return validate(read_json(path), path)
+
+
+def load_pre_notice(path: Path) -> dict | None:
+    """Optional pre-notice.json (same schema as advisories.json); None when the file is absent."""
+    return validate(read_json(path), path) if path.is_file() else None
+
+
+def insert_by_date(entries: list[dict], advisories: list[dict]) -> list[dict]:
+    """New list: KISA order kept (newest first), each entry placed before the first notice not newer than it."""
+    out = list(advisories)
+    for entry in sorted(entries, key=lambda e: e["date"]):
+        index = next((i for i, a in enumerate(out) if a["date"] <= entry["date"]), len(out))
+        out.insert(index, entry)
+    return out
+
+
+def merge_pre_notice(data: dict, pre: dict | None) -> dict:
+    """Return the KISA data with pre-notice entries merged in by date; the inputs are not modified.
+
+    An entry is retired once all of its CVEs appear in KISA notices (they are the source from then on);
+    an entry without CVEs is never retired. Per CVE, KISA-side risk signals win over the pre-notice ones.
+    Coverage stays the KISA coverage.
+    """
+    if not pre:
+        return data
+    known = {c.upper() for a in data["advisories"] for c in a["cves"]}
+    checked = str(pre.get("checked", ""))
+    active, retired = [], []
+    for entry in pre["advisories"]:
+        cves = {c.upper() for c in entry["cves"]}
+        if cves and cves <= known:
+            retired.append(entry["title"])
+        else:
+            active.append({**entry, "pre_notice": True, "checked": checked})
+    kisa_meta = data.get("cve_meta", {})
+    pre_meta = {cve.upper(): value for cve, value in pre.get("cve_meta", {}).items()}
+    meta = {cve: {**pre_meta.get(cve, {}), **kisa_meta.get(cve, {})} for cve in {*pre_meta, *kisa_meta}}
+    return {**data, "advisories": insert_by_date(active, data["advisories"]), "cve_meta": meta,
+            "pre_notice": {"checked": checked, "active": [a["title"] for a in active], "retired": retired}}
+
+
 def record_problem(advisory: object) -> str | None:
     if not isinstance(advisory, dict):
         return "is not an object"
@@ -218,8 +282,12 @@ def record_problem(advisory: object) -> str | None:
     for key in REQUIRED_LIST:
         if not isinstance(advisory.get(key), list):
             return f"field '{key}' must be a list"
+    if not all(isinstance(c, str) for c in advisory["cves"]):  # id format: scripts/validate-content.mjs
+        return "field 'cves' must hold strings"
     if not all(isinstance(row, dict) for row in advisory["affected"]):
         return "field 'affected' must contain objects"
+    if not all(isinstance(value, str) for row in advisory["affected"] for value in row.values()):
+        return "rows in 'affected' must hold string values"
     refs = advisory.get("refs", [])
     if not isinstance(refs, list) or not all(isinstance(r, dict) and isinstance(r.get("url"), str) for r in refs):
         return "field 'refs' must be a list of {url, n?} objects"
@@ -292,7 +360,8 @@ def match_cve(advisory: dict, cve: str) -> tuple[str, list[dict]] | None:
 
 
 def match_id(advisory: dict, ident: str) -> tuple[str, list[dict]] | None:
-    return ("title", advisory["affected"]) if ident in (advisory["no"], advisory.get("ntt")) else None
+    ident = ident.lower()  # pre-notice ids are words (nginx2root); KISA ids are digits or '공지'
+    return ("title", advisory["affected"]) if ident in (advisory["no"].lower(), str(advisory.get("ntt", "")).lower()) else None
 
 
 def vendor_matches(advisory: dict, variants: list[list[list[re.Pattern]]]) -> bool:
@@ -460,11 +529,12 @@ def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.
     a = advisory
     ident = ref_id(a)
     number = a["no"] if a["no"].isdigit() else f"{a['no']} (nttId {a.get('ntt', '?')})"
-    out = [
-        f"### [{a['date']}] #{number} {a['title']} ({a['type']})",
-        f"- {labels['source']}: {a['url'] or '-'}",
-        f"- {labels['match']}: {match_label(kind, rows, a, labels)}",
-    ]
+    if a.get("pre_notice"):
+        out = [f"### [{a['date']}] {a['title']} ({a['type']})", f"- {labels['source']}: {a['url'] or '-'}",
+               f"- {labels['pre_notice'].format(checked=a.get('checked') or '-')}"]
+    else:
+        out = [f"### [{a['date']}] #{number} {a['title']} ({a['type']})", f"- {labels['source']}: {a['url'] or '-'}"]
+    out.append(f"- {labels['match']}: {match_label(kind, rows, a, labels)}")
     risk = risk_of(a["cves"], meta or {})
     if risk:
         out.append(f"- {labels['risk']}: {format_risk(risk, labels)}")
@@ -537,6 +607,8 @@ def json_rows(rows: list[dict], meta: dict) -> list[dict]:
 def json_payload(data: dict, groups: list, advisories: list[dict], args: argparse.Namespace) -> dict:
     meta = data.get("cve_meta", {})
     base = {"coverage": data.get("coverage", {}), "risk_sources": data.get("risk_sources", {})}
+    if data.get("pre_notice"):
+        base["pre_notice"] = data["pre_notice"]
     if not groups:
         shown = limit(advisories, args.limit)
         return {**base, "total": len(advisories), "truncated": len(shown) < len(advisories),
@@ -561,6 +633,14 @@ def risk_sources_line(data: dict, labels: dict) -> str | None:
     return labels["risk_sources"].format(kev=(src.get("kev") or {}).get("version", "-"),
                                          epss=(src.get("epss") or {}).get("date", "-"),
                                          nvd=nvd if nvd else labels["nvd_none"])
+
+
+def pre_notice_line(data: dict, labels: dict) -> str | None:
+    pre = data.get("pre_notice") or {}
+    if not pre.get("active"):
+        return None
+    return labels["pre_notice_count"].format(n=len(pre["active"]), checked=pre.get("checked") or "-",
+                                             titles=", ".join(pre["active"]))
 
 
 def days_since(text: str, today: dt.date) -> int | None:
@@ -602,6 +682,14 @@ def render_doctor(data: dict, labels: dict, today: dt.date, archive: Path = REPO
         line("WARN", labels["doctor_risk_missing"])
     nvd = (src.get("nvd") or {}).get("fetched")
     line("OK" if nvd else "INFO", labels["doctor_nvd"].format(n=nvd) if nvd else labels["doctor_nvd_missing"])
+    pre_active, pre_retired = pre_notice_line(data, labels), (data.get("pre_notice") or {}).get("retired")
+    if pre_active:
+        pre_age = days_since((data.get("pre_notice") or {}).get("checked", ""), today)
+        pre_stale = pre_age is None or pre_age > STALE_DAYS
+        line("WARN" if pre_stale else "INFO",
+             pre_active + (labels["doctor_pre_stale"].format(days=STALE_DAYS) if pre_stale else ""))
+    if pre_retired:
+        line("INFO", labels["doctor_pre_retired"].format(titles=", ".join(pre_retired)))
     line("INFO", labels["doctor_archive"].format(path=archive) if archive.is_dir() else labels["doctor_archive_missing"])
     has_threat = threat.is_file()
     line("OK" if has_threat else "WARN", labels["doctor_threat"].format(state=labels["present" if has_threat else "missing"]))
@@ -653,7 +741,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    data = load(args.data)
+    data = merge_pre_notice(load(args.data), load_pre_notice(args.data.parent / PRE_NOTICE_FILE))
     labels = LABELS[args.lang]
     if args.doctor:
         sys.stdout.write("\n".join(render_doctor(data, labels, dt.date.today())) + "\n")
@@ -673,8 +761,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     coverage = labels["coverage"].format(first=cov.get("first"), last=cov.get("last"), count=cov.get("count"))
-    sources = risk_sources_line(data, labels)
-    out = [f"> {coverage}"] + ([f"> {sources}"] if sources else []) + [""]
+    sources, pre_line = risk_sources_line(data, labels), pre_notice_line(data, labels)
+    out = [f"> {coverage}"] + [f"> {line}" for line in (sources, pre_line) if line] + [""]
     if args.stats:
         out += render_stats(advisories, labels) + [""]
     if groups:

@@ -33,6 +33,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 수집·구조화한 데이터입�
 | 파일 | 내용 | 사용 방법 |
 |------|------|----------|
 | `advisories.json` | 공지별 구조화 데이터 | `scripts/advisory_lookup.py`로 조회 (파일이 크므로 통째로 Read 하지 않음) |
+| `pre-notice.json` | KISA 공지 전에 CVE·벤더 권고로 공개된 취약점 (직접 편집, 같은 스키마) | `scripts/advisory_lookup.py`가 함께 조회 — "KISA 공지 전 항목" 참고 |
 | `vendor-index.md` | 벤더별 공지 목록 (게시일·번호·주요 제품·CVE 수·원문 링크) | 제품명/벤더명 Grep |
 | `threat-response.md` | 비(非)패치성 공지 기반 TR 점검항목 | 위협 대응 점검 시 Read |
 
@@ -108,6 +109,40 @@ KISA의 Oracle 공지는 Oracle 발표 내용의 일부만 싣습니다. #2640(2
 - ASEC 권고: 패치 전까지 인터넷에 공개된 서비스를 점검하고 불필요한 외부 접근을 제한합니다. 업데이트 후 서비스를 재시작하고 실행 중인 프로세스에 새 Java 버전이 적용됐는지 확인합니다.
 - Oracle은 매월 셋째 주 화요일에 보안 패치를 발표합니다(분기 누적 CPU, 그 외 달은 CSPU). 다음 일정: 2026-12-15(CSPU), 2027-01-19(CPU), 2027-02-16(CSPU), 2027-03-16(CSPU).
 
+## KISA 공지 전 항목 (`pre-notice.json`)
+
+CVE 원문이나 벤더 권고로 이미 공개됐지만 KISA 공지는 아직 없는 취약점입니다. `advisory_lookup.py`는 이 항목을 게시일 순서에 맞춰 모든 조회와 브리핑 목록에 함께 넣고(`--since`·`--type` 같은 필터도 똑같이 적용), "KISA 공지 전 항목"(유형 `KISA 공지 전 (벤더·CVE 원문)`, 브리핑 목록의 번호 `공지 전`, `--id <식별자>`)으로 표시합니다. KISA 공지들에 그 항목의 CVE가 모두 실리면 자동으로 빼고, `--doctor`가 지워도 되는 항목으로 알려 줍니다. CVE가 없는 항목은 저절로 빠지지 않습니다. `checked`가 30일 넘게 지나면 `--doctor`가 경고합니다. 데이터 기준 줄의 건수는 KISA 공지만 셉니다.
+
+- 항목은 1차 출처(CVE 레코드, 벤더 권고, 발견자 공개 글)로만 추가하고, 읽은 날짜를 `checked`에 적습니다. 형식은 `advisories.json` 레코드와 같고, `ntt`에는 소문자 식별자를, `folder`는 빈 값으로 둡니다. CNA 점수는 `cve_meta`(`cvss`, `cvss_v`, `sev`, `cwe`, `src`)에 넣으며, 같은 CVE의 KISA 쪽 지표가 생기면 그쪽이 우선합니다.
+- 이 항목으로 내린 판정은 보고서에 "벤더·CVE 원문 기준, KISA 공지 없음(`checked` 기준)"으로 적고, KISA 공지가 나오면 다시 판정합니다.
+- `skills/kesekit-advisory`와 `skills-ko/kesekit-advisory-ko`의 사본을 똑같이 유지합니다(`validate-content.mjs`가 검사).
+
+### NGINX2Root (2026-11-19 확인)
+
+Theori Xint 팀이 발견해 NGINX2Root로 이름 붙인 nginx 취약점 5건입니다([nginx2root.com](https://nginx2root.com/)). F5가 CNA로 2026-11-18 15:23 UTC(한국 시간 11-19 00:23)에 CVE 레코드를 공개했습니다. Xint는 각 취약점을 별도의 Linux SCTP 커널 권한 상승 취약점과 엮어, Docker 컨테이너 안에서 도는 nginx에서도 호스트 root를 얻는 과정을 시연했습니다. `advisory_lookup.py -q "NGINX2Root"`로 조회되며, 별칭이 CVE 5건에도 연결돼 있어 나중에 KISA 공지가 나와도 같은 이름으로 찾습니다.
+
+| CVE | 노출되는 기능·설정 | 유형 | 영향 시작 버전 | F5 권고 |
+|---|---|---|---|---|
+| CVE-2026-123007 | HTTP/2 (`listen … http2`, `http2 on`) | 정수 언더플로 → 범위 밖 쓰기 (CWE-191, CWE-787) | 1.9.5 | K000163926 |
+| CVE-2026-123634 | 변수가 들어간 `proxy_pass` 서버명 + `resolver`, 그리고 같은 이름으로 가는 `mirror` 또는 SSI 서브요청 | 해제 후 사용 (CWE-416) | 0.6.18 | K000163925 |
+| CVE-2026-123633 | HTTP/2 클라이언트 연결을 백엔드로 프록시(`proxy_pass`, `fastcgi_pass`, `grpc_pass`)하면서 worker의 `worker_connections`가 부족할 때 | 해제 후 사용 | 1.19.7 | K000163928 |
+| CVE-2026-121810 | HTTP/3·QUIC (`listen … quic`, `http3 on`) | 해제 후 사용 | 1.25.9 (레코드 표기 "1.25.09") | K000163927 |
+| CVE-2026-113425 | 메일 프록시 (`mail {}` + `auth_http`) | 해제 후 사용 | 0.5.33 | K000163931 |
+
+- **점수·영향**: F5는 5건 모두 CVSS 3.1 8.1(AV:N/AC:H/PR:N/UI:N), CVSS 4.0 9.2로 매겼습니다. F5 설명상 영향은 인증 없는 worker 중단·메모리 손상이고, ASLR이 꺼져 있거나 우회되면 코드 실행까지 가능합니다(데이터 플레인 한정). Xint는 CVE마다 동작하는 RCE 익스플로잇이 있다고 밝혔고 공개하지 않았습니다. 2026-11-19 기준 실제 악용 보고 없음(Xint), CISA KEV 미등재(이 데이터의 카탈로그 2026.11.17).
+- **해결 버전**: NGINX Open Source 1.31.9(mainline), **1.30.7(stable)** — Xint 페이지에는 1.31.9만 나옵니다. NGINX Plus 37.3.0.1 / 37.0.8.1(CVE-2026-123633은 37.2.0.1 / 37.0.7.1). 그보다 오래된 브랜치(Open Source 1.30 미만, Plus R33~36)는 F5가 기술 지원 종료(EoTS) 버전을 평가하지 않아 해결 버전 없이 영향 대상으로만 올라 있으므로 **취약 + 업그레이드**로 판정합니다. 2026-11-19 확인 시 nginx.org 다운로드 서버에는 1.31.9·1.30.7 파일이 이미 있었지만 뉴스·다운로드·보안 공지 페이지는 1.31.8 / 1.30.6에 머물러 있었습니다.
+- **발견자 크레딧**: CVE-2026-123007은 Rapid7, Wiz Research, Xint, Ikotas Labs 공동, CVE-2026-123633은 Metnir, Wiz Research, Xint 공동, 나머지 3건은 Xint입니다.
+- **점검** (읽기 전용):
+  - nginx 전부 찾기: `which -a nginx`, 패키지(`dpkg -l 'nginx*'`, `rpm -q nginx`), 컨테이너 이미지(`FROM nginx:…`, `docker images`), 인그레스 컨트롤러, nginx를 내장한 장비.
+  - 빌드: `nginx -V 2>&1` (버전, `--with-http_v2_module`, `--with-http_v3_module`, `--with-mail`).
+  - 적용된 설정: `nginx -T 2>/dev/null | grep -nE 'http2|quic|http3|^\s*mail\s*\{|auth_http|resolver|mirror|ssi\s+on|(proxy|fastcgi|grpc)_pass'`.
+  - 외부에서 HTTP/2 확인: `openssl s_client -connect HOST:443 -servername HOST -alpn h2 </dev/null 2>&1 | grep -F 'ALPN protocol: h2'` (TLS 연결 자체가 성공했을 때만 "출력 없음"을 미사용으로 봅니다).
+- **판정 보조**: 버전이 범위 안이면 기능 사용 여부와 상관없이 취약으로 보고 패치를 권합니다. 노출 기능(HTTP/2·HTTP/3 리스너, 메일 프록시, resolver + mirror·SSI)이 인터넷에서 닿으면 긴급입니다. 배포판 패키지·이미지·장비는 버전 문자열을 그대로 두고 패치를 백포트할 수 있으므로 배포판·제조사 권고로 확인하기 전까지 확인 필요로 둡니다. 앞단 CDN·로드밸런서가 HTTP/2를 종단하고 nginx와 HTTP/1.1로 통신하면 HTTP/2 경로는 막히지만, nginx에 직접 닿거나 TLS 패스스루면 막히지 않습니다. 내부망 전용 서버도 패치 대상입니다.
+- **조치**: 업데이트 후 반드시 **재시작**합니다. `nginx -s reload`는 기존 바이너리를 그대로 쓰므로, 예전 worker 프로세스가 남지 않았는지 확인합니다. 그전까지는 모든 리스너에서 HTTP/2를 끕니다(1.25.1 이상 `http2 off;`, 1.9.5~1.25.0은 `listen`에서 `http2` 제거). 이 임시 조치는 CVE-2026-123007·CVE-2026-123633만 막고, HTTP/2를 쓰는 gRPC는 멈춥니다. HTTP/3, resolver·mirror·SSI, 메일 프록시는 따로 점검합니다. WAF 규칙으로는 HTTP/2 프레임 처리 결함을 막지 못합니다.
+- **침해 조사**: 일반 접근 로그에는 `WINDOW_UPDATE`·`RST_STREAM` 프레임이 남지 않습니다. 에러 로그(worker 반복 중단), nginx worker의 예상 밖 자식 프로세스, 네트워크 캡처를 확인합니다. 침해가 확인되면 worker가 읽을 수 있던 비밀정보를 교체하고, root까지 가는 체인이므로 호스트도 조사합니다.
+- **커널**: Linux SCTP 권한 상승 취약점은 아직 CVE와 패치가 없습니다(Xint: "앞으로 몇 주 안에"). nginx 패치로 진입점은 막히지만 커널 패치는 따로 챙겨야 합니다. 그래서 별도 항목(`--id nginx2root-sctp`, CVE 없음, "해결 버전 미배포" 경고 표시)으로 두어 nginx CVE가 KISA 공지에 실려도 남게 했습니다. CVE가 배정되면 그 항목의 `cves`에 추가합니다. SCTP를 쓰지 않으면 모듈 차단(`lsmod | grep sctp` 확인, `/etc/modprobe.d/`에 `install sctp /bin/false`)은 일반 하드닝일 뿐이며, 이 취약점의 완화책으로 확인된 것은 아닙니다.
+- 출처: cve.org CVE 레코드(2026-11-19 확인), F5 K000163925 / K000163926 / K000163927 / K000163928 / K000163931, [nginx2root.com](https://nginx2root.com/), nginx.org 다운로드 서버.
+
 ## 원본 데이터 품질 메모 (2026-11-14 검토)
 
 - **첨부 오배치**: `2026/07/2026-07-21_2500_…` 폴더의 PDF는 `2026/09/2026-09-29_2551_…`의 PDF와 동일 파일(SHA-256 일치)입니다. #2500의 실제 첨부는 수집되지 않았고, `목록.csv`의 #2500 첨부파일명도 잘못 기록되어 있습니다.
@@ -128,4 +163,5 @@ KISA의 Oracle 공지는 Oracle 발표 내용의 일부만 싣습니다. #2640(2
    # 원본 위치가 다르면: python scripts/build_kisa_advisories.py --source "<목록.csv가 있는 폴더>"
    ```
 3. 새 `보안 조치·강화 권고`/`취약점 조치 권고`/`주의 권고`가 있으면 `threat-response.md`(EN/KO)에 TR 항목을 추가합니다.
+   `python scripts/advisory_lookup.py --doctor`가 KISA 공지에 반영돼 빠진 공지 전 항목을 알려 주면 두 `pre-notice.json` 사본에서 지웁니다.
 4. `node scripts/validate-content.mjs`로 검증합니다.

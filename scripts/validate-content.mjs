@@ -914,6 +914,7 @@ const advisoryRequiredFiles = [
   "scripts/advisory_lookup.py",
   "references/kisa-advisories/overview.md",
   "references/kisa-advisories/advisories.json",
+  "references/kisa-advisories/pre-notice.json",
   "references/kisa-advisories/vendor-index.md",
   "references/kisa-advisories/threat-response.md",
 ];
@@ -940,7 +941,8 @@ check("advisory-skill-files", () => {
 
 check("advisory-data-parity", () => {
   const [en, ko] = advisorySkills;
-  for (const file of ["scripts/advisory_lookup.py", "references/kisa-advisories/advisories.json"]) {
+  for (const file of ["scripts/advisory_lookup.py", "references/kisa-advisories/advisories.json",
+    "references/kisa-advisories/pre-notice.json"]) {
     assert(
       read(advisoryPath(en, file)) === read(advisoryPath(ko, file)),
       `${ko.root}/${ko.dir}/${file} diverged from ${en.root}/${en.dir}/${file}`,
@@ -988,6 +990,52 @@ check("advisory-data-schema", () => {
       match && Number(match[1]) === total,
       `${skill.root}/${skill.dir} overview stats do not match ${total} advisories (rerun scripts/build_kisa_advisories.py)`,
     );
+  }
+});
+
+check("advisory-pre-notice-schema", () => {
+  const filePath = advisoryPath(advisorySkills[0], "references/kisa-advisories/pre-notice.json");
+  if (!fs.existsSync(filePath)) return; // reported by advisory-skill-files
+  const data = JSON.parse(read(filePath));
+  assert(data.schema === 1 && Array.isArray(data.advisories), "pre-notice.json needs schema 1 and an advisories array");
+  assert(/^\d{4}-\d{2}-\d{2}$/.test(data.checked ?? ""), `pre-notice.json has invalid checked date ${data.checked}`);
+  const cveId = /^CVE-\d{4}-\d{4,7}$/;
+  const seenNtt = new Set();
+  for (const entry of Array.isArray(data.advisories) ? data.advisories : []) {
+    const label = `pre-notice entry ${entry?.ntt}`;
+    const badStrings = advisoryStringKeys.filter((key) => typeof entry?.[key] !== "string");
+    const badArrays = advisoryArrayKeys.filter((key) => !Array.isArray(entry?.[key]));
+    assert(badStrings.length === 0, `${label} needs string field(s): ${badStrings.join(", ")}`);
+    assert(badArrays.length === 0, `${label} needs array field(s): ${badArrays.join(", ")}`);
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(entry?.date ?? ""), `${label} has invalid date ${entry?.date}`);
+    // a letter keeps it apart from numeric KISA nttIds, which --id also accepts
+    assert(/^(?=.*[a-z])[a-z0-9-]+$/.test(entry?.ntt ?? ""), `${label} needs a lowercase id with a letter in ntt`);
+    assert(!seenNtt.has(entry?.ntt), `duplicate pre-notice id ${entry?.ntt}`);
+    seenNtt.add(entry?.ntt);
+    const urls = [entry?.url, ...(Array.isArray(entry?.refs) ? entry.refs.map((ref) => ref?.url) : [])];
+    const badUrls = urls.filter((url) => !/^https:\/\/\S+$/.test(url ?? ""));
+    assert(badUrls.length === 0, `${label} has malformed URL(s): ${badUrls.join(", ")}`);
+    const cves = Array.isArray(entry?.cves) ? entry.cves : [];
+    const badCves = cves.filter((cve) => !cveId.test(cve ?? ""));
+    assert(badCves.length === 0, `${label} has malformed CVE id(s): ${badCves.join(", ")}`);
+    for (const row of Array.isArray(entry?.affected) ? entry.affected : []) {
+      const values = Object.values(row ?? {});
+      assert(values.every((value) => typeof value === "string"), `${label} has a row with non-string values`);
+      const rowCves = typeof row?.cve === "string" ? row.cve.match(/CVE-\d{4}-\d{4,7}/g) ?? [] : [];
+      const unknown = rowCves.filter((cve) => !cves.includes(cve));
+      assert(unknown.length === 0, `${label} rows mention CVE(s) missing from cves: ${unknown.join(", ")}`);
+    }
+  }
+  const cveMeta = data.cve_meta ?? {};
+  assert(typeof cveMeta === "object" && !Array.isArray(cveMeta), "pre-notice.json cve_meta must be an object");
+  const referenced = new Set(data.advisories.flatMap((entry) => (Array.isArray(entry?.cves) ? entry.cves : [])));
+  const inRange = (value, upper) => value === undefined || (typeof value === "number" && value >= 0 && value <= upper);
+  for (const [cve, meta] of Object.entries(Array.isArray(cveMeta) ? {} : cveMeta)) {
+    assert(cveId.test(cve), `pre-notice.json cve_meta key ${cve} is not an upper-case CVE id`);
+    assert(referenced.has(cve), `pre-notice.json cve_meta lists ${cve}, which no entry references`);
+    assert(inRange(meta?.epss, 1) && inRange(meta?.pct, 1) && inRange(meta?.cvss, 10),
+      `pre-notice.json cve_meta ${cve} has an out-of-range score`);
+    assert(meta?.kev === undefined || typeof meta.kev === "string", `pre-notice.json cve_meta ${cve} kev must be a date string`);
   }
 });
 

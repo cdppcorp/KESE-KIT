@@ -236,6 +236,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 
 | 영향도 점검 | 설치 제품·버전·의존성 ↔ 공지의 영향받는 버전/해결 버전 대조, 긴급/높음/보통 우선순위 | 보안 업데이트 권고 435건, 버전 행 12,660행 |
 | 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 526건 |
 | CVE 조회 | 특정 CVE의 KISA 공지 포함 여부와 해결 버전 | 고유 CVE 8,894개 |
+| KISA 공지 전 취약점 | CVE·벤더 권고로 먼저 공개된 취약점을 "공지 전 항목"으로 함께 조회(예: "NGINX2Root 점검해줘"), KISA 공지가 나오면 공지 기준으로 자동 전환 | 2건 — NGINX2Root nginx CVE 5건, 연계 리눅스 커널 취약점 (2026-11-19 확인) |
 | 위협 대응 점검 | BPFDoor, 리눅스 커널 루트킷, 랜섬웨어, 자격증명 노출, 개발 공급망 공격, 제품 사용 주의(EoL) — TR-01~TR-43 (43항목) + 피싱·스미싱 동향 35건 | 비패치성 공지 91건 (보안 조치·강화 18, 취약점 조치 7, 주의 63, 기타 3) |
 
 **조회 도구**: `scripts/advisory_lookup.py` (Python 표준 라이브러리, 제품/CVE/벤더/기간/유형 필터)
@@ -410,6 +411,7 @@ Structured KISA Boho-nara (KrCERT/CC) security notices for answering **"does any
 | Exposure check | Installed products/versions/dependencies vs. affected/fixed versions, Critical/High/Medium priority | 435 security update advisories, 12,660 version rows |
 | Notice briefing | Recent notices by period, vendor, or type with action priorities | All 526 notices |
 | CVE lookup | Whether a CVE is in a KISA notice and its fixed version | 8,894 unique CVEs |
+| Pre-notice vulnerabilities | Vulnerabilities public in CVE records / vendor advisories before KISA posts them are looked up as "pre-notice entries" (e.g. "check NGINX2Root"); they switch to the KISA notice automatically once it is posted | 2 entries — NGINX2Root's 5 nginx CVEs and the chained Linux kernel bug (checked 2026-11-19) |
 | Threat response | BPFDoor, Linux kernel rootkits, ransomware, exposed credentials, dev supply-chain attacks, product-use cautions (EoL) — TR-01~TR-43 (43 items) + 35 phishing/smishing trend rows | 91 non-patch notices (18 hardening, 7 mitigation, 63 caution, 3 other) |
 
 **Lookup tool**: `scripts/advisory_lookup.py` (Python standard library; product/CVE/vendor/period/type filters)

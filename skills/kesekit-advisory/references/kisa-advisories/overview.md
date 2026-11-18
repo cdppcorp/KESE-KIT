@@ -34,6 +34,7 @@ Structured data collected from the KISA Boho-nara (KrCERT/CC) security notice bo
 | File | Content | How to use |
 |------|---------|-----------|
 | `advisories.json` | Structured notices | Query with `scripts/advisory_lookup.py` (large file — do not Read it whole) |
+| `pre-notice.json` | Vulnerabilities public in CVE records / vendor advisories before a KISA notice (hand-edited, same schema) | Merged by `scripts/advisory_lookup.py` — see "Pre-notice entries" |
 | `vendor-index.md` | Notices grouped by vendor (date, number, products, CVE count, link) | Grep by product/vendor |
 | `threat-response.md` | TR check items derived from non-patch notices | Read for threat-response checks |
 
@@ -111,6 +112,40 @@ KISA's Oracle notices quote only part of Oracle's release. Example: #2640 (2026-
 - ASEC's advice: until patched, review internet-facing services and block unneeded external access; after updating, restart the service and confirm the running process uses the new Java version.
 - Oracle publishes security patches on the third Tuesday of every month: the quarterly cumulative CPU, and a CSPU in the other months. Next: 2026-12-15 (CSPU), 2027-01-19 (CPU), 2027-02-16 (CSPU), 2027-03-16 (CSPU).
 
+## Pre-notice entries (`pre-notice.json`)
+
+Vulnerabilities that are already public in CVE records or vendor advisories but not yet in a KISA notice. `advisory_lookup.py` merges them by date into every lookup and the briefing list (filters such as `--since`/`--type` apply to them too), labels them "KISA pre-notice entry" (type `KISA 공지 전 (벤더·CVE 원문)`, number `공지 전` in the briefing list, `--id <id>`), and drops an entry automatically once all of its CVEs appear in KISA notices; `--doctor` then lists it as retired so it can be deleted. An entry without a CVE never drops out on its own. `--doctor` warns when `checked` is more than 30 days old. The coverage line still counts KISA notices only.
+
+- Add an entry only from primary sources (CVE record, vendor advisory, the discoverer's write-up), set `checked` to the date you read them, and use the `advisories.json` record schema with a lowercase `ntt` id and an empty `folder`. CNA scores go in `cve_meta` (`cvss`, `cvss_v`, `sev`, `cwe`, `src`); KISA-side signals win once both exist.
+- Report verdicts from these entries as "vendor/CVE record, no KISA notice yet (as of `checked`)" and re-judge when KISA posts its notice.
+- Keep the `skills/kesekit-advisory` and `skills-ko/kesekit-advisory-ko` copies identical (`validate-content.mjs` checks).
+
+### NGINX2Root (checked 2026-11-19)
+
+Five nginx vulnerabilities found by Theori's Xint team and named NGINX2Root ([nginx2root.com](https://nginx2root.com/)). F5, as CNA, published the CVE records on 2026-11-18 15:23 UTC (2026-11-19 00:23 KST). Xint chained each of them with a separate Linux SCTP kernel privilege escalation to reach root on the host, including from nginx running in a Docker container. `advisory_lookup.py -q "NGINX2Root"` finds the entry; the nickname also maps to the five CVEs for the KISA notice that will follow.
+
+| CVE | Feature / config that exposes it | Type | Affected from | F5 advisory |
+|---|---|---|---|---|
+| CVE-2026-123007 | HTTP/2 (`listen … http2`, `http2 on`) | Integer underflow → out-of-bounds write (CWE-191, CWE-787) | 1.9.5 | K000163926 |
+| CVE-2026-123634 | `proxy_pass` host with variables + `resolver`, and a `mirror` or SSI subrequest to a location that resolves the same name | Use after free (CWE-416) | 0.6.18 | K000163925 |
+| CVE-2026-123633 | HTTP/2 client connections proxied to a backend (`proxy_pass`, `fastcgi_pass`, `grpc_pass`) while the worker runs low on `worker_connections` | Use after free | 1.19.7 | K000163928 |
+| CVE-2026-121810 | HTTP/3 / QUIC (`listen … quic`, `http3 on`) | Use after free | 1.25.9 (the record writes "1.25.09") | K000163927 |
+| CVE-2026-113425 | Mail proxy (`mail {}` with `auth_http`) | Use after free | 0.5.33 | K000163931 |
+
+- **Scores and impact**: F5 rates every CVE CVSS 3.1 8.1 (AV:N/AC:H/PR:N/UI:N) and CVSS 4.0 9.2. F5's impact text: unauthenticated worker crash or memory corruption, code execution when ASLR is disabled or bypassed; data plane only. Xint reports a working RCE exploit for each CVE and withholds the exploits. No in-the-wild exploitation reported as of 2026-11-19 (Xint); not in CISA KEV (catalog 2026.11.17 in this data).
+- **Fixed versions**: NGINX Open Source 1.31.9 (mainline) and **1.30.7 (stable)** — the Xint page names only 1.31.9. NGINX Plus 37.3.0.1 / 37.0.8.1 (CVE-2026-123633: 37.2.0.1 / 37.0.7.1). Older branches (Open Source below 1.30, Plus R33–36) are listed as affected with no fix because F5 does not evaluate End of Technical Support versions → **Vulnerable + upgrade**. On 2026-11-19 the nginx.org download server already served the 1.31.9 and 1.30.7 files, while its news, download and security-advisory pages still showed 1.31.8 / 1.30.6.
+- **Credits**: CVE-2026-123007 is co-credited to Rapid7, Wiz Research, Xint and Ikotas Labs; CVE-2026-123633 to Metnir, Wiz Research and Xint; the other three to Xint.
+- **Checks** (read-only):
+  - Every nginx: `which -a nginx`, packages (`dpkg -l 'nginx*'`, `rpm -q nginx`), container images (`FROM nginx:…`, `docker images`), ingress controllers, appliances that bundle nginx.
+  - Build: `nginx -V 2>&1` (version, `--with-http_v2_module`, `--with-http_v3_module`, `--with-mail`).
+  - Loaded config: `nginx -T 2>/dev/null | grep -nE 'http2|quic|http3|^\s*mail\s*\{|auth_http|resolver|mirror|ssi\s+on|(proxy|fastcgi|grpc)_pass'`.
+  - HTTP/2 from outside: `openssl s_client -connect HOST:443 -servername HOST -alpn h2 </dev/null 2>&1 | grep -F 'ALPN protocol: h2'` (no output only counts when the TLS handshake itself succeeds).
+- **Verdict aid**: an in-range version is Vulnerable whatever features are on (patch anyway). It is Critical when an exposing feature is reachable from the internet (HTTP/2 or HTTP/3 listener, mail proxy, resolver + mirror/SSI). Distribution packages, images and appliances may carry a backported fix under the old version string → Needs review until the distribution or vendor advisory confirms. A CDN or load balancer that terminates HTTP/2 and speaks HTTP/1.1 to nginx blocks the HTTP/2 path only when nginx is not reachable directly (not with TLS passthrough). Internal-only servers still need the patch.
+- **Remediation**: update, then **restart** — `nginx -s reload` keeps the old binary; confirm that no old worker processes remain. Until then, disable HTTP/2 on every listener (`http2 off;` on 1.25.1 and later; remove `http2` from `listen` on 1.9.5–1.25.0), which covers only CVE-2026-123007 and CVE-2026-123633 and stops gRPC over HTTP/2. HTTP/3, resolver/mirror/SSI and the mail proxy need their own review. WAF rules do not cover HTTP/2 frame handling.
+- **Investigation**: access logs do not record `WINDOW_UPDATE` / `RST_STREAM` frames. Look at error logs (repeated worker crashes), unexpected child processes of nginx workers, and network captures. On a confirmed compromise, rotate secrets the worker could read and check the host, since the chain reaches root.
+- **Kernel**: the Linux SCTP privilege escalation has no CVE or patch yet (Xint: "in the coming weeks"). Patching nginx closes the way in; track the kernel fix separately. It is its own entry (`--id nginx2root-sctp`, no CVE, flagged "fix not released") so it stays when the nginx CVEs reach a KISA notice; add its CVE to `cves` once one is assigned. If SCTP is unused, blocking the module (`lsmod | grep sctp`; `install sctp /bin/false` in `/etc/modprobe.d/`) is general hardening, not a confirmed mitigation for this bug.
+- Sources: CVE records on cve.org (read 2026-11-19), F5 K000163925 / K000163926 / K000163927 / K000163928 / K000163931, [nginx2root.com](https://nginx2root.com/), nginx.org download server.
+
 ## Source data quality notes (reviewed 2026-11-14)
 
 - **Misplaced attachment**: the PDF in folder `2026/07/2026-07-21_2500_…` is the same file (matching SHA-256) as the one in `2026/09/2026-09-29_2551_…`. Notice #2500's real attachment was not collected, and its attachment name in `목록.csv` is wrong too.
@@ -131,4 +166,5 @@ KISA's Oracle notices quote only part of Oracle's release. Example: #2640 (2026-
    # different source location: python scripts/build_kisa_advisories.py --source "<folder with 목록.csv>"
    ```
 3. If new 보안 조치·강화 권고 / 취약점 조치 권고 / 주의 권고 notices appeared, add TR items to `threat-response.md` (EN/KO).
+   If `python scripts/advisory_lookup.py --doctor` now lists a retired pre-notice entry, delete it from both `pre-notice.json` copies.
 4. Validate with `node scripts/validate-content.mjs`.
