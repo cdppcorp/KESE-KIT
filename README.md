@@ -227,15 +227,15 @@ KESE(KISA Enhanced Security Evaluation Kit)는 KISA(한국인터넷진흥원) �
 
 대상: SW 개발기업, 공공조달 납품사, 정부과제 개발자, 바이브코딩 개발자
 
-#### 8. KISA 보안공지 대응 — 519건 (2025-01 ~ 2026-11)
+#### 8. KISA 보안공지 대응 — 526건 (2025-01 ~ 2026-11)
 
 KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 시스템에 해당하는 공지가 있는지** 판정합니다.
 
 | 모드 | 내용 | 근거 데이터 |
 |------|------|------------|
-| 영향도 점검 | 설치 제품·버전·의존성 ↔ 공지의 영향받는 버전/해결 버전 대조, 긴급/높음/보통 우선순위 | 보안 업데이트 권고 428건, 버전 행 12,256행 |
-| 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 519건 |
-| CVE 조회 | 특정 CVE의 KISA 공지 포함 여부와 해결 버전 | 고유 CVE 8,833개 |
+| 영향도 점검 | 설치 제품·버전·의존성 ↔ 공지의 영향받는 버전/해결 버전 대조, 긴급/높음/보통 우선순위 | 보안 업데이트 권고 435건, 버전 행 12,660행 |
+| 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 526건 |
+| CVE 조회 | 특정 CVE의 KISA 공지 포함 여부와 해결 버전 | 고유 CVE 8,894개 |
 | 위협 대응 점검 | BPFDoor, 리눅스 커널 루트킷, 랜섬웨어, 자격증명 노출, 개발 공급망 공격, 제품 사용 주의(EoL) — TR-01~TR-43 (43항목) + 피싱·스미싱 동향 35건 | 비패치성 공지 91건 (보안 조치·강화 18, 취약점 조치 7, 주의 63, 기타 3) |
 
 **조회 도구**: `scripts/advisory_lookup.py` (Python 표준 라이브러리, 제품/CVE/벤더/기간/유형 필터)
@@ -267,7 +267,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 
 | 15 | **SW 공급망 보안 가이드라인 (요약본)** | 국정원 / 과기정통부 / KISA | 2024 | 22 | [PDF](문서/240513-(요약본)_SW_공급망_보안_가이드라인.pdf) / [MD](문서/SW_공급망_보안_가이드라인_요약본.md) |
 | 16 | **SW 공급망 보안 가이드라인 (전체본)** | 국정원 / 과기정통부 / KISA | 2024 | 100 | [PDF](문서/240525-(전체본)_SW_공급망_보안_가이드라인_최종%20수정본.pdf) / [MD](문서/SW_공급망_보안_가이드라인_전체본.md) |
 | 17 | **인공지능기본법 교안** (11장 60개 절, 실무 해설) | 과기정통부·한국AI소프트웨어산업협회 발행 / KESE-KIT 편집 | 2026 | - | [MD](문서/AI_기본법_교안/) |
-| 18 | **KISA 보호나라 보안공지** (519건, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - | [목록·본문](문서/KISA_보안공지_2025-2026/) |
+| 18 | **KISA 보호나라 보안공지** (526건, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - | [목록·본문](문서/KISA_보안공지_2025-2026/) |
 
 ### v2.x에서 마이그레이션
 
@@ -401,15 +401,15 @@ Korean versions are also available:
 **Administrative Assessment**: A-1~A-127 (127 items, 14 domains)
 **Physical Assessment**: P-1~P-18 (18 items)
 
-#### 8. KISA Security Notices — 519 notices (2025-01 ~ 2026-11)
+#### 8. KISA Security Notices — 526 notices (2025-01 ~ 2026-11)
 
 Structured KISA Boho-nara (KrCERT/CC) security notices for answering **"does any KISA notice affect our systems?"**
 
 | Mode | What it does | Data |
 |------|-------------|------|
-| Exposure check | Installed products/versions/dependencies vs. affected/fixed versions, Critical/High/Medium priority | 428 security update advisories, 12,256 version rows |
-| Notice briefing | Recent notices by period, vendor, or type with action priorities | All 519 notices |
-| CVE lookup | Whether a CVE is in a KISA notice and its fixed version | 8,833 unique CVEs |
+| Exposure check | Installed products/versions/dependencies vs. affected/fixed versions, Critical/High/Medium priority | 435 security update advisories, 12,660 version rows |
+| Notice briefing | Recent notices by period, vendor, or type with action priorities | All 526 notices |
+| CVE lookup | Whether a CVE is in a KISA notice and its fixed version | 8,894 unique CVEs |
 | Threat response | BPFDoor, Linux kernel rootkits, ransomware, exposed credentials, dev supply-chain attacks, product-use cautions (EoL) — TR-01~TR-43 (43 items) + 35 phishing/smishing trend rows | 91 non-patch notices (18 hardening, 7 mitigation, 63 caution, 3 other) |
 
 **Lookup tool**: `scripts/advisory_lookup.py` (Python standard library; product/CVE/vendor/period/type filters)
@@ -445,7 +445,7 @@ KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provid
 | 8 | **Space Security Explanation Guide** | MSIT / KISA | 2025 | 218 |
 | 9 | **SW Supply Chain Security Guideline (Summary)** | NIS / MSIT / KISA | 2024 | 22 |
 | 10 | **SW Supply Chain Security Guideline (Full)** | NIS / MSIT / KISA | 2024 | 100 |
-| 11 | **KISA Boho-nara Security Notices** (519 notices, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - |
+| 11 | **KISA Boho-nara Security Notices** (526 notices, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - |
 
 ---
 
@@ -524,13 +524,13 @@ KESE-KIT/
 ### v3.5.0 (2026-11-14)
 
 **새 스킬 추가: KISA 보안공지 대응 (`/kesekit-advisory`, `/kesekit-advisory-ko`)**
-- 출처: KISA 보호나라 보안공지 519건 (2025-01-06 ~ 2026-11-13) — 보안 업데이트 권고 428, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
+- 출처: KISA 보호나라 보안공지 526건 (2025-01-06 ~ 2026-11-18) — 보안 업데이트 권고 435, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
 - 4개 모드: 영향도 점검(영향받는/해결 버전 대조), 공지 브리핑, CVE 조회, 위협 대응 점검
 - 위협 대응 점검: 비패치성 공지 91건 → TR-01~TR-43 (서버 침해·웹·개발 공급망·네트워크 장비·EoL 제품·단말/표적형) + 피싱·스미싱 동향 35건, 점검 명령은 원문 그대로 수록
-- `scripts/build_kisa_advisories.py`: 공지 HTML 표(rowspan/colspan) 파싱 → `advisories.json`(버전 행 12,256행, 고유 CVE 8,833개), 벤더 인덱스(163개 벤더), 통계 자동 갱신
+- `scripts/build_kisa_advisories.py`: 공지 HTML 표(rowspan/colspan) 파싱 → `advisories.json`(버전 행 12,660행, 고유 CVE 8,894개), 벤더 인덱스(164개 벤더), 통계 자동 갱신
 - `advisory_lookup.py`: 제품(영문 단어 경계·한영 별칭)/CVE/벤더/기간/유형 조회, Markdown·JSON 출력
 - 공지별 참고사이트(`[n] URL`, 벤더 권고·NVD 등) 2,005개와 첨부 파일명 수록, 저장소에 원본이 있으면 첨부 열람용 로컬 경로 표시
-- CVE 위험 지표: `scripts/fetch_cve_enrichment.py`로 CISA KEV(실제 악용, 248개 CVE)·FIRST EPSS(8,815개) 반영, NVD CVSS·CWE는 API 키로 선택 수집 → 조회 결과의 위험 지표·`--kev`·`--sort risk`, KEV/EPSS 기반 우선순위
+- CVE 위험 지표: `scripts/fetch_cve_enrichment.py`로 CISA KEV(실제 악용, 249개 CVE)·FIRST EPSS(8,870개) 반영, NVD CVSS·CWE는 API 키로 선택 수집 → 조회 결과의 위험 지표·`--kev`·`--sort risk`, KEV/EPSS 기반 우선순위
 - 진단 시 벤더 권고 실시간 확인 단계: 취약·확인 필요·해결 버전 미배포 공지는 참고사이트의 벤더 권고를 열어 최신 해결 버전을 확인하고 확인 일시와 함께 기록
 - start/check/fix 스킬(EN/KO)에 KISA 보안공지 분기 연결, CII 패치 관리 항목의 근거로 활용
 - CI: advisory 데이터 스키마·EN/KO 동일성·통계 일치 검증, Python 단위 테스트 추가

@@ -57,6 +57,7 @@ ALIAS_GROUPS = [
     ("apache", "아파치"),
     ("fortinet", "포티넷"),
     ("oracle", "오라클"),
+    ("java", "자바"),
     ("cisco", "시스코"),
     ("nvidia", "엔비디아"),
     ("adobe", "어도비"),
