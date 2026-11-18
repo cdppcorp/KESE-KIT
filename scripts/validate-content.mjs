@@ -567,7 +567,28 @@ const setupFormMarkers = [
   'id="pick-folder-btn"',
   'id="projectPath"',
   'id="gitRemote"',
+  'id="fs-reportFormat"',
+  'id="report-status"',
 ];
+// Enums rendered without a free-text input or resolved-value preview.
+const enumsWithoutFreeText = ["role", "reportFormat"];
+const reportToolKeys = ["builtin", "unknown", "ready", "pdfNone", "pptxNone", "hwpxKordoc", "hwpxMcp", "hwpxNpx", "hwpxNone"];
+// Every skill that writes report files reads the shared report-output rules from its own references.
+const reportOutputSkills = {
+  skills: ["kesekit-start", "kesekit-check", "kesekit-fix", "kesekit-guide", "kesekit-advisory"],
+  "skills-ko": ["kesekit-start-ko", "kesekit-check-ko", "kesekit-fix-ko", "kesekit-guide-ko", "kesekit-advisory-ko"],
+};
+const reportOutputMarkers = ["`output.reportFormat`", "report.html", "`templates/report/report.html`", "--print-to-pdf", "kordoc generate", "--preset 보고서", "pandoc", "`npx -y kordoc`"];
+// The HTML report template: same layout in both languages, a fixed finding structure, print-ready, no scripts.
+const reportTemplateMarkers = {
+  skills: ["## Report Structure", "## Writing a Finding"],
+  "skills-ko": ["## 보고서 구성", "## 발견 사항 쓰는 법"],
+};
+const reportTemplateFields = {
+  skills: ["<dt>Current state</dt>", "<dt>Risk</dt>", "<dt>Example</dt>", "<dt>Remediation</dt>"],
+  "skills-ko": ["<dt>현황</dt>", "<dt>문제점</dt>", "<dt>예시</dt>", "<dt>조치 방안</dt>"],
+};
+const reportTemplateCommon = ['class="finding"', 'class="cover"', 'class="toc"', "@media print", "@page"];
 const setupScriptMarkers = ["KESEKIT_PROFILE_INPUT v1", "END_KESEKIT_PROFILE_INPUT", "showDirectoryPicker", "environmentSource"];
 const envKeys = ["aiLibraries", "cloudClis", "containers", "databases", "frameworks", "languages", "services", "webServers"];
 const setupSchemaFields = [
@@ -577,12 +598,14 @@ const setupSchemaFields = [
   "`project.fingerprint`",
   "`assessment.source`",
   "`assessment.custom`",
+  "`output.reportFormat`",
 ];
 const expectedEnumKeys = [
   "ciiTargets",
   "domains",
   "organizationType",
   "purpose",
+  "reportFormat",
   "role",
   "scope",
   "ztTargetMaturity",
@@ -595,6 +618,7 @@ const enumFields = {
   ztTargetMaturity: "assessment.ztTargetMaturity",
   organizationType: "assessment.organizationType",
   role: "system.role",
+  reportFormat: "output.reportFormat",
 };
 const gateHeadings = { skills: "## Step 0: Setup Check", "skills-ko": "## 0단계: 초기 설정 확인" };
 const STALE_DAYS = 14;
@@ -686,8 +710,20 @@ check("setup-i18n-covers-form", () => {
   ]);
   for (const [key, values] of Object.entries(readSetupEnums())) {
     values.forEach((value) => keys.add(`enum.${key}.${value}`));
-    if (key !== "role") keys.add(`customPlaceholder.${key}`).add(`legend.${key}`);
+    if (key !== "role") keys.add(`legend.${key}`);
+    if (!enumsWithoutFreeText.includes(key)) keys.add(`customPlaceholder.${key}`);
+    if (key === "reportFormat") {
+      const builtinMatch = script.match(/const BUILTIN_FORMATS = (\[[^\]]*\]);/);
+      const builtin = builtinMatch ? JSON.parse(builtinMatch[1]) : [];
+      assert(builtinMatch !== null, "setup-form.js must declare BUILTIN_FORMATS");
+      values.forEach((value) => {
+        keys.add(`reportDesc.${value}`);
+        if (!builtin.includes(value)) keys.add(`reportTool.${value}None`);
+      });
+    }
   }
+  reportToolKeys.forEach((key) => keys.add(`reportTool.${key}`));
+  keys.add("reportDefault");
   envKeys.forEach((key) => keys.add(`env.${key}`));
   ["MISSING", "INCOMPLETE", "STALE", "CHANGED", "MANUAL"].forEach((code) => keys.add(`reason.${code}`));
 
@@ -723,7 +759,7 @@ check("setup-form-contract", () => {
   assertObjectEqual(Object.keys(enums).sort(), expectedEnumKeys, "setup-form.html enum keys");
   for (const [key, values] of Object.entries(enums)) {
     assert(Array.isArray(values) && values.length > 0, `setup-form.html enum ${key} must be a non-empty array`);
-    if (key !== "role") {
+    if (!enumsWithoutFreeText.includes(key)) {
       assertIncludes(formPath, `id="custom-${key}"`, `the free-text input for ${key}`);
       assertIncludes(formPath, `id="preview-${key}"`, `the resolved-value preview for ${key}`);
     }
@@ -788,6 +824,71 @@ check("skills-run-setup-gate", () => {
   }
 });
 
+check("report-output-rules", () => {
+  for (const skillRoot of skillRoots) {
+    const [baselineDir, ...others] = reportOutputSkills[skillRoot];
+    const baselinePath = path.join(rootDir, skillRoot, baselineDir, "references", "report-output.md");
+    assert(fs.existsSync(baselinePath), `${rel(baselinePath)} does not exist`);
+    if (!fs.existsSync(baselinePath)) continue;
+
+    const baseline = read(baselinePath);
+    for (const marker of reportOutputMarkers) {
+      assertIncludes(baselinePath, marker, `the report rule marker ${marker}`);
+    }
+    for (const dir of others) {
+      const candidatePath = path.join(rootDir, skillRoot, dir, "references", "report-output.md");
+      assert(fs.existsSync(candidatePath) && read(candidatePath) === baseline, `${rel(candidatePath)} must exist and match ${rel(baselinePath)}`);
+    }
+    for (const dir of reportOutputSkills[skillRoot]) {
+      const skillFile = path.join(rootDir, skillRoot, dir, "SKILL.md");
+      const content = read(skillFile).replaceAll("\r\n", "\n");
+      const gateStart = content.indexOf(gateHeadings[skillRoot]);
+      const gateEnd = gateStart === -1 ? -1 : content.indexOf("\n## ", gateStart + 1);
+      const stepZero = gateStart === -1 ? "" : content.slice(gateStart, gateEnd === -1 ? undefined : gateEnd);
+      assert(stepZero.includes("`output.reportFormat`"), `${rel(skillFile)} Step 0 must apply \`output.reportFormat\``);
+      assert(stepZero.includes("`references/report-output.md`"), `${rel(skillFile)} Step 0 must point to \`references/report-output.md\``);
+    }
+    assertIncludes(setupPath(skillRoot, "references", "detection.md"), "`reportTools`", "the report tool detection (`reportTools`)");
+    for (const marker of reportTemplateMarkers[skillRoot]) {
+      assertIncludes(baselinePath, marker, `the report rule section ${marker}`);
+    }
+  }
+});
+
+function reportTemplatePath(skillRoot, dir) {
+  return path.join(rootDir, skillRoot, dir, "templates", "report", "report.html");
+}
+
+check("report-template", () => {
+  const styles = {};
+  for (const skillRoot of skillRoots) {
+    const [baselineDir, ...others] = reportOutputSkills[skillRoot];
+    const baselinePath = reportTemplatePath(skillRoot, baselineDir);
+    assert(fs.existsSync(baselinePath), `${rel(baselinePath)} does not exist`);
+    if (!fs.existsSync(baselinePath)) continue;
+
+    const baseline = read(baselinePath);
+    const markup = baseline.replace(/<!--[\s\S]*?-->/g, "");
+    for (const marker of [...reportTemplateCommon, ...reportTemplateFields[skillRoot]]) {
+      assertIncludes(baselinePath, marker, `the report template marker ${marker}`);
+    }
+    assert(!/<script\b|\son[a-z]+\s*=|javascript:/i.test(markup), `${rel(baselinePath)} must not contain scripts, event handlers, or javascript: URLs`);
+    assert(
+      !/(?:href|src|action|srcset)\s*=\s*["']?(?:[a-z][a-z0-9+.-]*:)?\/\/|@import|url\(\s*["']?(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(markup),
+      `${rel(baselinePath)} must not load external resources`,
+    );
+    styles[skillRoot] = (markup.match(/<style>[\s\S]*?<\/style>/) || [""])[0];
+
+    for (const dir of others) {
+      const candidatePath = reportTemplatePath(skillRoot, dir);
+      assert(fs.existsSync(candidatePath) && read(candidatePath) === baseline, `${rel(candidatePath)} must exist and match ${rel(baselinePath)}`);
+    }
+  }
+  if (styles.skills && styles["skills-ko"]) {
+    assert(styles.skills === styles["skills-ko"], "the English and Korean report templates must share the same <style>");
+  }
+});
+
 check("setup-skill-registered", () => {
   const marketplace = JSON.parse(read(path.join(rootDir, ".claude-plugin", "marketplace.json")));
   const skills = marketplace.plugins.flatMap((plugin) => plugin.skills ?? []);
@@ -813,6 +914,7 @@ const advisoryRequiredFiles = [
   "scripts/advisory_lookup.py",
   "references/kisa-advisories/overview.md",
   "references/kisa-advisories/advisories.json",
+  "references/kisa-advisories/pre-notice.json",
   "references/kisa-advisories/vendor-index.md",
   "references/kisa-advisories/threat-response.md",
 ];
@@ -839,7 +941,8 @@ check("advisory-skill-files", () => {
 
 check("advisory-data-parity", () => {
   const [en, ko] = advisorySkills;
-  for (const file of ["scripts/advisory_lookup.py", "references/kisa-advisories/advisories.json"]) {
+  for (const file of ["scripts/advisory_lookup.py", "references/kisa-advisories/advisories.json",
+    "references/kisa-advisories/pre-notice.json"]) {
     assert(
       read(advisoryPath(en, file)) === read(advisoryPath(ko, file)),
       `${ko.root}/${ko.dir}/${file} diverged from ${en.root}/${en.dir}/${file}`,
@@ -887,6 +990,52 @@ check("advisory-data-schema", () => {
       match && Number(match[1]) === total,
       `${skill.root}/${skill.dir} overview stats do not match ${total} advisories (rerun scripts/build_kisa_advisories.py)`,
     );
+  }
+});
+
+check("advisory-pre-notice-schema", () => {
+  const filePath = advisoryPath(advisorySkills[0], "references/kisa-advisories/pre-notice.json");
+  if (!fs.existsSync(filePath)) return; // reported by advisory-skill-files
+  const data = JSON.parse(read(filePath));
+  assert(data.schema === 1 && Array.isArray(data.advisories), "pre-notice.json needs schema 1 and an advisories array");
+  assert(/^\d{4}-\d{2}-\d{2}$/.test(data.checked ?? ""), `pre-notice.json has invalid checked date ${data.checked}`);
+  const cveId = /^CVE-\d{4}-\d{4,7}$/;
+  const seenNtt = new Set();
+  for (const entry of Array.isArray(data.advisories) ? data.advisories : []) {
+    const label = `pre-notice entry ${entry?.ntt}`;
+    const badStrings = advisoryStringKeys.filter((key) => typeof entry?.[key] !== "string");
+    const badArrays = advisoryArrayKeys.filter((key) => !Array.isArray(entry?.[key]));
+    assert(badStrings.length === 0, `${label} needs string field(s): ${badStrings.join(", ")}`);
+    assert(badArrays.length === 0, `${label} needs array field(s): ${badArrays.join(", ")}`);
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(entry?.date ?? ""), `${label} has invalid date ${entry?.date}`);
+    // a letter keeps it apart from numeric KISA nttIds, which --id also accepts
+    assert(/^(?=.*[a-z])[a-z0-9-]+$/.test(entry?.ntt ?? ""), `${label} needs a lowercase id with a letter in ntt`);
+    assert(!seenNtt.has(entry?.ntt), `duplicate pre-notice id ${entry?.ntt}`);
+    seenNtt.add(entry?.ntt);
+    const urls = [entry?.url, ...(Array.isArray(entry?.refs) ? entry.refs.map((ref) => ref?.url) : [])];
+    const badUrls = urls.filter((url) => !/^https:\/\/\S+$/.test(url ?? ""));
+    assert(badUrls.length === 0, `${label} has malformed URL(s): ${badUrls.join(", ")}`);
+    const cves = Array.isArray(entry?.cves) ? entry.cves : [];
+    const badCves = cves.filter((cve) => !cveId.test(cve ?? ""));
+    assert(badCves.length === 0, `${label} has malformed CVE id(s): ${badCves.join(", ")}`);
+    for (const row of Array.isArray(entry?.affected) ? entry.affected : []) {
+      const values = Object.values(row ?? {});
+      assert(values.every((value) => typeof value === "string"), `${label} has a row with non-string values`);
+      const rowCves = typeof row?.cve === "string" ? row.cve.match(/CVE-\d{4}-\d{4,7}/g) ?? [] : [];
+      const unknown = rowCves.filter((cve) => !cves.includes(cve));
+      assert(unknown.length === 0, `${label} rows mention CVE(s) missing from cves: ${unknown.join(", ")}`);
+    }
+  }
+  const cveMeta = data.cve_meta ?? {};
+  assert(typeof cveMeta === "object" && !Array.isArray(cveMeta), "pre-notice.json cve_meta must be an object");
+  const referenced = new Set(data.advisories.flatMap((entry) => (Array.isArray(entry?.cves) ? entry.cves : [])));
+  const inRange = (value, upper) => value === undefined || (typeof value === "number" && value >= 0 && value <= upper);
+  for (const [cve, meta] of Object.entries(Array.isArray(cveMeta) ? {} : cveMeta)) {
+    assert(cveId.test(cve), `pre-notice.json cve_meta key ${cve} is not an upper-case CVE id`);
+    assert(referenced.has(cve), `pre-notice.json cve_meta lists ${cve}, which no entry references`);
+    assert(inRange(meta?.epss, 1) && inRange(meta?.pct, 1) && inRange(meta?.cvss, 10),
+      `pre-notice.json cve_meta ${cve} has an out-of-range score`);
+    assert(meta?.kev === undefined || typeof meta.kev === "string", `pre-notice.json cve_meta ${cve} kev must be a date string`);
   }
 });
 

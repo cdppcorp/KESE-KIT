@@ -76,6 +76,9 @@
       "organizationType": ""
     }
   },
+  "output": {
+    "reportFormat": "html"
+  },
   "notes": {
     "common": "",
     "start": "",
@@ -97,6 +100,7 @@
 | `environmentSource` | 환경 목록별 출처: `auto`(자동 분석, 저장할 때 Claude가 `project.path`에서 다시 탐지) 또는 `manual`(사용자가 직접 고름) |
 | `assessment.source` | 점검 설정 값의 출처: `selected`(사용자가 고름), `custom`(직접 입력을 Claude가 해석), `recommended`(비워 둬서 추천값 사용), `null`(해당 없음) |
 | `assessment.custom` | 항목별 직접 입력 원문. 선택값이 있어도 함께 보관하며, 스킬이 사용자 설명으로 참고합니다 |
+| `output.reportFormat` | 결과 보고서를 받을 형식. 없으면 `html`로 봅니다. 형식별로 만드는 방법은 보고서를 쓰는 각 스킬의 `references/report-output.md`에 있습니다 |
 
 ## 선택지 값
 
@@ -111,6 +115,7 @@
 | `assessment.ztTargetMaturity` | `traditional`, `initial`, `advanced`, `optimal` |
 | `assessment.organizationType` | `public`, `cii-operator`, `enterprise`, `startup`, `individual`, `other` |
 | `system.role` | `dev-pc`, `server`, `vm`, `container`, `other` |
+| `output.reportFormat` | `html`, `pdf`, `hwpx`, `pptx`, `md` |
 | `system.os` (탐지값) | `windows`, `linux`, `macos`, `other` |
 
 - `assessment.ciiTargets` 값은 각 스킬의 `templates/cii/<값>.md` 파일 이름과 같습니다.
@@ -130,7 +135,7 @@
 - `assessment.domains`에 `zero-trust`가 있으면 `assessment.ztTargetMaturity`
 - 선택지 값 표에 없는 값이 들어 있어도 결측으로 봅니다
 
-`assessment.organizationType`은 선택 사항입니다. 사용자가 비워 둔 항목은 저장 전에 추천값으로 채우고, 추천값도 비지 않게 만들기 때문에(`references/detection.md`의 "추천 분야") 정상적으로 저장된 프로필은 결측이 생기지 않습니다.
+`assessment.organizationType`과 `output.reportFormat`은 선택 사항입니다(`output.reportFormat`이 없으면 `html`). 사용자가 비워 둔 항목은 저장 전에 추천값으로 채우고, 추천값도 비지 않게 만들기 때문에(`references/detection.md`의 "추천 분야") 정상적으로 저장된 프로필은 결측이 생기지 않습니다.
 
 ## 진단 규칙
 
@@ -165,7 +170,7 @@
 
 ```
 KESEKIT_PROFILE_INPUT v1
-{ "meta": {…}, "project": {…}, "system": {…}, "environment": {…}, "environmentSource": {…}, "assessment": {…}, "notes": {…} }
+{ "meta": {…}, "project": {…}, "system": {…}, "environment": {…}, "environmentSource": {…}, "assessment": {…}, "output": {…}, "notes": {…} }
 END_KESEKIT_PROFILE_INPUT
 ```
 
@@ -180,6 +185,7 @@ END_KESEKIT_PROFILE_INPUT
 | `environment` | `languages`, `frameworks`, `services`, `webServers`, `databases`, `containers`, `cloudClis`, `aiLibraries` |
 | `environmentSource` | 위 8개 목록 각각의 `auto` 또는 `manual` |
 | `assessment` | `purpose`, `scope`, `domains`, `ciiTargets`, `ztTargetMaturity`, `organizationType`, `source`, `custom` |
+| `output` | `reportFormat`: `html`(기본), `pdf`, `hwpx`, `pptx`, `md` 중 하나 |
 | `notes` | `common`, `start`, `check`, `fix`, `guide`, `advisory` |
 
 입력 화면은 점검 설정 항목마다 **선택한 값 → 직접 입력 → 추천값** 순서로 값을 정합니다. 직접 입력만 있는 항목은 값이 `null`이고 `source`가 `custom`입니다. 이 값은 Claude가 "입력값 확정"에서 채웁니다.
@@ -218,6 +224,7 @@ END_KESEKIT_PROFILE_INPUT
 | `system.os`, `system.arch`, `system.hostname`, `system.remoteSession` | 이번 탐지값 (`os`는 실패해도 `other`) |
 | `system.osVersion`, `system.cpu`, `system.memoryGb`, `system.role`, `system.roleEdited` | 입력값 |
 | `environment`, `environmentSource` | "입력값 확정" 4번을 거친 값 |
+| `output.reportFormat` | 입력값 (없으면 `html`) |
 | `notes` | 입력값 |
 | `assessment` | "입력값 확정"을 거친 값과 `source`, `custom` |
 
@@ -239,6 +246,7 @@ Git 원격 주소: https://github.com/acme/shop-api.git
 CII 대상 (unix, windows, web-service, security-equip, network, control-system, pc, database, mobile, webapp, virtualization, cloud, admin, physical) [추천: unix, web-service]:
 제로트러스트 목표 성숙도 (traditional | initial | advanced | optimal) [추천: initial]:
 조직 유형 (public | cii-operator | enterprise | startup | individual | other) [선택 사항]:
+보고서 형식 (html | pdf | hwpx | pptx | md) [기본: html]:
 OS 버전: Ubuntu 22.04.4 LTS
 CPU: Intel(R) Xeon(R) Silver 4310
 메모리(GB): 64
@@ -254,6 +262,6 @@ CPU: Intel(R) Xeon(R) Silver 4310
 받은 내용은 다음처럼 처리합니다.
 
 1. **경로가 바뀌었으면**: 경로 안전 규칙을 확인하고 폴더가 있는지 본 뒤, 그 경로에서 프로젝트를 다시 탐지하고 추천값을 다시 계산합니다. 사용자가 적은 답을 유지한 채 새 탐지값으로 템플릿을 다시 출력하고, 다시 붙여넣어 달라고 합니다.
-2. 각 항목은 선택지 값이면 `selected`, 자유 서술이면 `custom`(원문은 `assessment.custom`에 보관), 비어 있으면 그 자리에 추천값을 넣고 `recommended`로 둡니다. 장비 역할을 비워 두면 탐지값을 쓰고 `roleEdited`는 `false`입니다. Git 주소가 탐지값과 다르면 `gitRemoteEdited`는 `true`입니다.
+2. 각 항목은 선택지 값이면 `selected`, 자유 서술이면 `custom`(원문은 `assessment.custom`에 보관), 비어 있으면 그 자리에 추천값을 넣고 `recommended`로 둡니다. 장비 역할을 비워 두면 탐지값을 쓰고 `roleEdited`는 `false`입니다. Git 주소가 탐지값과 다르면 `gitRemoteEdited`는 `true`입니다. 보고서 형식은 선택지 값만 저장합니다. 비워 두면 `html`이고, "PDF"·"한글"·"PPT"·"마크다운" 같은 표현은 해당 값(`pdf`·`hwpx`·`pptx`·`md`)으로 바꿉니다. 바꿀 수 없으면 `html`로 두고 요약에서 알립니다.
 3. `environmentSource`는 모두 `auto`로 둡니다.
 4. "붙여넣기 블록 검증" 4~8번과 "입력값 확정" 2~5번을 적용합니다.

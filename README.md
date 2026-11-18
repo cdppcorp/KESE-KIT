@@ -54,7 +54,7 @@ Claude Code 프롬프트에 슬래시 명령어를 입력합니다:
 /kesekit-advisory     KISA security notice exposure check
 ```
 
-> **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 점검할 프로젝트는 [프로젝트 변경] → [폴더 선택]으로 Windows 폴더 선택 창에서 고를 수 있고, Git 원격 주소도 바꿀 수 있습니다. 언어·프레임워크 같은 환경 목록은 기본이 '자동 분석'이며 드롭다운에서 여러 개를 직접 고를 수도 있습니다. 점검 설정은 고르기 어려우면 비워 두면 추천값으로 진행하고, 선택지에 없는 내용은 '직접 입력'에 적으면 Claude가 해석해 반영합니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
+> **초기 설정은 자동으로 먼저 실행됩니다.** 어떤 명령을 실행하든 `.kesekit/profile.json`이 없거나, 필수 항목이 비었거나, 마지막 설정 후 14일이 지났거나, 프로젝트·환경이 바뀌었으면 setup이 먼저 실행됩니다. 이때 PC를 읽기 전용으로 탐지하고 브라우저에 입력 화면을 엽니다. 입력 화면에서 [복사] 후 Claude Code에 붙여넣으면 프로필이 저장되고, 이후 스킬은 같은 질문을 다시 하지 않습니다. 점검할 프로젝트는 [프로젝트 변경] → [폴더 선택]으로 Windows 폴더 선택 창에서 고를 수 있고, Git 원격 주소도 바꿀 수 있습니다. 언어·프레임워크 같은 환경 목록은 기본이 '자동 분석'이며 드롭다운에서 여러 개를 직접 고를 수도 있습니다. 보고서는 HTML(기본)·PDF·한글(HWPX, kordoc 필요)·PPT·Markdown 중에서 고를 수 있고, 어떤 형식이든 표지·목차·발견 사항별 현황/문제점/예시/조치를 갖춘 공식 보고서 구성으로 나옵니다. 점검 설정은 고르기 어려우면 비워 두면 추천값으로 진행하고, 선택지에 없는 내용은 '직접 입력'에 적으면 Claude가 해석해 반영합니다. 브라우저가 없는 SSH 환경에서는 터미널 입력 템플릿이 대신 나옵니다.
 
 > **"보안점검해줘"라고만 입력해도 됩니다.** 입력에 "보안점검"(또는 "보안 점검")이 들어가면 플러그인 훅이 `/kesekit-start-ko`부터 실행하도록 Claude에게 알려 줍니다(배포 전 점검·수정·KISA 공지처럼 구체적인 요청이면 해당 스킬로 연결). 훅은 POSIX `sh`로 동작하며 Windows에서는 Claude Code가 쓰는 Git Bash에서 실행됩니다. 끄려면 `/hooks`에서 kesekit 훅을 비활성화하세요.
 
@@ -227,15 +227,16 @@ KESE(KISA Enhanced Security Evaluation Kit)는 KISA(한국인터넷진흥원) �
 
 대상: SW 개발기업, 공공조달 납품사, 정부과제 개발자, 바이브코딩 개발자
 
-#### 8. KISA 보안공지 대응 — 519건 (2025-01 ~ 2026-11)
+#### 8. KISA 보안공지 대응 — 526건 (2025-01 ~ 2026-11)
 
 KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 시스템에 해당하는 공지가 있는지** 판정합니다.
 
 | 모드 | 내용 | 근거 데이터 |
 |------|------|------------|
-| 영향도 점검 | 설치 제품·버전·의존성 ↔ 공지의 영향받는 버전/해결 버전 대조, 긴급/높음/보통 우선순위 | 보안 업데이트 권고 428건, 버전 행 12,256행 |
-| 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 519건 |
-| CVE 조회 | 특정 CVE의 KISA 공지 포함 여부와 해결 버전 | 고유 CVE 8,833개 |
+| 영향도 점검 | 설치 제품·버전·의존성 ↔ 공지의 영향받는 버전/해결 버전 대조, 긴급/높음/보통 우선순위 | 보안 업데이트 권고 435건, 버전 행 12,660행 |
+| 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 526건 |
+| CVE 조회 | 특정 CVE의 KISA 공지 포함 여부와 해결 버전 | 고유 CVE 8,894개 |
+| KISA 공지 전 취약점 | CVE·벤더 권고로 먼저 공개된 취약점을 "공지 전 항목"으로 함께 조회(예: "NGINX2Root 점검해줘"), KISA 공지가 나오면 공지 기준으로 자동 전환 | 2건 — NGINX2Root nginx CVE 5건, 연계 리눅스 커널 취약점 (2026-11-19 확인) |
 | 위협 대응 점검 | BPFDoor, 리눅스 커널 루트킷, 랜섬웨어, 자격증명 노출, 개발 공급망 공격, 제품 사용 주의(EoL) — TR-01~TR-43 (43항목) + 피싱·스미싱 동향 35건 | 비패치성 공지 91건 (보안 조치·강화 18, 취약점 조치 7, 주의 63, 기타 3) |
 
 **조회 도구**: `scripts/advisory_lookup.py` (Python 표준 라이브러리, 제품/CVE/벤더/기간/유형 필터)
@@ -267,7 +268,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 
 | 15 | **SW 공급망 보안 가이드라인 (요약본)** | 국정원 / 과기정통부 / KISA | 2024 | 22 | [PDF](문서/240513-(요약본)_SW_공급망_보안_가이드라인.pdf) / [MD](문서/SW_공급망_보안_가이드라인_요약본.md) |
 | 16 | **SW 공급망 보안 가이드라인 (전체본)** | 국정원 / 과기정통부 / KISA | 2024 | 100 | [PDF](문서/240525-(전체본)_SW_공급망_보안_가이드라인_최종%20수정본.pdf) / [MD](문서/SW_공급망_보안_가이드라인_전체본.md) |
 | 17 | **인공지능기본법 교안** (11장 60개 절, 실무 해설) | 과기정통부·한국AI소프트웨어산업협회 발행 / KESE-KIT 편집 | 2026 | - | [MD](문서/AI_기본법_교안/) |
-| 18 | **KISA 보호나라 보안공지** (519건, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - | [목록·본문](문서/KISA_보안공지_2025-2026/) |
+| 18 | **KISA 보호나라 보안공지** (526건, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - | [목록·본문](문서/KISA_보안공지_2025-2026/) |
 
 ### v2.x에서 마이그레이션
 
@@ -346,7 +347,7 @@ Korean versions are also available:
 /kesekit-advisory-ko  KISA 보안공지 대응
 ```
 
-> **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. [Change project] → [Choose folder] opens the native folder picker, and you can also change the Git remote. Environment lists such as languages and frameworks default to auto-detection; open a dropdown to pick several yourself. Leave hard assessment choices blank to use the suggestions, or describe them in "Your own words" and Claude maps them to the options. Over SSH without a browser, a terminal input template is shown instead.
+> **Setup runs first, automatically.** Whatever command you run, setup runs first if `.kesekit/profile.json` is missing, has empty required fields, is 14 or more days old, or the project or environment changed. It detects the machine read-only and opens an input form in your browser. Press [Copy] and paste into Claude Code to save the profile; later skills stop asking the same questions. [Change project] → [Choose folder] opens the native folder picker, and you can also change the Git remote. Environment lists such as languages and frameworks default to auto-detection; open a dropdown to pick several yourself. Reports come as HTML (default), PDF, HWPX (needs kordoc), PPTX, or Markdown, and every format follows a formal report structure with a cover, contents, and current state / risk / example / remediation for each finding. Leave hard assessment choices blank to use the suggestions, or describe them in "Your own words" and Claude maps them to the options. Over SSH without a browser, a terminal input template is shown instead.
 
 > **Korean shortcut:** typing "보안점검해줘" ("run a security check") — or any prompt containing "보안점검" / "보안 점검" — makes a plugin hook tell Claude to start with `/kesekit-start-ko` (or the matching check/fix/advisory skill for a more specific request). The hook is POSIX `sh` (Git Bash on Windows). Disable it in `/hooks`.
 
@@ -401,15 +402,16 @@ Korean versions are also available:
 **Administrative Assessment**: A-1~A-127 (127 items, 14 domains)
 **Physical Assessment**: P-1~P-18 (18 items)
 
-#### 8. KISA Security Notices — 519 notices (2025-01 ~ 2026-11)
+#### 8. KISA Security Notices — 526 notices (2025-01 ~ 2026-11)
 
 Structured KISA Boho-nara (KrCERT/CC) security notices for answering **"does any KISA notice affect our systems?"**
 
 | Mode | What it does | Data |
 |------|-------------|------|
-| Exposure check | Installed products/versions/dependencies vs. affected/fixed versions, Critical/High/Medium priority | 428 security update advisories, 12,256 version rows |
-| Notice briefing | Recent notices by period, vendor, or type with action priorities | All 519 notices |
-| CVE lookup | Whether a CVE is in a KISA notice and its fixed version | 8,833 unique CVEs |
+| Exposure check | Installed products/versions/dependencies vs. affected/fixed versions, Critical/High/Medium priority | 435 security update advisories, 12,660 version rows |
+| Notice briefing | Recent notices by period, vendor, or type with action priorities | All 526 notices |
+| CVE lookup | Whether a CVE is in a KISA notice and its fixed version | 8,894 unique CVEs |
+| Pre-notice vulnerabilities | Vulnerabilities public in CVE records / vendor advisories before KISA posts them are looked up as "pre-notice entries" (e.g. "check NGINX2Root"); they switch to the KISA notice automatically once it is posted | 2 entries — NGINX2Root's 5 nginx CVEs and the chained Linux kernel bug (checked 2026-11-19) |
 | Threat response | BPFDoor, Linux kernel rootkits, ransomware, exposed credentials, dev supply-chain attacks, product-use cautions (EoL) — TR-01~TR-43 (43 items) + 35 phishing/smishing trend rows | 91 non-patch notices (18 hardening, 7 mitigation, 63 caution, 3 other) |
 
 **Lookup tool**: `scripts/advisory_lookup.py` (Python standard library; product/CVE/vendor/period/type filters)
@@ -445,7 +447,7 @@ KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provid
 | 8 | **Space Security Explanation Guide** | MSIT / KISA | 2025 | 218 |
 | 9 | **SW Supply Chain Security Guideline (Summary)** | NIS / MSIT / KISA | 2024 | 22 |
 | 10 | **SW Supply Chain Security Guideline (Full)** | NIS / MSIT / KISA | 2024 | 100 |
-| 11 | **KISA Boho-nara Security Notices** (519 notices, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - |
+| 11 | **KISA Boho-nara Security Notices** (526 notices, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - |
 
 ---
 
@@ -501,6 +503,29 @@ KESE-KIT/
 
 ## 변경 이력
 
+### v3.8.0 (2026-11-19)
+
+**KISA 공지 #2634~#2640 반영, Java4Shell·NGINX2Root 점검, KISA 공지 전 취약점 조회**
+- KISA 보호나라 보안공지 #2634~#2640 추가(총 526건, 2026-11-18까지). Oracle Java CSPU 2026년 11월(#2640)과, KISA 공지에 빠진 Oracle 제품·CVE 범위를 `overview.md`에 정리
+- "취약점 점검"·"최근 취약점 점검" 입력과 취약점 별칭(Log4Shell, Java4Shell, PHP2Shell, NGINX2Root 등)에도 훅이 반응해 kesekit으로 연결(별칭은 `kesekit-advisory`)
+- Java4Shell → CVE-2026-114938 별칭 매핑. CPU 조건(AVX-512 VBMI)·영향 버전·임시 조치를 `overview.md`에 정리
+- **KISA 공지 전 항목**(`references/kisa-advisories/pre-notice.json`): CVE·벤더 권고로 먼저 공개된 취약점을 KISA 공지와 함께 조회하고 "KISA 공지 전 항목"으로 표시. KISA 공지들에 CVE가 모두 실리면 자동으로 빠지고, 확인일이 30일을 넘으면 `--doctor`가 경고
+- NGINX2Root(nginx CVE 5건 + 연계 Linux SCTP 커널 취약점): 해결 버전 1.31.9(mainline)·1.30.7(stable)·NGINX Plus, nginx 빌드·설정 점검(`nginx -V`/`nginx -T`, 외부 ALPN h2 확인), 업데이트 후 재시작 필요·HTTP/2 끄기의 한계 안내
+- 별칭 매핑을 단방향으로 바꿔 CVE 하나로 검색할 때 같은 그룹의 다른 CVE가 잡히지 않음, `--id` 대소문자 무시
+- 검증기: `pre-notice.json` 존재·한/영 동일·스키마 검사 추가, 테스트 85개
+
+### v3.7.0 (2026-11-14)
+
+**보고서 형식 선택 + 공식 보고서 견본**
+- 초기 설정 화면에 "보고서 형식" 추가: HTML(기본)·PDF·한글(HWPX)·PPT(PPTX)·Markdown. 선택은 `output.reportFormat`에 저장
+- 변환 도구를 탐지해(`reportTools`) 화면에 사용 가능 여부 표시. PDF는 Edge·Chrome 헤드리스 인쇄, HWPX는 kordoc(`kordoc generate --preset 보고서`), PPTX는 pandoc(없으면 python-pptx). 도구가 없으면 HTML로 대체하고 설치 방법 안내
+- kordoc 확인 순서: 설치된 `kordoc` → kordoc MCP → Node.js 20 이상이면 `npx -y kordoc`(실행 전 사용자 동의). 아무것도 자동 설치하지 않음
+- 보고서를 쓰는 5개 스킬(start·check·fix·guide·advisory, 한/영)에 `references/report-output.md`(공통 규칙)와 `templates/report/report.html`(A4 인쇄용 공식 보고서 견본, 스크립트·외부 리소스 없음) 추가
+- 보고서 구성 고정: 표지·목차 → 1. 점검 개요 → 2. 결과 요약(종합 판정·판정 현황·주요 발견 사항) → 3. 세부 결과 → 4. 조치 계획 → 5. 부록
+- 발견 사항마다 **현황(현재 코드·설정 근거) · 문제점(누가·어떤 조건에서·무엇을·피해) · 예시(시나리오와 현재/개선 코드) · 조치 방안 · 확인 필요**를 반드시 작성
+- 결과 Markdown은 형식과 상관없이 함께 남겨 `/kesekit-fix`가 이어서 사용
+- 검증기: 보고서 형식 선택지·문구, 견본의 한/영 동일 스타일·필수 칸·스크립트 없음, 규칙 문서 배치·0단계 연결 검사 추가
+
 ### v3.6.0 (2026-11-14)
 
 **"보안점검해줘" 키워드로 바로 실행 (플러그인 훅)**
@@ -512,13 +537,13 @@ KESE-KIT/
 ### v3.5.0 (2026-11-14)
 
 **새 스킬 추가: KISA 보안공지 대응 (`/kesekit-advisory`, `/kesekit-advisory-ko`)**
-- 출처: KISA 보호나라 보안공지 519건 (2025-01-06 ~ 2026-11-13) — 보안 업데이트 권고 428, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
+- 출처: KISA 보호나라 보안공지 526건 (2025-01-06 ~ 2026-11-18) — 보안 업데이트 권고 435, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
 - 4개 모드: 영향도 점검(영향받는/해결 버전 대조), 공지 브리핑, CVE 조회, 위협 대응 점검
 - 위협 대응 점검: 비패치성 공지 91건 → TR-01~TR-43 (서버 침해·웹·개발 공급망·네트워크 장비·EoL 제품·단말/표적형) + 피싱·스미싱 동향 35건, 점검 명령은 원문 그대로 수록
-- `scripts/build_kisa_advisories.py`: 공지 HTML 표(rowspan/colspan) 파싱 → `advisories.json`(버전 행 12,256행, 고유 CVE 8,833개), 벤더 인덱스(163개 벤더), 통계 자동 갱신
+- `scripts/build_kisa_advisories.py`: 공지 HTML 표(rowspan/colspan) 파싱 → `advisories.json`(버전 행 12,660행, 고유 CVE 8,894개), 벤더 인덱스(164개 벤더), 통계 자동 갱신
 - `advisory_lookup.py`: 제품(영문 단어 경계·한영 별칭)/CVE/벤더/기간/유형 조회, Markdown·JSON 출력
 - 공지별 참고사이트(`[n] URL`, 벤더 권고·NVD 등) 2,005개와 첨부 파일명 수록, 저장소에 원본이 있으면 첨부 열람용 로컬 경로 표시
-- CVE 위험 지표: `scripts/fetch_cve_enrichment.py`로 CISA KEV(실제 악용, 248개 CVE)·FIRST EPSS(8,815개) 반영, NVD CVSS·CWE는 API 키로 선택 수집 → 조회 결과의 위험 지표·`--kev`·`--sort risk`, KEV/EPSS 기반 우선순위
+- CVE 위험 지표: `scripts/fetch_cve_enrichment.py`로 CISA KEV(실제 악용, 249개 CVE)·FIRST EPSS(8,870개) 반영, NVD CVSS·CWE는 API 키로 선택 수집 → 조회 결과의 위험 지표·`--kev`·`--sort risk`, KEV/EPSS 기반 우선순위
 - 진단 시 벤더 권고 실시간 확인 단계: 취약·확인 필요·해결 버전 미배포 공지는 참고사이트의 벤더 권고를 열어 최신 해결 버전을 확인하고 확인 일시와 함께 기록
 - start/check/fix 스킬(EN/KO)에 KISA 보안공지 분기 연결, CII 패치 관리 항목의 근거로 활용
 - CI: advisory 데이터 스키마·EN/KO 동일성·통계 일치 검증, Python 단위 테스트 추가

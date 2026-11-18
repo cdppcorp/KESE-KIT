@@ -44,7 +44,7 @@ window.KESEKIT_I18N = {
     env: { languages: "언어", frameworks: "프레임워크", services: "실행 중인 서비스", webServers: "웹 서버", databases: "데이터베이스", containers: "컨테이너·오케스트레이션", cloudClis: "클라우드 도구", aiLibraries: "AI·ML 라이브러리" },
     assessTitle: "점검 설정",
     assessHint: "고르기 어려우면 비워 두세요. 비워 둔 항목은 '추천' 값으로 진행합니다. 선택지에 없는 내용은 '직접 입력'에 적으면 Claude가 선택지로 바꿔 반영합니다.",
-    legend: { purpose: "점검 목적", scope: "점검 범위 (여러 개 선택)", domains: "점검 분야 (여러 개 선택)", ciiTargets: "CII 점검 대상 시스템", ztTargetMaturity: "제로트러스트 목표 성숙도", organizationType: "조직 유형" },
+    legend: { purpose: "점검 목적", scope: "점검 범위 (여러 개 선택)", domains: "점검 분야 (여러 개 선택)", ciiTargets: "CII 점검 대상 시스템", ztTargetMaturity: "제로트러스트 목표 성숙도", organizationType: "조직 유형", reportFormat: "받을 형식" },
     recommended: "추천",
     customLabel: "직접 입력",
     customPlaceholder: {
@@ -64,7 +64,29 @@ window.KESEKIT_I18N = {
       ciiTargets: { "unix": "Unix/Linux 서버", "windows": "Windows 서버", "web-service": "웹 서비스", "security-equip": "보안 장비", "network": "네트워크 장비", "control-system": "제어시스템", "pc": "PC", "database": "DBMS", "mobile": "이동통신", "webapp": "Web Application", "virtualization": "가상화 장비", "cloud": "클라우드", "admin": "관리적 취약점", "physical": "물리적 취약점" },
       ztTargetMaturity: { "traditional": "기존", "initial": "초기", "advanced": "향상", "optimal": "최적화" },
       organizationType: { "public": "공공기관", "cii-operator": "주요정보통신기반시설 관리기관", "enterprise": "민간기업", "startup": "스타트업", "individual": "개인·1인 개발자", "other": "기타" },
-      role: { "dev-pc": "개발·업무용 PC", "server": "서버", "vm": "가상머신", "container": "컨테이너", "other": "기타" }
+      role: { "dev-pc": "개발·업무용 PC", "server": "서버", "vm": "가상머신", "container": "컨테이너", "other": "기타" },
+      reportFormat: { "html": "HTML", "pdf": "PDF", "hwpx": "한글 (HWPX)", "pptx": "PPT (PPTX)", "md": "Markdown" }
+    },
+    reportTitle: "보고서 형식",
+    reportHint: "점검 결과 보고서를 받을 형식입니다. 어떤 형식을 골라도 항목별 결과 Markdown은 함께 남겨, 다른 스킬(예: /kesekit-fix)이 이어서 씁니다.",
+    reportDefault: "기본",
+    reportDesc: {
+      html: "브라우저에서 바로 열기",
+      pdf: "인쇄·결재·보관용",
+      hwpx: "한글에서 편집·공문 첨부",
+      pptx: "발표용 슬라이드",
+      md: "편집·버전 관리용 원문"
+    },
+    reportTool: {
+      builtin: "추가 도구 없이 바로 만듭니다.",
+      unknown: "변환 도구는 보고서를 만들 때 Claude가 확인합니다.",
+      ready: "{tool}(으)로 변환합니다.",
+      pdfNone: "Edge·Chrome 같은 변환 도구가 없어 HTML 보고서로 대체합니다. Edge나 Chrome을 설치하면 PDF로 받을 수 있습니다.",
+      pptxNone: "pandoc이 없어 HTML 보고서로 대체합니다. pandoc을 설치하면 PPTX로 받을 수 있습니다(Windows: winget install JohnMacFarlane.Pandoc).",
+      hwpxKordoc: "kordoc이 설치되어 있어 HWPX로 만듭니다.",
+      hwpxMcp: "kordoc MCP로 HWPX를 만듭니다.",
+      hwpxNpx: "kordoc이 설치되어 있지 않습니다. Node.js가 있어 npx로 내려받아 실행할 수 있으며, 실행 전에 동의를 구합니다.",
+      hwpxNone: "kordoc이 없어 지금은 HTML 보고서로 대체합니다. Node.js 20 이상을 설치한 뒤 'npm install -g kordoc'으로 설치하면 HWPX로 받을 수 있습니다."
     },
     notesTitle: "스킬별 요청사항",
     notesHint: "각 스킬이 시작할 때 읽는 메모입니다. 비워 둬도 됩니다. 스킬의 안전 규칙(예: 점검 중 읽기 전용)은 바꿀 수 없습니다.",
@@ -137,7 +159,7 @@ window.KESEKIT_I18N = {
     env: { languages: "Languages", frameworks: "Frameworks", services: "Running services", webServers: "Web servers", databases: "Databases", containers: "Containers & orchestration", cloudClis: "Cloud tools", aiLibraries: "AI/ML libraries" },
     assessTitle: "Assessment settings",
     assessHint: "Leave anything blank if it is hard to choose; blank items use the 'Suggested' values. Anything not in the options can go in 'Your own words', and Claude maps it to the options.",
-    legend: { purpose: "Purpose", scope: "Scope (select all that apply)", domains: "Domains (select all that apply)", ciiTargets: "CII target systems", ztTargetMaturity: "Zero Trust target maturity", organizationType: "Organization type" },
+    legend: { purpose: "Purpose", scope: "Scope (select all that apply)", domains: "Domains (select all that apply)", ciiTargets: "CII target systems", ztTargetMaturity: "Zero Trust target maturity", organizationType: "Organization type", reportFormat: "Format" },
     recommended: "Suggested",
     customLabel: "Your own words",
     customPlaceholder: {
@@ -157,7 +179,29 @@ window.KESEKIT_I18N = {
       ciiTargets: { "unix": "Unix/Linux server", "windows": "Windows server", "web-service": "Web service", "security-equip": "Security equipment", "network": "Network equipment", "control-system": "Control system", "pc": "PC", "database": "DBMS", "mobile": "Mobile network", "webapp": "Web application", "virtualization": "Virtualization", "cloud": "Cloud", "admin": "Administrative", "physical": "Physical" },
       ztTargetMaturity: { "traditional": "Traditional", "initial": "Initial", "advanced": "Advanced", "optimal": "Optimal" },
       organizationType: { "public": "Public institution", "cii-operator": "CII operator", "enterprise": "Private enterprise", "startup": "Startup", "individual": "Individual developer", "other": "Other" },
-      role: { "dev-pc": "Development / work PC", "server": "Server", "vm": "Virtual machine", "container": "Container", "other": "Other" }
+      role: { "dev-pc": "Development / work PC", "server": "Server", "vm": "Virtual machine", "container": "Container", "other": "Other" },
+      reportFormat: { "html": "HTML", "pdf": "PDF", "hwpx": "Hangul (HWPX)", "pptx": "PowerPoint (PPTX)", "md": "Markdown" }
+    },
+    reportTitle: "Report format",
+    reportHint: "The format you receive the assessment report in. Whatever you choose, the per-item Markdown results are kept too so other skills (such as /kesekit-fix) can build on them.",
+    reportDefault: "Default",
+    reportDesc: {
+      html: "Opens right in a browser",
+      pdf: "For printing, approval, archiving",
+      hwpx: "Edit in Hangul, attach to official documents",
+      pptx: "Presentation slides",
+      md: "Plain source for editing and version control"
+    },
+    reportTool: {
+      builtin: "Made directly, no extra tools needed.",
+      unknown: "Claude checks the conversion tool when it writes the report.",
+      ready: "Converted with {tool}.",
+      pdfNone: "No converter such as Edge or Chrome was found, so an HTML report is used instead. Install Edge or Chrome to get PDF.",
+      pptxNone: "pandoc was not found, so an HTML report is used instead. Install pandoc to get PPTX (Windows: winget install JohnMacFarlane.Pandoc).",
+      hwpxKordoc: "kordoc is installed, so the report is made as HWPX.",
+      hwpxMcp: "The report is made as HWPX through the kordoc MCP server.",
+      hwpxNpx: "kordoc is not installed. Node.js is available, so it can be downloaded and run with npx; Claude asks before running it.",
+      hwpxNone: "kordoc was not found, so an HTML report is used for now. Install Node.js 20 or later, then 'npm install -g kordoc', to get HWPX."
     },
     notesTitle: "Requests per skill",
     notesHint: "Each skill reads its note when it starts. Leave blank if you have none. Notes cannot override a skill's safety rules (for example, read-only during assessment).",

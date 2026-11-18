@@ -3,7 +3,7 @@
 > `scripts/build_kisa_advisories.py`가 생성한 파일입니다. 직접 수정하지 마세요.
 > 제품명으로 Grep 하거나 `scripts/advisory_lookup.py`로 상세(영향/해결 버전)를 조회하세요.
 
-2025-01-06 ~ 2026-11-13 · 총 519 · 163 벤더
+2025-01-06 ~ 2026-11-18 · 총 526 · 164 벤더
 
 ## 7-Zip (3)
 
@@ -147,10 +147,11 @@
 |---|---|---|---|---|:-:|---|
 | 2025-04-02 | 2176 | 보안 업데이트 권고 | Canon 제품 보안 업데이트 권고 | Generic Plus PCL6 Printer Driver, Generic Plus UFR II Printer Driver, Generic Plus LIPS4 Printer Driver, Generic Plus LIPSLX Printer Driver… | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71707) |
 
-## Check Point (2)
+## Check Point (3)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-17 | 2638 | 보안 업데이트 권고 | Check Point 제품 보안 업데이트 권고 | Force Firewall, Management Server, Log Server, Multi-Domain Security Management, Multi-Domain Log Server, Maestro Orchestrator, Cloud Firew… | 3 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72311) |
 | 2026-09-23 | 2548 | 보안 업데이트 권고 | Check Point 제품 보안 업데이트 권고 | Security Management Server, Multi-Domain Security Management Server, Log Server, Multi-Domain Log Server, SmartEvent | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72198) |
 | 2026-09-18 | 2543 | 보안 업데이트 권고 | Check Point 제품 보안 업데이트 권고 | Security Management Server, Multi-Domain Security Management Server, Log Server, Multi-Domain Log Server, Security Gateway, Spark Firewall | 6 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72192) |
 
@@ -189,10 +190,11 @@
 | 2025-02-07 | 2140 | 보안 업데이트 권고 | Cisco 제품 보안 업데이트 권고 | Cisco ISE Cisco ISE-PIC | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71653) |
 | 2025-01-23 | 2130 | 보안 업데이트 권고 | Cisco 제품 보안 업데이트 권고 | Cisco BroadWorks, Cisco Meeting Management, Cisco Unified Industrial Wireless | 4 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71641) |
 
-## Citrix (8)
+## Citrix (9)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-17 | 2639 | 보안 업데이트 권고 | Citrix 제품 보안 업데이트 권고 | NetScaler ADC, NetScaler Gateway, NetScaler ADC (FIPS), NetScaler ADC (FIPS/NDcPP), NetScaler Console, Secure Access Client (Windows) | 11 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72312) |
 | 2026-10-12 | 2560 | 보안 업데이트 권고 | Citrix 제품 보안 업데이트 권고 | NetScaler ADC, NetScaler Gateway, NetScaler ADC FIPS/NDcPP, NetScaler ADC FIPS | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72212) |
 | 2026-10-06 | 2557 | 보안 업데이트 권고 | Citrix 제품 보안 업데이트 권고 | NetScaler ADC, NetScaler Gateway, NetScaler ADC FIPS/NDcPP, NetScaler ADC FIPS | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72209) |
 | 2026-09-29 | 2550 | 보안 업데이트 권고 | Citrix 제품 보안 업데이트 권고 | NetScaler ADC, NetScaler Gateway, NetScaler ADC FIPS/NDcPP, NetScaler ADC FIPS | 8 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72201) |
@@ -313,10 +315,11 @@
 |---|---|---|---|---|:-:|---|
 | 2025-10-14 | 2299 | 보안 업데이트 권고 | Figma MCP Server 제품 보안 업데이트 권고 | figma-developer-mcp | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71888) |
 
-## Fortinet (18)
+## Fortinet (19)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-16 | 2635 | 보안 업데이트 권고 | Fortinet 제품 보안 업데이트 권고 | FortiManager, FortiAnalyzer, FortiAnalyzer Cloud, FortiManager Cloud, FortiOS, FortiAnalyzer-BigData, FortiPAM | 15 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72308) |
 | 2026-10-22 | 2576 | 보안 업데이트 권고 | Fortinet 제품 보안 업데이트 권고 | FortiSIEM | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72231) |
 | 2026-09-14 | 2539 | 보안 업데이트 권고 | Fortinet 제품 보안 업데이트 권고 | FortiOS, FortiSwitchManager | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72187) |
 | 2026-08-20 | 2520 | 보안 업데이트 권고 | Fortinet 제품 보안 업데이트 권고 | FortiWeb, FortiClientWindows, FortiManager, FortiManager Cloud | 3 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72163) |
@@ -347,6 +350,12 @@
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
 | 2025-03-17 | 2155 | 취약점 조치 권고 | FreeType 라이브러리에서 발생하는 취약점에 대한 업데이트 권고 | FreeType | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71679) |
+
+## Git (1)
+
+| 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
+|---|---|---|---|---|:-:|---|
+| 2026-11-16 | 2634 | 보안 업데이트 권고 | Git 제품 보안 업데이트 권고 | Git | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72307) |
 
 ## Gitea (2)
 
@@ -624,10 +633,11 @@
 |---|---|---|---|---|:-:|---|
 | 2026-08-21 | 2522 | 보안 업데이트 권고 | MLflow 제품 보안 업데이트 권고 | MLflow | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72166) |
 
-## MongoDB (2)
+## MongoDB (3)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-17 | 2636 | 보안 업데이트 권고 | MongoDB 제품 보안 업데이트 권고 | Node.js Driver | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72309) |
 | 2026-11-11 | 2624 | 보안 업데이트 권고 | MongoDB 제품 보안 업데이트 권고 | MongoDB Server | 18 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72296) |
 | 2025-12-26 | 2331 | 보안 업데이트 권고 | MongoDB 제품 보안 업데이트 권고 | MongoDB | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71931) |
 
@@ -728,10 +738,11 @@
 | 2026-06-17 | 2464 | 보안 업데이트 권고 | OpenSSL 제품 보안 업데이트 권고 | OpenSSL | 3 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72098) |
 | 2026-01-30 | 2344 | 보안 업데이트 권고 | OpenSSL 취약점 보안 업데이트 권고 | OpenSSL | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71954) |
 
-## Oracle (10)
+## Oracle (11)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-18 | 2640 | 보안 업데이트 권고 | Oracle 제품 보안 업데이트 권고 | Oracle Java SE, Oracle JavaFX, Oracle GraalVM for JDK, Oracle GraalVM Enterprise Edition | 6 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72313) |
 | 2026-10-30 | 2597 | 보안 업데이트 권고 | Oracle 제품 보안 업데이트 권고 | Oracle Application Object Library, Oracle Payments | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72258) |
 | 2026-10-23 | 2578 | 보안 업데이트 권고 | Oracle 제품 보안 업데이트 권고 | Java SE, GraalVM for JDK, GraalVM Enterprise Edition, OpenJDK | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72234) |
 | 2026-08-31 | 2526 | 보안 업데이트 권고 | Oracle 제품 보안 업데이트 권고 | WebLogic Server | 3 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72172) |
@@ -803,10 +814,11 @@
 |---|---|---|---|---|:-:|---|
 | 2026-05-29 | 2444 | 보안 업데이트 권고 | Portainer 제품 보안 업데이트 권고 | Portainer | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72073) |
 
-## PostgreSQL (4)
+## PostgreSQL (5)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-17 | 2637 | 보안 업데이트 권고 | PostgreSQL 제품 보안 업데이트 권고 | PostgreSQL | 25 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72310) |
 | 2026-09-10 | 2536 | 보안 업데이트 권고 | PostgreSQL 제품 보안 업데이트 권고 | PostgreSQL | 6 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72184) |
 | 2026-08-20 | 2521 | 보안 업데이트 권고 | PostgreSQL 제품 보안 업데이트 권고 | PostgreSQL | 18 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72164) |
 | 2025-02-19 | 2146 | 주의 권고 | PostgreSQL 제품 이용 주의 권고 | PostgreSQL | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71662) |

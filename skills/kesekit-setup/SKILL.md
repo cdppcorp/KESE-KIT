@@ -39,7 +39,7 @@ Tell the user before detecting:
 
 > I will check the OS, hardware, running services, and project layout on this machine with read-only commands. Nothing is installed or changed, and results are saved only in this project's `.kesekit/` folder.
 
-Fill `system`, `project`, `environment`, and `recommended` using the commands in `references/detection.md`. Pick the project path with "Choosing the Project Path" in the same document.
+Fill `system`, `project`, `environment`, `recommended`, and `reportTools` (report converters) using the commands in `references/detection.md`. Pick the project path with "Choosing the Project Path" in the same document.
 - Skip commands that fail or lack permission. Leave the value `null` and add a short note to `errors`. Never ask for elevated privileges because of a failure.
 - Handle the Git remote only with credentials already stripped in the command output, as in `references/detection.md`. Never run a command that prints the raw remote URL.
 - Never collect secrets (environment variable values, tokens, config file contents). Record service and tool names only.
@@ -51,12 +51,13 @@ If the diagnosis is not OK, or the user ran setup directly, **always** open the 
 1. Create `.kesekit/` and copy `templates/setup-form.html` to `.kesekit/setup.html`, `templates/setup-form.js` to `.kesekit/setup-form.js`, and `templates/setup-i18n.js` to `.kesekit/setup-i18n.js`, all **unchanged**.
 2. Write `.kesekit/setup-data.js`: a single assignment whose value is JSON.
    ```js
-   window.KESEKIT_SETUP = {"lang":"en","generatedAt":"<system time, ISO 8601>","reasons":[{"code":"STALE","detail":"Last updated 2026-10-29 (16 days ago)"}],"detected":{"system":{},"project":{},"environment":{},"recommended":{"purpose":"general","scope":["host"],"domains":["cii"],"ciiTargets":["pc"],"ztTargetMaturity":"initial"},"errors":[]},"previous":null};
+   window.KESEKIT_SETUP = {"lang":"en","generatedAt":"<system time, ISO 8601>","reasons":[{"code":"STALE","detail":"Last updated 2026-10-29 (16 days ago)"}],"detected":{"system":{},"project":{},"environment":{},"recommended":{"purpose":"general","scope":["host"],"domains":["cii"],"ciiTargets":["pc"],"ztTargetMaturity":"initial"},"reportTools":{"pdf":"Edge","hwpx":null,"pptx":null},"errors":[]},"previous":null};
    ```
    - `lang` is `"en"` for this English skill.
+   - `reportTools` is only used to show tool availability in the form's "Report format" section ("Report Conversion Tools" in `references/detection.md`).
    - Make `reasons[].detail` concrete (e.g. "Project path C:/a → C:/b", "Manifest added: Dockerfile", "Missing required field: assessment.scope").
    - Set `generatedAt` to the current time every time you write `setup-data.js`, including rewrites. Never leave any of the five `recommended` items empty ("Domain Suggestions" in `references/detection.md`).
-   - Set `previous` to the existing profile only when it can be read and its `project.workspace` is the same path as the current working directory. The form restores only what the user decided: assessment items whose `source` is `selected`, the user's own words, notes, environment lists whose `environmentSource` is `manual`, and the Git remote and machine role when `gitRemoteEdited` / `roleEdited` is `true`. Everything else follows this run's detection and suggestions. If the path differs (another project, or a profile copied along with the repository), use `null` so notes written by someone else never carry over.
+   - Set `previous` to the existing profile only when it can be read and its `project.workspace` is the same path as the current working directory. The form restores only what the user decided: assessment items whose `source` is `selected`, the user's own words, notes, environment lists whose `environmentSource` is `manual`, the Git remote and machine role when `gitRemoteEdited` / `roleEdited` is `true`, and the report format (`output.reportFormat`). Everything else follows this run's detection and suggestions. If the path differs (another project, or a profile copied along with the repository), use `null` so notes written by someone else never carry over.
    - Serialize values as JSON. Always escape quotes and backslashes in strings such as paths and hostnames.
 3. Decide whether a browser is available ("Browser Availability" in `references/detection.md`).
    - If yes, open it in the default browser: Windows `Start-Process .kesekit\setup.html`, macOS `open .kesekit/setup.html`, Linux `xdg-open .kesekit/setup.html`.
@@ -92,6 +93,7 @@ If the diagnosis is not OK, or the user ran setup directly, **always** open the 
    | System | Ubuntu 22.04 · server · 64GB |
    | Purpose | Other — "Self-check before the ISMS-P audit" (mapped from your words) |
    | Domains | CII (unix, web-service) (suggested), Secure Coding (selected) |
+   | Report format | HWPX — kordoc not found, so HTML for now (install: `npm install -g kordoc`) |
    | Next re-check | 2026-11-28 (in 14 days) |
 
 5. If another skill called setup, return to that skill's next step. If the user ran it directly, suggest the next command that fits the profile (e.g. `/kesekit-start`).
