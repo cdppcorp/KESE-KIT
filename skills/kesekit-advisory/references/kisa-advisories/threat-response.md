@@ -2,7 +2,7 @@
 
 > Source: KISA Boho-nara (보호나라, KrCERT/CC) security notices of the types 보안 조치·강화 권고 (security action/hardening advisory) / 취약점 조치 권고 (vulnerability remediation advisory) / 주의 권고 (caution advisory) / 기타 (other). Patch-type '보안 업데이트 권고' (security update advisory) notices are handled by an advisories.json lookup.
 >
-> Scope: 91 non-patch notices out of the 526 rows in 목록.csv (18 security action/hardening, 7 vulnerability remediation, 63 caution, 3 other). Five pinned notices carry no number and are shown as `공지` (pinned notice).
+> Scope: 91 non-patch notices out of the 531 rows in 목록.csv (18 security action/hardening, 7 vulnerability remediation, 63 caution, 3 other). Five pinned notices carry no number and are shown as `공지` (pinned notice).
 
 ## How to use
 - Pick only the sections that match the environment under review: A servers, B web, C development and CI/CD, D network devices and NAS, E products in inventory, F work endpoints and accounts, G staff awareness material.
@@ -182,7 +182,7 @@
 - **Background**: Unauthenticated remote command execution (CVSS 9.2). Details leaked before the patch and attack attempts have been reported. Passwords, tokens and API keys in server memory can also leak.
 - **Checks**:
   - [ ] Identify PHP use and version based on servers actually running, not the asset list. Include outsourced, abandoned, event and test servers, admin pages, appliances and Windows installers with embedded PHP, and external container images.
-  - [ ] Apply the fixed versions PHP 8.5.12, 8.4.27, 8.3.36, 8.2.35 or later (including Linux-distribution and vendor updates), internet-facing servers first.
+  - [ ] Apply the fixed versions PHP 8.5.12, 8.4.27, 8.3.36, 8.2.35 or later (including Linux-distribution and vendor updates), internet-facing servers first. Since #2644 (2026-11-19) the target is **8.5.13, 8.4.28, 8.3.37, 8.2.36 or later (8.6.0 included)**; servers already moved to the 10-21 versions must be updated again (TR-12, `overview.md` "PHP security release of 2026-11-19").
   - [ ] After updating, restart every service that runs PHP, such as PHP-FPM, Apache mod_php, php-cgi, FrankenPHP and LiteSpeed (otherwise it stays vulnerable). Redeploy containers from a new image.
   - [ ] Confirm the PHP version the web service actually uses. It can differ from `php -v`, so check each install if there are several. Distribution packages may keep the same version number after patching, so check the package changelog for the CVE fix.
   - [ ] Move PHP 8.1 and earlier to a supported version. PHP 8.2 security support also ends on 2026.12.31, so 8.3 or later is recommended. Until then, apply distribution/LTS-vendor patches or the PHP security team's source patches for 7.4, 8.0 and 8.1 as a stopgap.
@@ -199,13 +199,13 @@
 
 ### TR-12 PHP session-handling remote code execution (CVE-2026-115560) temporary mitigation
 - **Notice**: 2026-10-24 · #2581 · Vulnerability remediation advisory — PHP 신규 취약점(CVE-2026-115560) 임시 조치 권고 (temporary mitigation for a new PHP vulnerability)
-- **Scope**: PHP. At the time of the notice the vendor had not disclosed affected versions and no fixed version had been released (planned for the next regular update).
+- **Scope**: PHP. At the time of the notice the vendor had not disclosed affected versions and no fixed version had been released (planned for the next regular update). **The fix shipped on 2026-11-19 in #2644** (versions below 8.2.36 / 8.3.37 / 8.4.28 / 8.5.13 are affected).
 - **Background**: Remote code execution in session handling. The updates released on 10.21. (8.5.12, 8.4.27, 8.3.36, 8.2.35) do not fix it.
 - **Checks** (affected only if all three conditions hold):
   - [ ] `session.serialize_handler` in the config file is `php_binary` or `php_serialize`
   - [ ] Code calls `ini_set()` to change that value to `php` before calling `session_start()`
   - [ ] `session.upload_progress.enabled` is on (the default)
-- **Action**: Until a security update is released, set `session.upload_progress.enabled=0` in php.ini, the PHP-FPM pool, etc., and restart all PHP workers. If you already applied this as the TR-11 temporary measure, nothing more is needed. The notice is due to be updated, so re-check it for the latest information.
+- **Action**: Update to PHP 8.5.13, 8.4.28, 8.3.37, 8.2.36 or later (8.6.0 included) and restart every service that runs PHP (#2644). If the three conditions above hold, a version in range is **Vulnerable**. Until the update, set `session.upload_progress.enabled=0` in php.ini, the PHP-FPM pool, etc., and restart all PHP workers. If you already applied this as the TR-11 temporary measure, the setting needs no repeat — but the update is still required.
 - **Source**: https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72237 · Attachment: none
 
 ### TR-13 Web- and API-focused corporate hardening

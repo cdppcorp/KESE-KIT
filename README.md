@@ -227,16 +227,16 @@ KESE(KISA Enhanced Security Evaluation Kit)는 KISA(한국인터넷진흥원) �
 
 대상: SW 개발기업, 공공조달 납품사, 정부과제 개발자, 바이브코딩 개발자
 
-#### 8. KISA 보안공지 대응 — 526건 (2025-01 ~ 2026-11)
+#### 8. KISA 보안공지 대응 — 531건 (2025-01 ~ 2026-11)
 
 KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 시스템에 해당하는 공지가 있는지** 판정합니다.
 
 | 모드 | 내용 | 근거 데이터 |
 |------|------|------------|
 | 영향도 점검 | 설치 제품·버전·의존성 ↔ 공지의 영향받는 버전/해결 버전 대조, 긴급/높음/보통 우선순위 | 보안 업데이트 권고 435건, 버전 행 12,660행 |
-| 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 526건 |
+| 공지 브리핑 | 기간·벤더·유형별 최신 공지 요약과 조치 우선순위 | 전체 531건 |
 | CVE 조회 | 특정 CVE의 KISA 공지 포함 여부와 해결 버전 | 고유 CVE 8,894개 |
-| KISA 공지 전 취약점 | CVE·벤더 권고로 먼저 공개된 취약점을 "공지 전 항목"으로 함께 조회(예: "NGINX2Root 점검해줘"), KISA 공지가 나오면 공지 기준으로 자동 전환 | 2건 — NGINX2Root nginx CVE 5건, 연계 리눅스 커널 취약점 (2026-11-19 확인) |
+| KISA 공지 전 취약점 | CVE·벤더 권고로 먼저 공개된 취약점을 "공지 전 항목"으로 함께 조회(예: "NGINX2Root 점검해줘"), KISA 공지가 나오면 공지 기준으로 자동 전환 | 1건 — NGINX2Root 연계 리눅스 커널 취약점(CVE 미공개). nginx CVE 5건은 KISA #2641(2026-11-19)로 전환 (2026-11-22 확인) |
 | 위협 대응 점검 | BPFDoor, 리눅스 커널 루트킷, 랜섬웨어, 자격증명 노출, 개발 공급망 공격, 제품 사용 주의(EoL) — TR-01~TR-43 (43항목) + 피싱·스미싱 동향 35건 | 비패치성 공지 91건 (보안 조치·강화 18, 취약점 조치 7, 주의 63, 기타 3) |
 
 **조회 도구**: `scripts/advisory_lookup.py` (Python 표준 라이브러리, 제품/CVE/벤더/기간/유형 필터)
@@ -268,7 +268,7 @@ KISA 보호나라(KrCERT/CC) 보안공지를 구조화한 데이터로 **우리 
 | 15 | **SW 공급망 보안 가이드라인 (요약본)** | 국정원 / 과기정통부 / KISA | 2024 | 22 | [PDF](문서/240513-(요약본)_SW_공급망_보안_가이드라인.pdf) / [MD](문서/SW_공급망_보안_가이드라인_요약본.md) |
 | 16 | **SW 공급망 보안 가이드라인 (전체본)** | 국정원 / 과기정통부 / KISA | 2024 | 100 | [PDF](문서/240525-(전체본)_SW_공급망_보안_가이드라인_최종%20수정본.pdf) / [MD](문서/SW_공급망_보안_가이드라인_전체본.md) |
 | 17 | **인공지능기본법 교안** (11장 60개 절, 실무 해설) | 과기정통부·한국AI소프트웨어산업협회 발행 / KESE-KIT 편집 | 2026 | - | [MD](문서/AI_기본법_교안/) |
-| 18 | **KISA 보호나라 보안공지** (526건, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - | [목록·본문](문서/KISA_보안공지_2025-2026/) |
+| 18 | **KISA 보호나라 보안공지** (531건, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - | [목록·본문](문서/KISA_보안공지_2025-2026/) |
 
 ### v2.x에서 마이그레이션
 
@@ -402,16 +402,16 @@ Korean versions are also available:
 **Administrative Assessment**: A-1~A-127 (127 items, 14 domains)
 **Physical Assessment**: P-1~P-18 (18 items)
 
-#### 8. KISA Security Notices — 526 notices (2025-01 ~ 2026-11)
+#### 8. KISA Security Notices — 531 notices (2025-01 ~ 2026-11)
 
 Structured KISA Boho-nara (KrCERT/CC) security notices for answering **"does any KISA notice affect our systems?"**
 
 | Mode | What it does | Data |
 |------|-------------|------|
 | Exposure check | Installed products/versions/dependencies vs. affected/fixed versions, Critical/High/Medium priority | 435 security update advisories, 12,660 version rows |
-| Notice briefing | Recent notices by period, vendor, or type with action priorities | All 526 notices |
+| Notice briefing | Recent notices by period, vendor, or type with action priorities | All 531 notices |
 | CVE lookup | Whether a CVE is in a KISA notice and its fixed version | 8,894 unique CVEs |
-| Pre-notice vulnerabilities | Vulnerabilities public in CVE records / vendor advisories before KISA posts them are looked up as "pre-notice entries" (e.g. "check NGINX2Root"); they switch to the KISA notice automatically once it is posted | 2 entries — NGINX2Root's 5 nginx CVEs and the chained Linux kernel bug (checked 2026-11-19) |
+| Pre-notice vulnerabilities | Vulnerabilities public in CVE records / vendor advisories before KISA posts them are looked up as "pre-notice entries" (e.g. "check NGINX2Root"); they switch to the KISA notice automatically once it is posted | 1 entry — the Linux kernel bug chained with NGINX2Root (no CVE yet). The 5 nginx CVEs moved to KISA #2641 (2026-11-19) (checked 2026-11-22) |
 | Threat response | BPFDoor, Linux kernel rootkits, ransomware, exposed credentials, dev supply-chain attacks, product-use cautions (EoL) — TR-01~TR-43 (43 items) + 35 phishing/smishing trend rows | 91 non-patch notices (18 hardening, 7 mitigation, 63 caution, 3 other) |
 
 **Lookup tool**: `scripts/advisory_lookup.py` (Python standard library; product/CVE/vendor/period/type filters)
@@ -447,7 +447,7 @@ KESE (KISA Enhanced Security Evaluation Kit) is a Claude Code plugin that provid
 | 8 | **Space Security Explanation Guide** | MSIT / KISA | 2025 | 218 |
 | 9 | **SW Supply Chain Security Guideline (Summary)** | NIS / MSIT / KISA | 2024 | 22 |
 | 10 | **SW Supply Chain Security Guideline (Full)** | NIS / MSIT / KISA | 2024 | 100 |
-| 11 | **KISA Boho-nara Security Notices** (526 notices, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - |
+| 11 | **KISA Boho-nara Security Notices** (531 notices, 2025-01 ~ 2026-11) | KISA | 2025–2026 | - |
 
 ---
 
@@ -503,6 +503,16 @@ KESE-KIT/
 
 ## 변경 이력
 
+### v3.9.0 (2026-11-22)
+
+**KISA 공지 #2641~#2645 반영, PHP 2026-11-19 보안 릴리스, 후속 공지 해결 표시**
+- KISA 보호나라 보안공지 #2641~#2645 추가(총 531건, 2026-11-20까지): NGINX(#2641), Oracle WebLogic·E-Business Suite·PeopleSoft(#2642), F5 BIG-IP(#2643), PHP(#2644), VMware vCenter·SDDC Manager(#2645). KEV 2026.11.20 · EPSS 2026-11-21로 갱신(#2645의 CVE-2026-123890이 KEV에 새로 등재)
+- PHP 8.5.13 / 8.4.28 / 8.3.37 / 8.2.36(CVE 18개, #2644)과 8.6.0 정식판 판정 기준을 `overview.md`와 3단계 판정 규칙에 추가. #2581에서 패치가 없던 CVE-2026-115560이 이번에 해결됐으므로 TR-11·TR-12 조치를 새 버전 기준으로 수정
+- **후속 공지 해결 표시**: "해결 버전 미배포" 공지의 CVE가 같은 벤더의 이후 공지에 해결 버전과 함께 실리면 경고 대신 "후속 공지 #N에 해결 버전"을 표시(JSON `fixed_by`). 예: #2581 → #2644
+- `PHP2Shell` 별칭을 CVE-2026-109618·109619에 연결해, 대응 수칙 공지뿐 아니라 패치 공지 #2574와 PHP 내장 장비 공지(Check Point, Palo Alto 등)의 행도 조회
+- NGINX2Root: KISA #2641이 게시돼 nginx 공지 전 항목은 자동으로 공지 기준으로 전환(F5 CVSS 유지를 위해 항목은 남김). 연계 커널 취약점은 CVE 미공개로 공지 전 항목 유지
+- 테스트 92개
+
 ### v3.8.0 (2026-11-19)
 
 **KISA 공지 #2634~#2640 반영, Java4Shell·NGINX2Root 점검, KISA 공지 전 취약점 조회**
@@ -537,7 +547,7 @@ KESE-KIT/
 ### v3.5.0 (2026-11-14)
 
 **새 스킬 추가: KISA 보안공지 대응 (`/kesekit-advisory`, `/kesekit-advisory-ko`)**
-- 출처: KISA 보호나라 보안공지 526건 (2025-01-06 ~ 2026-11-18) — 보안 업데이트 권고 435, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
+- 출처: KISA 보호나라 보안공지 531건 (2025-01-06 ~ 2026-11-20) — 보안 업데이트 권고 440, 주의 권고 63, 보안 조치·강화 권고 18, 취약점 조치 권고 7, 기타 3
 - 4개 모드: 영향도 점검(영향받는/해결 버전 대조), 공지 브리핑, CVE 조회, 위협 대응 점검
 - 위협 대응 점검: 비패치성 공지 91건 → TR-01~TR-43 (서버 침해·웹·개발 공급망·네트워크 장비·EoL 제품·단말/표적형) + 피싱·스미싱 동향 35건, 점검 명령은 원문 그대로 수록
 - `scripts/build_kisa_advisories.py`: 공지 HTML 표(rowspan/colspan) 파싱 → `advisories.json`(버전 행 12,660행, 고유 CVE 8,894개), 벤더 인덱스(164개 벤더), 통계 자동 갱신

@@ -3,7 +3,7 @@
 > `scripts/build_kisa_advisories.py`가 생성한 파일입니다. 직접 수정하지 마세요.
 > 제품명으로 Grep 하거나 `scripts/advisory_lookup.py`로 상세(영향/해결 버전)를 조회하세요.
 
-2025-01-06 ~ 2026-11-18 · 총 526 · 164 벤더
+2025-01-06 ~ 2026-11-20 · 총 531 · 164 벤더
 
 ## 7-Zip (3)
 
@@ -293,10 +293,11 @@
 |---|---|---|---|---|:-:|---|
 | 2026-05-18 | 2428 | 보안 업데이트 권고 | Exim 제품 보안 업데이트 권고 | Exim | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72054) |
 
-## F5 (5)
+## F5 (6)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-19 | 2643 | 보안 업데이트 권고 | F5 제품 보안 업데이트 권고 | BIG-IP APM, BIG-IP PEM, BIG-IP CNF, BIG-IP Next for Kubernetes, BIG-IP (all modules), BIG-IP DNS, BIG-IQ Centralized Management, BIG-IP SSL… | 12 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72316) |
 | 2026-10-20 | 2572 | 보안 업데이트 권고 | F5 제품 보안 업데이트 권고 | NGINX Plus, NGINX Open Source | 5 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72224) |
 | 2026-06-26 | 2475 | 보안 업데이트 권고 | F5 제품 보안 업데이트 권고 | NGINX Open Source, NGINX Instance Manager, NGINX Gateway Fabric, NGINX Ingress Controller | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72109) |
 | 2025-11-10 | 2306 | 보안 업데이트 권고 | F5 제품 보안 업데이트 권고 | BIG-IP (all modules), F5OS-A, F5OS-C, BIG-IP Next SPK, BIG-IP Next CNF, BIG-IP SSL Orchestrator, BIG-IP ASM, BIG-IP PEM, BIG-IP Next for Ku… | 44 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71899) |
@@ -671,10 +672,11 @@
 |---|---|---|---|---|:-:|---|
 | 2026-02-02 | 2347 | 보안 업데이트 권고 | NET-NTLM v1 보안 업데이트 권고 | NET-NTLM | 0 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71957) |
 
-## NGINX (5)
+## NGINX (6)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-19 | 2641 | 보안 업데이트 권고 | NGINX 제품 보안 업데이트 권고 | NGINX Open Source, NGINX Plus | 5 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72314) |
 | 2026-07-20 | 2497 | 보안 업데이트 권고 | NGINX 제품 보안 업데이트 권고 | NGINX Plus, NGINX Open Source | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72135) |
 | 2026-05-24 | 2439 | 보안 업데이트 권고 | NGINX 제품 보안 업데이트 권고 | NGINX Open Source, NGINX Plus | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72066) |
 | 2026-05-20 | 2430 | 보안 업데이트 권고 | NGINX 제품 보안 업데이트 권고 | NGINX Plus, NGINX Open Source | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72057) |
@@ -738,10 +740,11 @@
 | 2026-06-17 | 2464 | 보안 업데이트 권고 | OpenSSL 제품 보안 업데이트 권고 | OpenSSL | 3 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72098) |
 | 2026-01-30 | 2344 | 보안 업데이트 권고 | OpenSSL 취약점 보안 업데이트 권고 | OpenSSL | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71954) |
 
-## Oracle (11)
+## Oracle (12)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-19 | 2642 | 보안 업데이트 권고 | Oracle 제품 보안 업데이트 권고 | WebLogic Server, Application Object Library, Concurrent Processing, PeopleSoft Enterprise PeopleTools, VM VirtualBox | 28 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72315) |
 | 2026-11-18 | 2640 | 보안 업데이트 권고 | Oracle 제품 보안 업데이트 권고 | Oracle Java SE, Oracle JavaFX, Oracle GraalVM for JDK, Oracle GraalVM Enterprise Edition | 6 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72313) |
 | 2026-10-30 | 2597 | 보안 업데이트 권고 | Oracle 제품 보안 업데이트 권고 | Oracle Application Object Library, Oracle Payments | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72258) |
 | 2026-10-23 | 2578 | 보안 업데이트 권고 | Oracle 제품 보안 업데이트 권고 | Java SE, GraalVM for JDK, GraalVM Enterprise Edition, OpenJDK | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72234) |
@@ -782,10 +785,11 @@
 | 2026-05-07 | 2418 | 보안 업데이트 권고 | Palo Alto Networks 제품 보안 업데이트 권고 | PAN-OS 12.1, PAN-OS 11.2, PAN-OS 11.1, PAN-OS 10.2 | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72044) |
 | 2025-02-20 | 2148 | 보안 업데이트 권고 | Palo Alto Networks 제품 보안 업데이트 권고 | PAN-OS | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71664) |
 
-## PHP (3)
+## PHP (4)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-19 | 2644 | 보안 업데이트 권고 | PHP 제품 보안 업데이트 권고 | PHP 8.2, PHP 8.3, PHP 8.4, PHP 8.5 | 18 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72318) |
 | 2026-10-24 | 2581 | 취약점 조치 권고 | PHP 신규 취약점(CVE-2026-115560) 임시 조치 권고 | PHP | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72237) |
 | 2026-10-22 | 공지 | 취약점 조치 권고 | PHP 보안취약점(PHP2Shell) 관련 기업 보안 대응 수칙 |  | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72230) |
 | 2026-10-21 | 2574 | 보안 업데이트 권고 | PHP 제품 보안 업데이트 권고 | PHP 8.2, PHP 8.3, PHP 8.4, PHP 8.5 | 2 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72227) |
@@ -1061,10 +1065,11 @@
 | 2026-10-20 | 2569 | 보안 업데이트 권고 | Vercel 제품 보안 업데이트 권고 | Next.js | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72221) |
 | 2025-03-26 | 2167 | 보안 업데이트 권고 | Vercel 제품 보안 업데이트 권고 | Next.js | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=71695) |
 
-## VMware (4)
+## VMware (5)
 
 | 게시일 | 번호 | 유형 | 제목 | 주요 제품 | CVE | 원문 |
 |---|---|---|---|---|:-:|---|
+| 2026-11-20 | 2645 | 보안 업데이트 권고 | VMware 제품 보안 업데이트 권고 | VMware Telco Cloud Platform, VMware Telco Cloud Infrastructure, VMware Cloud Foundation, VMware vCenter, VMware vSphere Foundation, SDDC Ma… | 3 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72319) |
 | 2026-10-30 | 2596 | 보안 업데이트 권고 | VMware 제품 보안 업데이트 권고 | VMware Telco Cloud Platform, VMware Cloud Foundation, VMware ESX, VMware vSphere Foundation | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72257) |
 | 2026-08-06 | 2509 | 보안 업데이트 권고 | VMware 제품 보안 업데이트 권고 | VMware Cloud Foundation, VMware vSphere Foundation, VMware ESXi, VMware Workstation, VMware Fusion, VMware Telco Cloud Platform, VMware vCe… | 4 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72152) |
 | 2026-05-22 | 2437 | 보안 업데이트 권고 | VMware 제품 보안 업데이트 권고 | VMware Fusion | 1 | [보기](https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000133&menuNo=205020&nttId=72064) |
