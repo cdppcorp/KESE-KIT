@@ -46,6 +46,10 @@ REQUIRED_LIST = ("cves", "affected")
 MATCH_RANK = {"title": 3, "rows": 2, "body": 1}
 # Notices whose fix is not out yet: the vendor advisory must be checked live.
 PENDING_RE = re.compile(r"업데이트 예정|미배포|제조사 미공개|패치 미제공")
+# 'Fixed' cells that name no fix (KISA tables: "패치 미발표", "None", "Not applicable", "없음").
+NO_FIX_RE = re.compile(r"미발표|미제공|없음|not applicable|\bnone\b|\bn/a\b", re.I)
+DIGIT_RE = re.compile(r"\d")
+CATCH_ALL_VENDOR = "기타"  # vendor of unrelated notices; never matched as "the same vendor"
 
 # Spellings that appear in KISA titles/tables. Every member of a group expands to the others.
 ALIAS_GROUPS = [
@@ -86,6 +90,9 @@ NICKNAME_GROUPS = [
     ("java4shell", "cve-2026-114938"),  # Calif.io disclosure, Oracle CSPU Nov 2026 (KISA #2640)
     # Theori Xint disclosure (nginx2root.com), F5 CVE records 2026-11-18; the Linux SCTP kernel bug has no CVE yet
     ("nginx2root", "cve-2026-123007", "cve-2026-123634", "cve-2026-123633", "cve-2026-121810", "cve-2026-113425"),
+    # KISA pinned notice 2026-10-22 (nttId 72230): "PHP 보안취약점(PHP2Shell) … (CVE-2026-109618, CVE-2026-109619)";
+    # the fixed versions are in the patch notice #2574
+    ("php2shell", "cve-2026-109618", "cve-2026-109619"),
 ]
 ALIASES = {
     **{member: [o for o in group if o != member] for group in ALIAS_GROUPS for member in group},
@@ -117,6 +124,7 @@ LABELS = {
         "max_cvss": "최고 CVSS {score:g} ({cve})",
         "max_epss": "최고 EPSS {score:.3f} (상위 {top}%, {cve})",
         "pending": "주의: 해결 버전 미배포·후속 업데이트 예정 공지 — 참고사이트의 벤더 권고를 실시간으로 확인하세요",
+        "pending_fixed": "후속 공지 #{no}({date})에 해결 버전이 나왔습니다 — 해결 버전은 그 공지로 판정하세요 (--id {id})",
         "local": "원본 폴더 (본문·첨부 열람)",
         "more_rows": "… {n}행 생략 (전체: --id {id} --max-rows 0)",
         "hidden_rows": "… 질의와 무관한 행 {n}개 숨김 (전체: --id {id})",
@@ -168,6 +176,7 @@ LABELS = {
         "max_cvss": "max CVSS {score:g} ({cve})",
         "max_epss": "max EPSS {score:.3f} (top {top}%, {cve})",
         "pending": "Caution: fix not released / notice to be updated — check the vendor advisory in References live",
+        "pending_fixed": "Fix released in a later notice #{no} ({date}) — judge the fix against that notice (--id {id})",
         "local": "Source folder (notice body and attachments)",
         "more_rows": "… {n} more row(s) (all rows: --id {id} --max-rows 0)",
         "hidden_rows": "… {n} row(s) unrelated to the query hidden (all rows: --id {id})",
@@ -404,6 +413,61 @@ def is_pending(advisory: dict) -> bool:
     return any(PENDING_RE.search(t) for t in texts)
 
 
+def has_fix(row: dict) -> bool:
+    """True when the row names a fixed version: it has a number and no 'not released / no fix' wording."""
+    fixed = row.get("fixed", "").strip()
+    return bool(DIGIT_RE.search(fixed)) and not PENDING_RE.search(fixed) and not NO_FIX_RE.search(fixed)
+
+
+def cve_rows(advisory: dict, cve: str) -> list[dict]:
+    return [r for r in advisory["affected"] if cve in {c.upper() for c in row_cves(r)}]
+
+
+def product_key(row: dict) -> str:
+    return " ".join(row.get("product", "").lower().split())
+
+
+def fixes_cve(notice: dict, cve: str, products: set[str]) -> bool:
+    """Every row of the CVE in the notice has a fixed version, and every product in products is among them
+    (prefix match either way, so 'PHP' is covered by 'PHP 8.2')."""
+    rows = cve_rows(notice, cve)
+    if not rows or not all(has_fix(r) for r in rows):
+        return False
+    fixed = [key for key in map(product_key, rows) if key]
+    return all(any(f.startswith(p) or p.startswith(f) for f in fixed) for p in products)
+
+
+def mark_later_fixes(data: dict) -> dict:
+    """Return the data with 'fixed_by' on each pending KISA notice whose open CVEs are all fixed in one later
+    notice of the same vendor (the earliest such notice); the inputs are not modified.
+
+    Open CVEs are those not already fixed by the notice itself or an earlier or same-date notice of the
+    same vendor (e.g. #2581 cites PHP2Shell, fixed in #2574). The later notice must have a fixed version on
+    every row of each open CVE and cover every product the pending notice lists for it. Other vendors'
+    notices, the catch-all vendor '기타', notices without CVEs and pre-notice entries never count.
+    """
+    kisa = sorted((a for a in data["advisories"] if not a.get("pre_notice")), key=lambda a: a["date"])
+
+    def later_fix(advisory: dict) -> dict | None:
+        cves, vendor = {c.upper() for c in advisory["cves"]}, advisory["vendor"]
+        if advisory.get("pre_notice") or not cves or vendor == CATCH_ALL_VENDOR or not is_pending(advisory):
+            return None
+        same_vendor = [b for b in kisa if b["vendor"] == vendor]
+        earlier = [b for b in same_vendor if b["date"] <= advisory["date"]]  # includes the notice itself
+        open_cves = {c for c in cves if not any(fixes_cve(b, c, set()) for b in earlier)}
+        if not open_cves:
+            return None
+        needed = {c: {product_key(r) for r in cve_rows(advisory, c)} - {""} for c in open_cves}
+        return next((b for b in same_vendor if b["date"] > advisory["date"]
+                     and all(fixes_cve(b, c, needed[c]) for c in open_cves)), None)
+
+    out = []
+    for a in data["advisories"]:
+        later = later_fix(a)
+        out.append({**a, "fixed_by": {"no": later["no"], "date": later["date"], "id": ref_id(later)}} if later else a)
+    return {**data, "advisories": out}
+
+
 def passes_filters(advisory: dict, args: argparse.Namespace, vendor_query, meta: dict | None = None) -> bool:
     if getattr(args, "kev", False) and not risk_of(advisory["cves"], meta or {}).get("kev"):
         return False
@@ -538,7 +602,9 @@ def render_advisory(advisory: dict, kind: str, rows: list[dict], args: argparse.
     risk = risk_of(a["cves"], meta or {})
     if risk:
         out.append(f"- {labels['risk']}: {format_risk(risk, labels)}")
-    if is_pending(a):
+    if a.get("fixed_by"):
+        out.append(f"- {labels['pending_fixed'].format(**a['fixed_by'])}")
+    elif is_pending(a):
         out.append(f"- {labels['pending']}")
     if a["summary"]:
         out.append(f"- {labels['summary']}: {a['summary']}")
@@ -588,7 +654,7 @@ def slim(advisory: dict, meta: dict | None = None) -> dict:
     risk = risk_of(advisory["cves"], meta or {})
     if risk:
         out["risk"] = risk
-    if is_pending(advisory):
+    if is_pending(advisory) and not advisory.get("fixed_by"):
         out["fix_pending"] = True
     folder = local_folder(advisory)
     if folder:
@@ -741,7 +807,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    data = merge_pre_notice(load(args.data), load_pre_notice(args.data.parent / PRE_NOTICE_FILE))
+    data = mark_later_fixes(merge_pre_notice(load(args.data), load_pre_notice(args.data.parent / PRE_NOTICE_FILE)))
     labels = LABELS[args.lang]
     if args.doctor:
         sys.stdout.write("\n".join(render_doctor(data, labels, dt.date.today())) + "\n")

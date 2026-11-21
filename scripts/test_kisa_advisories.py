@@ -366,6 +366,17 @@ class LookupTest(unittest.TestCase):
         self.assertEqual(lookup.match_query(f5, lookup.build_query("CVE-2026-123007"))[0], "rows")
         self.assertEqual(lookup.ALIASES["cve-2026-123007"], ["nginx2root"])
 
+    def test_php2shell_nickname_matches_the_patch_notice_rows(self):
+        php = advisory("2574", "2026-10-21", "PHP 제품 보안 업데이트 권고", "PHP",
+                       cves=["CVE-2026-109618", "CVE-2026-109619", "CVE-2026-5"],
+                       affected=[{"cve": "CVE-2026-109618", "product": "PHP 8.5", "affected": "8.5.12 미만"},
+                                 {"cve": "CVE-2026-109619", "product": "PHP 8.5", "affected": "8.5.12 미만"},
+                                 {"cve": "CVE-2026-5", "product": "PHP 8.5", "affected": "8.5.12 미만"}])
+        kind, rows = lookup.match_query(php, lookup.build_query("PHP2Shell"))
+        self.assertEqual(kind, "rows")
+        self.assertEqual([r["cve"] for r in rows], ["CVE-2026-109618", "CVE-2026-109619"])
+        self.assertEqual(lookup.ALIASES["cve-2026-109619"], ["php2shell"])
+
     def test_vendor_plus_product_query_narrows_to_product_rows(self):
         kind, rows = self.query("4", "Fortinet FortiOS")
         self.assertEqual(kind, "rows")
@@ -524,6 +535,126 @@ class LookupTest(unittest.TestCase):
             with self.subTest(argv=argv), contextlib.redirect_stderr(io.StringIO()):
                 with self.assertRaises(SystemExit):
                     lookup.parse_args(argv)
+
+
+def pending_php(cves=("CVE-2026-100007",), date="2026-10-24"):
+    return advisory("7", date, "PHP 신규 취약점 임시 조치 권고", "PHP", cves=cves,
+                    affected=[{"cve": c, "product": "PHP", "affected": "제조사 미공개",
+                               "fixed": "미배포(차기 정기 업데이트 예정)"} for c in cves])
+
+
+def php_release(no, date, fixes, vendor="PHP"):
+    """Another notice; fixes maps CVE -> fixed value."""
+    return advisory(no, date, f"{vendor} 제품 보안 업데이트 권고", vendor, cves=list(fixes),
+                    affected=[{"cve": c, "product": f"{vendor} 8.2", "affected": "8.2.36 미만", "fixed": f}
+                              for c, f in fixes.items()])
+
+
+def pending_with_reference(reference="CVE-2026-100009"):
+    """Like KISA #2581: the table has the new CVE, the body also cites an older, already-fixed one."""
+    return {**pending_php(), "cves": ["CVE-2026-100007", reference]}
+
+
+def rows_notice(no, date, rows, vendor="F5"):
+    """A notice from (cve, product, fixed) rows."""
+    return advisory(no, date, f"{vendor} 제품 보안 업데이트 권고", vendor, cves=sorted({c for c, _, _ in rows}),
+                    affected=[{"cve": c, "product": p, "affected": "1.0", "fixed": f} for c, p, f in rows])
+
+
+class LaterFixTest(unittest.TestCase):
+    """A 'fix not released' notice whose CVEs all got a fixed version in a later KISA notice."""
+
+    def run_main(self, data: dict, *argv: str) -> str:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "advisories.json"
+            path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+            buffer = io.StringIO()
+            with contextlib.redirect_stdout(buffer):
+                self.assertEqual(lookup.main([*argv, "--data", str(path)]), 0)
+            return buffer.getvalue()
+
+    def data(self, *advisories):
+        return {**SAMPLE_DATA, "advisories": list(advisories),
+                "coverage": {"first": "2026-10-01", "last": "2026-11-19", "count": len(advisories)}}
+
+    def test_pending_notice_points_to_the_first_later_notice_that_fixes_every_cve(self):
+        pending = pending_php()
+        data = self.data(php_release("9", "2026-11-19", {"CVE-2026-100007": "8.2.36 이상"}),
+                         php_release("8", "2026-11-01", {"CVE-2026-100007": "8.2.35 이상"}), pending)
+        marked = {a["no"]: a for a in lookup.mark_later_fixes(data)["advisories"]}
+        self.assertEqual(marked["7"]["fixed_by"], {"no": "8", "date": "2026-11-01", "id": "8"})
+        self.assertNotIn("fixed_by", marked["9"])
+        self.assertNotIn("fixed_by", pending)  # input not modified
+
+    def test_cves_already_fixed_by_an_earlier_notice_of_the_same_vendor_are_not_required_again(self):
+        data = self.data(php_release("9", "2026-11-19", {"CVE-2026-100007": "8.2.36 이상"}), pending_with_reference(),
+                         php_release("6", "2026-10-21", {"CVE-2026-100009": "8.2.35 이상"}))
+        marked = {a["no"]: a for a in lookup.mark_later_fixes(data)["advisories"]}
+        self.assertEqual(marked["7"]["fixed_by"]["no"], "9")
+
+    def test_cves_fixed_in_the_pending_notice_itself_are_not_required_again(self):
+        pending = rows_notice("7", "2026-10-24", [("CVE-2026-100007", "BIG-IP", "17.1.2 이상"),
+                                                  ("CVE-2026-100008", "BIG-IP", "미배포")])
+        later = rows_notice("9", "2026-11-19", [("CVE-2026-100008", "BIG-IP", "17.1.3 이상")])
+        marked = {a["no"]: a for a in lookup.mark_later_fixes(self.data(later, pending))["advisories"]}
+        self.assertEqual(marked["7"]["fixed_by"]["no"], "9")
+
+    def test_has_fix_needs_a_version_and_rejects_no_fix_wording(self):
+        for fixed in ("8.2.36 이상", "R82.20 Jumbo Hotfix Take 14 이상", "1.30.7"):
+            with self.subTest(fixed=fixed):
+                self.assertTrue(lookup.has_fix({"fixed": fixed}))
+        for fixed in ("", "-", "미배포(차기 정기 업데이트 예정)", "패치 미발표 ※지원 버전으로 전환 검토", "None",
+                      "Not applicable", "해결 버전으로 마이그레이션", "패치 미제공", "없음", "N/A"):
+            with self.subTest(fixed=fixed):
+                self.assertFalse(lookup.has_fix({"fixed": fixed}))
+
+    def test_pending_warning_stays_until_every_cve_has_a_fixed_version(self):
+        later_fix = php_release("9", "2026-11-19", {"CVE-2026-100007": "8.2.36 이상"})
+        two_products = rows_notice("7", "2026-10-24", [("CVE-2026-100007", "BIG-IP", "미배포"),
+                                                       ("CVE-2026-100007", "NGINX Plus", "미배포")])
+        no_cve_pending = {**advisory("7", "2026-10-24", "PHP 임시 조치 권고", "PHP", text="해결 버전 미배포"),
+                          "affected": []}
+        cases = {
+            "one CVE still open": (pending_php(("CVE-2026-100007", "CVE-2026-100008")), later_fix),
+            "later row not fixed": (pending_php(), php_release("9", "2026-11-19", {"CVE-2026-100007": "-"})),
+            "later row also pending": (pending_php(), php_release("9", "2026-11-19", {"CVE-2026-100007": "미배포"})),
+            "later row says no patch": (pending_php(), php_release("9", "2026-11-19", {"CVE-2026-100007": "패치 미발표"})),
+            "later row says None": (pending_php(), php_release("9", "2026-11-19", {"CVE-2026-100007": "None"})),
+            "fix is older": (pending_php(), php_release("9", "2026-10-01", {"CVE-2026-100007": "8.2.35 이상"})),
+            "fix is on the same date": (pending_php(), php_release("9", "2026-10-24", {"CVE-2026-100007": "8.2.35 이상"})),
+            "no CVEs": (no_cve_pending, later_fix),
+            "pre-notice entry": ({**pending_php(), "pre_notice": True}, later_fix),
+            "later fix is another vendor's": (pending_php(), php_release("9", "2026-11-19", {"CVE-2026-100007": "R82"},
+                                                                          vendor="Check Point")),
+            "only another vendor fixed the cited CVE": (
+                pending_with_reference(), later_fix,
+                php_release("6", "2026-10-21", {"CVE-2026-100009": "R82"}, vendor="Check Point")),
+            "vendor 기타 is not a vendor": ({**pending_php(), "vendor": "기타"},
+                                           {**later_fix, "vendor": "기타"}),
+            "a pending product is not in the later notice": (
+                two_products, rows_notice("9", "2026-11-19", [("CVE-2026-100007", "BIG-IP", "17.1.3 이상")])),
+            "the later notice still has an unfixed row": (
+                two_products, rows_notice("9", "2026-11-19", [("CVE-2026-100007", "BIG-IP", "17.1.3 이상"),
+                                                              ("CVE-2026-100007", "NGINX Plus", "미배포")])),
+        }
+        for name, (pending, *others) in cases.items():
+            with self.subTest(name):
+                self.assertTrue(lookup.is_pending(pending))
+                marked = lookup.mark_later_fixes(self.data(*others, pending))["advisories"]
+                self.assertNotIn("fixed_by", next(a for a in marked if a["no"] == "7"))
+
+    def test_output_names_the_later_notice_instead_of_the_pending_warning(self):
+        data = self.data(php_release("9", "2026-11-19", {"CVE-2026-100007": "8.2.36 이상"}), pending_php())
+        out = self.run_main(data, "--id", "7", "--lang", "en")
+        self.assertIn("Fix released in a later notice #9 (2026-11-19)", out)
+        self.assertNotIn("fix not released", out)
+        self.assertIn("후속 공지 #9(2026-11-19)에 해결 버전", self.run_main(data, "--id", "7"))
+        match = json.loads(self.run_main(data, "--id", "7", "--format", "json"))["results"][0]["matches"][0]
+        self.assertEqual(match["fixed_by"]["id"], "9")
+        self.assertNotIn("fix_pending", match)
+        still_open = self.data(pending_php())
+        match = json.loads(self.run_main(still_open, "--id", "7", "--format", "json"))["results"][0]["matches"][0]
+        self.assertTrue(match["fix_pending"])
 
 
 PRE_NOTICE = {
